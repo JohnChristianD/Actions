@@ -44,6 +44,11 @@
           libraryName = "agda-prelude";
           libraryFile = "agda-prelude.agda-lib";
           src = agda-prelude;
+          meta = {
+            description = "Minimal Agda programming prelude";
+            homepage = "https://github.com/UlfNorell/agda-prelude";
+            license = pkgs.lib.licenses.mit;
+          };
         };
 
       typeTopologyLib = system:
@@ -56,6 +61,11 @@
           libraryName = "TypeTopology";
           libraryFile = "typetopology.agda-lib";
           src = typetopology;
+          meta = {
+            description = "Type topology formalization";
+            homepage = "https://github.com/martinescardo/TypeTopology";
+            license = pkgs.lib.licenses.gpl3Only;
+          };
         };
 
       agdaWithPrelude = system:
