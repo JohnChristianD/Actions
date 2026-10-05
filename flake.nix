@@ -14,9 +14,13 @@
     agda2hs = {
       url = "github:agda/agda2hs/4e6de7ec2109b3bed6a820728b57d31ad7ffd698";
     };
+    haskell-inversion = {
+      url = "github:cau-placc/inversion-plugin/aad4886742bed127b63f8378b1ec5fe8987f8e4d";
+      flake = false;
+    };
   };
 
-  outputs = { self, nixpkgs, agda-prelude, typetopology, agda2hs }:
+  outputs = { self, nixpkgs, agda-prelude, typetopology, agda2hs, haskell-inversion }:
     let
       systems = [
         "x86_64-linux"
@@ -341,6 +345,7 @@
                 pkgs.findutils
                 pkgs.git
                 pkgs.mirth
+                pkgs.stack
                 pkgs.stdenv.cc
               ];
               text = ''
@@ -357,6 +362,14 @@
                   "source=FullCoupled/Agda2HsSurface.agda generated=build/agda-haskell/FullCoupled/Agda2HsSurface.hs ghc:pass liquid:z3:pass" \
                   > "$out/agda2hs-liquid-manifest.tsv"
                 cat "$out/agda2hs-liquid-manifest.tsv"
+                cp -R "${haskell-inversion}/." "$out/inversion-source"
+                cd "$out/inversion-source"
+                test "$(stack --no-terminal exec -- ghc --numeric-version)" = "9.2.4"
+                stack --no-terminal test inversion-plugin
+                printf '%s\n' \
+                  "source=cau-placc/inversion-plugin commit=aad4886742bed127b63f8378b1ec5fe8987f8e4d ghc:9.2.4 stack:test:pass" \
+                  > "$out/haskell-inversion-manifest.tsv"
+                cat "$out/haskell-inversion-manifest.tsv"
               '';
             };
           in {
