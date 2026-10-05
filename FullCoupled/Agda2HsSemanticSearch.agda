@@ -362,6 +362,14 @@ graphLawAddDependency name dependency
   else
     law ∷ graphLawAddDependency name dependency laws
 
+ensureGraphLaw : String -> List GraphLaw -> List GraphLaw
+ensureGraphLaw name [] = graphLaw name [] ∷ []
+ensureGraphLaw name (law ∷ laws) =
+  if name == graphLawName law then
+    law ∷ laws
+  else
+    law ∷ ensureGraphLaw name laws
+
 graphLawsFromEdges :
   List (String × String) -> List GraphLaw
 graphLawsFromEdges [] = []
@@ -369,7 +377,7 @@ graphLawsFromEdges ((source , target) ∷ edges) =
   graphLawAddDependency
     source
     target
-    (graphLawsFromEdges edges)
+    (ensureGraphLaw target (graphLawsFromEdges edges))
 
 graphLawSeeds : List GraphLaw -> List GraphNode
 graphLawSeeds [] = []
@@ -453,9 +461,13 @@ graphValidPlan [] _ = False
 graphValidPlan plan laws =
   graphAllUnique plan && graphValidChain plan laws
 
+factorial : Nat -> Nat
+factorial zero = suc zero
+factorial (suc n) = suc n * factorial n
+
 graphAStarFuel : List GraphLaw -> Nat
 graphAStarFuel laws =
-  suc (length laws + length laws)
+  suc (factorial (length laws))
 
 graphAStar :
   Nat ->
@@ -506,6 +518,9 @@ autonomousGraphSearchReport edges =
 {-# COMPILE AGDA2HS SemanticLaw #-}
 {-# COMPILE AGDA2HS GraphLaw #-}
 {-# COMPILE AGDA2HS GraphNode #-}
+{-# COMPILE AGDA2HS autonomousGraphSearch #-}
+{-# COMPILE AGDA2HS autonomousGraphSearchCount #-}
+{-# COMPILE AGDA2HS autonomousGraphSearchReport #-}
 {-# COMPILE AGDA2HS SearchNode #-}
 {-# COMPILE AGDA2HS requiredCapabilities #-}
 {-# COMPILE AGDA2HS canonicalLaws #-}
