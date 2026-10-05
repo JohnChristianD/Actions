@@ -189,17 +189,21 @@
       inversionPlugin = system:
         let
           pkgs = pluginPkgsFor system;
-          treeMonad =
-            pkgs.haskell.lib.doJailbreak
-              pkgs.haskellPackages.tree-monad;
+          pluginPackages =
+            pkgs.haskellPackages.override {
+              overrides = self: super: {
+                tree-monad =
+                  pkgs.haskell.lib.doJailbreak super.tree-monad;
+                parallel-tree-search =
+                  pkgs.haskell.lib.doJailbreak super.parallel-tree-search;
+              };
+            };
           plugin =
             pkgs.haskell.lib.doJailbreak
-              (pkgs.haskellPackages.callCabal2nix
+              (pluginPackages.callCabal2nix
                 "inversion-plugin"
                 inversion-plugin-src
-                {
-                  "tree-monad" = treeMonad;
-                });
+                {});
           pluginWithoutChecks =
             pkgs.haskell.lib.overrideCabal
               plugin
