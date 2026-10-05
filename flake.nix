@@ -167,19 +167,11 @@
         let
           pkgs = pluginPkgsFor system;
           treeMonad =
-            pkgs.haskell.lib.overrideCabal
+            pkgs.haskell.lib.doJailbreak
               (pkgs.haskellPackages.callHackage
                 "tree-monad"
                 "0.3.2"
-                {})
-              (drv: {
-                postPatch =
-                  (drv.postPatch or "")
-                  + ''
-                    substituteInPlace tree-monad.cabal \
-                      --replace "base >=4.13 && <4.16.3" "base >=4.13"
-                  '';
-              });
+                {});
           plugin =
             pkgs.haskell.lib.doJailbreak
               (pkgs.haskellPackages.callCabal2nix
