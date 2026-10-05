@@ -36,10 +36,70 @@ open import Agda.Builtin.Reflection as Builtin
 open import Agda.Builtin.Sigma hiding (_,_)
 open import Agda.Primitive as Level
 open import Control.Monad.State using (State)
-open import Haskell.Prelude hiding (String; ⊥)
-open import Prelude
-open import Prelude.Char as Char
-open import Prelude.Nat.Properties using (add-assoc; add-suc-r; ≤-antisym; ≤-trans; n<1+n)
+open import Haskell.Prelude
+open import Haskell.Prelude.Char as Char
+open import Haskell.Prelude.Nat.Properties using (add-assoc; add-suc-r; ≤-antisym; ≤-trans; n<1+n)
+
+open import Logic
+open import LogicalFacts
+open import Two
+open import Naturals
+open import Addition
+open import Order
+open import Cantor
+open import JK-Monads
+open import Equality
+open import K-AC-N
+open import JK-LogicalFacts
+
+import Games.FiniteHistoryDependent
+open import Games.TypeTrees
+open import MLTT.Athenian
+open import MLTT.Fin
+open import MLTT.Spartan hiding (J)
+open import MonadOnTypes.K
+open import Naturals.Properties
+open import UF.FunExt
+
+open import MonadOnTypes.Definition
+open import MonadOnTypes.J
+open import MonadOnTypes.JK R
+open import UF.Base
+open import UF.FunExt
+
+open K-definitions {𝓦₀} {R}
+open J-definitions {𝓦₀} {R}
+
+open import Notation.CanonicalMap
+open import Notation.Order
+open import UF.Base
+open import UF.FunExt
+open import UF.PropTrunc
+open import UF.Powerset
+open import UF.Subsingletons
+open import Rationals.Type
+open import Rationals.Addition
+open import Rationals.Negation
+open import Rationals.Order
+open import Iterative.Multisets 𝓤
+open import Iterative.Multisets-Addendum ua 𝓤
+open import Iterative.Sets ua 𝓤
+open import UF.ClassicalLogic
+open import UF.Size
+open import UF.Subsingletons-FunExt
+open import UF.UA-FunExt
+open import W.Type
+
+import Unsafe.CantorCompact      -- uses CountableTychonoff
+import Unsafe.CoNat-Equiv        -- uses Coinductive records
+import Unsafe.CountableTychonoff -- uses TERMINATING
+import Unsafe.Type-in-Type-False -- uses --type-in-type
+import Unsafe.Haskell            -- uses Haskell features as postulates
+import Games.Main                -- uses Haskell features as postulates
+import TWA.Thesis.Chapter6.Main  -- uses Haskell features as postulates
+import SyntheticHomotopyTheory.Circle.WithRewriting    -- uses --rewriting
+                                                       -- and postulates
+import SyntheticHomotopyTheory.Circle.FundamentalGroup -- depends on the above
 -- END MIRTH-SYNC COMMON IMPORTS
 
 -- BEGIN MIRTH-SYNC CANONICAL COMMAND
