@@ -65,7 +65,7 @@ rewrite_theorem_graph_command() {
     printf '%s\n' '-- END THEOREM GRAPH COMMAND'
   } > "$tmp"
   write_graph_block     '-- BEGIN MIRTH-SYNC THEOREM GRAPH COMMAND'     '-- END MIRTH-SYNC THEOREM GRAPH COMMAND'     "$theorem_graph_block"     '-- END MIRTH-SYNC CANONICAL COMMAND'
-  write_graph_block     '-- BEGIN THEOREM GRAPH COMMAND'     '-- END THEOREM GRAPH COMMAND'     "$tmp"     '-- END MIRTH-SYNC THEOREM GRAPH COMMAND'
+  write_graph_block     '-- BEGIN THEOREM GRAPH COMMAND'     '-- END THEOREM GRAPH COMMAND'     "$theorem_graph_plain_block"     '-- END MIRTH-SYNC THEOREM GRAPH COMMAND'
 }
 rewrite_one() {
   file="$1"
