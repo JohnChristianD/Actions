@@ -361,7 +361,7 @@
                 liquid --smtsolver=z3 -i "$out" "$out/FullCoupled/Agda2HsSemanticSearch.hs"
                 "$out/agda2hs-semantic-search" "$out/theorems-monolith.dot" > "$out/report.txt"
                 grep -Fq "True" "$out/report.txt"
-                grep -E '^theorem-graph-edges=[1-9][0-9]*
+                grep -E '^theorem-graph-edges=[1-9][0-9]*$' "$out/report.txt"
                 printf '%s\n' \
                   "compiler=canonical-pkgs.haskellPackages.ghc" \
                   "plugins=Plugin.InversionPlugin,LiquidHaskell" \
