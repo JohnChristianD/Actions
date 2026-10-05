@@ -410,7 +410,6 @@
                   "$dependency_graph" \
                   "$semantic_manifest" \
                   "$PWD" \
-                  "${agdaPreludeLib system}/src" \
                   "${typeTopologyLib system}/source" \
                   "${agda2hsBaseLib system}"
                 test -s "$semantic_manifest"
