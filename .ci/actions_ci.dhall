@@ -666,8 +666,7 @@ DHALL
     done < <(git ls-files '*.agda')
     "$AGDA_COMMAND" --allow-exec -i . -i "$VEHICLE_AGDA_SOURCE" FullCoupled/TheoremsMonolith.agda
     (cd .ci && mmc --make check_forbidden_theorems && ./check_forbidden_theorems)
-    (cd .ci/discovery && mmc --make theorem_registry_reconcile && ./theorem_registry_reconcile --check)
-    (cd .ci/discovery && mmc --make theorem_monolith_egraph_sync && ./theorem_monolith_egraph_sync)
+    nix run .#mercury-theorem-e2e
     (cd .ci/discovery && mmc --make symbolic_egraph_test && ./symbolic_egraph_test)    (cd .ci/discovery && mmc --make interpolated_theorem_egraph_test && ./interpolated_theorem_egraph_test)
     ''} lane
 
