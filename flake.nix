@@ -7,20 +7,9 @@
       url = "github:vehicle-lang/vehicle/6312434dfc109a800c618c4c6a43089b116b7c42";
       flake = false;
     };
-    agda-prelude = {
-      url = "github:UlfNorell/agda-prelude/4230566d3ae229b6a00258587651ac7bfd38d088";
-      flake = false;
-    };
-    typetopology = {
-      url = "github:martinescardo/TypeTopology/8761920fdaec20c9dada7ff1d6628c09491245c5";
-      flake = false;
-    };
-    agda2hs = {
-      url = "github:agda/agda2hs/4e6de7ec2109b3bed6a820728b57d31ad7ffd698";
-    };
   };
 
-  outputs = { self, nixpkgs, vehicle, agda-prelude, typetopology, agda2hs }:
+  outputs = { self, nixpkgs, vehicle }:
     let
       systems = [
         "x86_64-linux"
@@ -34,58 +23,19 @@
       pkgsFor = system:
         import nixpkgs { inherit system; };
 
-      agdaPreludeLib = system:
+      agdaWithStdlib = system:
         let
           pkgs = pkgsFor system;
         in
-        pkgs.agdaPackages.mkDerivation {
-          pname = "agda-prelude";
-          version = "0-unstable-2026-10-05";
-          libraryName = "agda-prelude";
-          libraryFile = "agda-prelude.agda-lib";
-          src = agda-prelude;
-        };
-
-      typeTopologyLib = system:
-        let
-          pkgs = pkgsFor system;
-        in
-        pkgs.agdaPackages.mkDerivation {
-          pname = "TypeTopology";
-          version = "0-unstable-2026-10-05";
-          libraryName = "TypeTopology";
-          libraryFile = "typetopology.agda-lib";
-          src = typetopology;
-        };
-
-      agdaWithPrelude = system:
-        let
-          pkgs = pkgsFor system;
-        in
-        pkgs.agdaPackages.agda.withPackages [
-          (agdaPreludeLib system)
-          (typeTopologyLib system)
-        ];
+        pkgs.agdaPackages.agda.withPackages [ pkgs.agdaPackages.standard-library ];
 
       haskellLiquidGhc = system:
         let
           pkgs = pkgsFor system;
         in
         pkgs.haskellPackages.ghcWithPackages (p: [
-          p.rio
           p.liquidhaskell
         ]);
-
-      agda2hsWithHaskell = system:
-        let
-          ghc = haskellLiquidGhc system;
-        in
-        agda2hs.packages.${system}.agda2hs.withPackages {
-          pkgs = [
-            agda2hs.packages.${system}.base-lib
-          ];
-          inherit ghc;
-        };
 
       liquidHaskellEnv = system:
         let
@@ -95,6 +45,7 @@
           packages = [
             (haskellLiquidGhc system)
             pkgs.haskellPackages.liquidhaskell
+            pkgs.haskellPackages.cabal-install
             pkgs.z3
             pkgs.coreutils
             pkgs.findutils
@@ -114,10 +65,7 @@
           pkgs = pkgsFor system;
         in
         {
-          agda = agdaWithPrelude system;
-          agda2hs = agda2hsWithHaskell system;
-          agda-prelude = agdaPreludeLib system;
-          typetopology = typeTopologyLib system;
+          agda = agdaWithStdlib system;
           ci = pkgs.haskellPackages.dhall;
           yamlscript = pkgs.yamlscript;
           default = pkgs.haskellPackages.dhall;
@@ -232,26 +180,71 @@
             program = "${script}/bin/mirth-agda-graph";
           };
 
-          agda2hs-extract = let
+          malonzo-extract = let
             script = pkgs.writeShellApplication {
-              name = "agda2hs-extract";
+              name = "malonzo-extract";
               runtimeInputs = [
-                (agda2hsWithHaskell system)
+                (agdaWithStdlib system)
                 pkgs.coreutils
+                pkgs.findutils
               ];
               text = ''
                 set -euo pipefail
-                out="build/agda2hs"
+                out="build/malonzo";
                 rm -rf "$out"
                 mkdir -p "$out"
-                "${agda2hsWithHaskell system}/bin/agda2hs" -i . FullCoupled/Agda2HsSurface.agda -o "$out/Agda2HsSurface.hs"
-                test -s "$out/Agda2HsSurface.hs"
+                export AGDA_COMMAND="${agdaWithStdlib system}/bin/agda"
+                "$AGDA_COMMAND" -l standard-library -i . --compile --no-main --compile-dir="$out" FullCoupled/CanonicalLearnerMonolith.agda
+                "$AGDA_COMMAND" -l standard-library -i . --compile --no-main --compile-dir="$out" FullCoupled/TheoremsMonolith.agda
+                find "$out/MAlonzo/Code" -type f -name '*.hs' -print | sort
               '';
             };
           in {
             type = "app";
-            program = "${script}/bin/agda2hs-extract";
+            program = "${script}/bin/malonzo-extract";
           };
+
+          agda-haskell-pipeline = let
+            script = pkgs.writeShellApplication {
+              name = "agda-haskell-pipeline";
+              runtimeInputs = [
+                (agdaWithStdlib system)
+                (haskellLiquidGhc system)
+                pkgs.z3
+                pkgs.coreutils
+                pkgs.findutils
+                pkgs.mirth
+                pkgs.stdenv.cc
+              ];
+              text = ''
+                set -euo pipefail
+                out="build/agda-haskell"
+                rm -rf "$out"
+                mkdir -p "$out"
+                export AGDA_COMMAND="${agdaWithStdlib system}/bin/agda"
+                "$AGDA_COMMAND" -l standard-library -i . --compile --no-main --compile-dir="$out" FullCoupled/CanonicalLearnerMonolith.agda
+                "$AGDA_COMMAND" -l standard-library -i . --compile --no-main --compile-dir="$out" FullCoupled/TheoremsMonolith.agda
+                generated_learner="$out/MAlonzo/Code/FullCoupled/CanonicalLearnerMonolith.hs"
+                generated_theorem="$out/MAlonzo/Code/FullCoupled/TheoremsMonolith.hs"
+                liquid_sync_c="$out/liquid-haskell-sync.c"
+                liquid_sync="$out/liquid-haskell-sync"
+                liquid_target="$out/LiquidGeneratedBridge.hs"
+                mirthc .ci/mirth/liquid_haskell_sync.mth -o "$liquid_sync_c"
+                cc -std=c99 "$liquid_sync_c" -o "$liquid_sync"
+                "$liquid_sync" "$generated_learner" "$generated_theorem" "$liquid_target"
+                liquid --smtsolver=z3 -i "$out" "$liquid_target"
+                printf '%s\n' \
+                  "source=FullCoupled/CanonicalLearnerMonolith.agda generated=MAlonzo/Code/FullCoupled/CanonicalLearnerMonolith.hs target=build/agda-haskell/LiquidGeneratedBridge.hs liquid:z3:pass" \
+                  "source=FullCoupled/TheoremsMonolith.agda generated=MAlonzo/Code/FullCoupled/TheoremsMonolith.hs target=build/agda-haskell/LiquidGeneratedBridge.hs liquid:z3:pass" \
+                  > "$out/liquid-agda-manifest.tsv"
+                cat "$out/liquid-agda-manifest.tsv"
+              '';
+            };
+          in {
+            type = "app";
+            program = "${script}/bin/agda-haskell-pipeline";
+          };
+
           prune-theorem-registries = let
             script = pkgs.writeShellApplication {
               name = "prune-theorem-registries";
