@@ -78,6 +78,7 @@ record SaturationReport : Type where
     saturationIterations : Nat
     saturationRewrites : Nat
     saturationChanged : Bool
+    saturationComplete : Bool
 
 open SaturationReport public
 
@@ -367,9 +368,9 @@ enodeCount : EGraph -> Nat
 enodeCount graph = length (bindings graph)
 
 saturateWithFuel :
-  Nat -> List RewriteRule -> EGraph -> Nat -> Nat -> EGraph × Nat × Nat
+  Nat -> List RewriteRule -> EGraph -> Nat -> Nat -> EGraph × Nat × Nat × Bool
 saturateWithFuel zero _ graph total iterations =
-  graph , total , iterations
+  graph , total , iterations , False
 saturateWithFuel (suc fuel) rules graph total iterations =
   let roots = rootClasses graph
       (graph' , rewrites) = saturatePass rules roots graph
@@ -380,18 +381,18 @@ saturateWithFuel (suc fuel) rules graph total iterations =
         enodeCount graph == enodeCount graph''
       nextIterations = suc iterations
   in if stable then
-       graph'' , total + rewrites , nextIterations
+       graph'' , total + rewrites , nextIterations , True
      else
        saturateWithFuel fuel rules graph'' (total + rewrites) nextIterations
 
 saturateUntilStable :
   List RewriteRule -> EGraph -> EGraph × SaturationReport
 saturateUntilStable rules graph =
-  let (graph' , rewrites , iterations) =
+  let (graph' , rewrites , iterations , complete) =
         saturateWithFuel (suc (enodeCount graph)) rules graph zero zero
       changed = if rewrites == zero then False else True
   in graph' ,
-     saturationReport iterations rewrites changed
+     saturationReport iterations rewrites changed complete
 
 stringLength : String -> Nat
 stringLength text =
@@ -545,6 +546,7 @@ regressionGraph =
           Just result -> extractedCost result > zero
       quotientOk = classCount g5 < enodeCount g5
       iterationOk = saturationIterations report > zero
+      saturationOk = saturationComplete report
   in stable ,
      (congruenceOk &&
       associativityOk &&
@@ -552,7 +554,8 @@ regressionGraph =
       analysisOk &&
       extractOk &&
       quotientOk &&
-      iterationOk)
+      iterationOk &&
+      saturationOk)
 
 symbolicEGraphRegression : Bool
 symbolicEGraphRegression = pr₂ regressionGraph
