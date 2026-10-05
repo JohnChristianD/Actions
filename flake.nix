@@ -165,17 +165,13 @@
           pkgs = pkgsFor system;
         in
         pkgs.haskell.lib.overrideCabal
-          (pkgs.haskellPackages.callCabal2nix
-            "inversion-plugin"
-            inversion-plugin-src
-            {})
+          (pkgs.haskell.lib.doJailbreak
+            (pkgs.haskellPackages.callCabal2nix
+              "inversion-plugin"
+              inversion-plugin-src
+              {}))
           (drv: {
             doCheck = false;
-            preConfigure = ''
-              substituteInPlace inversion-plugin.cabal \
-                --replace-fail 'base                ^>= 4.16.1.0' 'base                >= 4.16 && < 4.22' \
-                --replace-fail 'ghc                 ^>= 9.2.2' 'ghc                 >= 9.2 && < 9.15'
-            '';
             meta = drv.meta // {
               description = "GHC plugin for automatic function inversion and functional patterns";
               homepage = "https://github.com/cau-placc/inversion-plugin";
