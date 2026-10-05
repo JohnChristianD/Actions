@@ -16,7 +16,7 @@ record Counter : Type where
 stepCounter : Counter -> Counter
 stepCounter (counter n) = counter (n + 1)
 
-counterLaw : ∀ c -> totalCount (stepCounter c) ≡ totalCount c + 1
+counterLaw : ∀ c -> Counter.totalCount (stepCounter c) ≡ Counter.totalCount c + 1
 counterLaw (counter n) = refl
 
 {-# COMPILE AGDA2HS Counter #-}
