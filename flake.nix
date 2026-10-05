@@ -15,20 +15,12 @@
       url = "github:martinescardo/TypeTopology/8761920fdaec20c9dada7ff1d6628c09491245c5";
       flake = false;
     };
-    extensiontypes-agda = {
-      url = "github:nicolaikraus/extensiontypes-agda/0444e27c878842eb7bbabbaaf3c104934a199c3f";
-      flake = false;
-    };
-    two-level-tt = {
-      url = "github:ElifUskuplu/2LTT-Agda/b0640910fae9263fe9031636923460dc124920f3";
-      flake = false;
-    };
     agda2hs = {
       url = "github:agda/agda2hs/4e6de7ec2109b3bed6a820728b57d31ad7ffd698";
     };
   };
 
-  outputs = { self, nixpkgs, vehicle, agda-prelude, typetopology, extensiontypes-agda, two-level-tt, agda2hs }:
+  outputs = { self, nixpkgs, vehicle, agda-prelude, typetopology, agda2hs }:
     let
       systems = [
         "x86_64-linux"
@@ -72,6 +64,7 @@
           version = "0-unstable-2026-10-05";
           libraryName = "TypeTopology";
           libraryFile = "typetopology.agda-lib";
+          meta = { description = "TypeTopology"; };
           src = typetopology;
           dontBuild = true;
           installPhase = ''
@@ -86,33 +79,6 @@
           };
         };
 
-      twoLevelTtLib = system:
-        let
-          pkgs = pkgsFor system;
-        in
-        pkgs.agdaPackages.mkDerivation {
-          pname = "two-level-tt";
-          version = "0-unstable-2025-08-06";
-          libraryName = "two-level-tt";
-          libraryFile = "two-level-tt.agda-lib";
-          meta = { description = "Two-level type theory"; };
-          src = two-level-tt;
-        };
-
-      extensionPreludeLib = system:
-        let
-          pkgs = pkgsFor system;
-        in
-        pkgs.agdaPackages.mkDerivation {
-          pname = "extension-types";
-          version = "0-unstable-2026-07-27";
-          libraryName = "extension-types";
-          libraryFile = "extension-types.agda-lib";
-          meta = { description = "Extension types Prelude layer"; };
-          src = extensiontypes-agda;
-          buildInputs = [ (twoLevelTtLib system) ];
-        };
-
       agdaWithPrelude = system:
         let
           pkgs = pkgsFor system;
@@ -120,7 +86,6 @@
         pkgs.agdaPackages.agda.withPackages [
           (agdaPreludeLib system)
           (typeTopologyLib system)
-          (extensionPreludeLib system)
         ];
 
       haskellLiquidGhc = system:
