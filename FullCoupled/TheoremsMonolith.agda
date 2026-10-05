@@ -125,6 +125,132 @@ import FullCoupled.FormalMethods.VerificationConditions as FormalMethodsVerifica
 open import FullCoupled.CanonicalLearnerMonolith as C
 -- END THEOREM-SPECIFIC IMPORTS
 
+------------------------------------------------------------------------
+-- Constructive inversion/search bridge.
+--
+-- The inversion-plugin/Curry line gives inverse computation as a
+-- non-deterministic preimage search with a single-solution condition.
+-- TWA's exact-real-search framework makes the search constructive by
+-- requiring searchable domains and explicit uniform-continuity moduli.
+--
+-- This theorem layer combines those ideas without putting search,
+-- inversion, or proof-discovery machinery into the learner semantics.
+------------------------------------------------------------------------
+
+module ExactSearchInversion (fe : FunExt) where
+
+  open import TWA.Thesis.Chapter3.ClosenessSpaces fe
+  open import TWA.Thesis.Chapter3.SearchableTypes fe
+
+  record ExactSearchEquivalence
+    (X Y : ClosenessSpace 𝓤₀) : Set₁ where
+    constructor exactSearchEquivalence
+    field
+      forward : ⟨ X ⟩ → ⟨ Y ⟩
+      inverse : ⟨ Y ⟩ → ⟨ X ⟩
+      forward-ucontinuous :
+        f-ucontinuous X Y forward
+      inverse-ucontinuous :
+        f-ucontinuous Y X inverse
+      forward-inverse :
+        ∀ y → forward (inverse y) ≡ y
+      inverse-forward :
+        ∀ x → inverse (forward x) ≡ x
+      searchable-domain :
+        csearchable 𝓤₀ X
+
+  open ExactSearchEquivalence public
+
+  exact-search-inverse-selects-preimage :
+    ∀ {X Y : ClosenessSpace 𝓤₀}
+    (E : ExactSearchEquivalence X Y)
+    (y : ⟨ Y ⟩)
+    (x : ⟨ X ⟩) →
+    forward E x ≡ y →
+    inverse E y ≡ x
+  exact-search-inverse-selects-preimage E y x h =
+    trans
+      (cong (inverse E) (sym h))
+      (inverse-forward E x)
+
+  exact-search-forward-is-equiv :
+    ∀ {X Y : ClosenessSpace 𝓤₀}
+    (E : ExactSearchEquivalence X Y) →
+    is-equiv (forward E)
+  exact-search-forward-is-equiv E =
+    invertibles-are-equivs
+      (forward E)
+      (inverse E , (λ y → forward-inverse E y)
+                  , (λ x → inverse-forward E x))
+
+  pullback-uc-predicate :
+    ∀ {X Y : ClosenessSpace 𝓤₀}
+    (E : ExactSearchEquivalence X Y) →
+    decidable-uc-predicate 𝓤₀ Y →
+    decidable-uc-predicate 𝓤₀ X
+  pullback-uc-predicate E ((p , d) , ϕ) =
+    ((p ∘ forward E , d ∘ forward E)
+    , p-ucontinuous-comp
+        _ _
+        (forward E)
+        (forward-ucontinuous E)
+        p ϕ)
+
+  inverse-preserves-csearchability :
+    ∀ {X Y : ClosenessSpace 𝓤₀}
+    (E : ExactSearchEquivalence X Y) →
+    csearchable 𝓤₀ Y
+  inverse-preserves-csearchability E ((p , d) , ϕ) =
+    y₀ , γ
+    where
+      pulled : decidable-uc-predicate 𝓤₀ X
+      pulled = pullback-uc-predicate E ((p , d) , ϕ)
+
+      x₀ : ⟨ X ⟩
+      x₀ = pr₁ (searchable-domain E pulled)
+
+      γx :
+        (Σ x ꞉ ⟨ X ⟩ , (p (forward E x)) holds) →
+        p (forward E x₀) holds
+      γx = pr₂ (searchable-domain E pulled)
+
+      y₀ : ⟨ Y ⟩
+      y₀ = forward E x₀
+
+      γ :
+        (Σ y ꞉ ⟨ Y ⟩ , (p y) holds) →
+        p y₀ holds
+      γ (y , py) =
+        γx
+          ( inverse E y
+          , transport
+              (λ z → (p z) holds)
+              (forward-inverse E y ⁻¹)
+              py
+          )
+
+------------------------------------------------------------------------
+-- Public theorem-shaped aliases consumed by the autonomous graph.
+------------------------------------------------------------------------
+
+exact-search-inverse-correct :
+  ∀ {X Y : ClosenessSpace 𝓤₀}
+  (E : ExactSearchEquivalence X Y)
+  (y : ⟨ Y ⟩)
+  (x : ⟨ X ⟩) →
+  forward E x ≡ y →
+  inverse E y ≡ x
+exact-search-inverse-correct =
+  exact-search-inverse-selects-preimage
+
+exact-search-inverse-csearchable :
+  ∀ {X Y : ClosenessSpace 𝓤₀}
+  (E : ExactSearchEquivalence X Y) →
+  csearchable 𝓤₀ Y
+exact-search-inverse-csearchable =
+  inverse-preserves-csearchability
+
+
 
 ------------------------------------------------------------------------
 nat-ring-solver-layernorm-step :
