@@ -48,7 +48,7 @@ let script = merge {
     nix run .#mirth-ascii-sync
     nix run .#mirth-agda-import-sync -- --check
     nix run .#mirth-agda-command-sync -- --check
-    nix run .#mirth-agda-graph -- "$tmp/GeneratedAgdaGraph.elm" | bash -s -- "$tmp/GeneratedAgdaGraph.elm"
+    nix run .#mirth-agda-graph -- "$tmp/GeneratedAgdaGraph.elm"
     test -s "$tmp/GeneratedAgdaGraph.elm"
     grep -Fq 'module GeneratedAgdaGraph exposing (Node, Edge, nodes, edges)' "$tmp/GeneratedAgdaGraph.elm"
     grep -Fq 'FullCoupled.TheoremsMonolith' "$tmp/GeneratedAgdaGraph.elm"
@@ -109,7 +109,7 @@ let script = merge {
     cp site/Main.elm "$tmp/src/Main.elm"
     echo "pages-stage=mirth-graph-compile"
     echo "pages-stage=mirth-graph-compile-done"
-    nix run .#mirth-agda-graph -- "$tmp/src/GeneratedAgdaGraph.elm" | bash -s -- "$tmp/src/GeneratedAgdaGraph.elm"
+    nix run .#mirth-agda-graph -- "$tmp/src/GeneratedAgdaGraph.elm"
     echo "pages-stage=mirth-surface-compile"
     mirthc .ci/mirth/agda_to_elm.mth -o "$tmp/agda-to-elm.c"
     echo "pages-stage=mirth-surface-compile-done"
