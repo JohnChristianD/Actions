@@ -29,9 +29,15 @@ add_source "$root_source"
 
 for root in "${roots[@]}"; do
   test -d "$root"
-  while IFS= read -r -d '' file; do
-    add_source "$file"
-  done < <(find "$root" -type f -name '*.agda' -print0)
+  if git -C "$root" rev-parse --show-toplevel >/dev/null 2>&1; then
+    while IFS= read -r -d '' file; do
+      add_source "$root/$file"
+    done < <(git -C "$root" ls-files -z '*.agda')
+  else
+    while IFS= read -r -d '' file; do
+      add_source "$file"
+    done < <(find "$root" -type f -name '*.agda' -print0)
+  fi
 done
 
 : > "$tmp/modules"
