@@ -358,24 +358,49 @@
             program = "${script}/bin/agda-haskell-pipeline";
           };
 
-          mercury-novel-theorem-interpolation = let
+          mercury-theorem-e2e = let
             script = pkgs.writeShellApplication {
-              name = "mercury-novel-theorem-interpolation";
+              name = "mercury-theorem-e2e";
               runtimeInputs = [
+                (agdaWithPrelude system)
                 pkgs.mercury
+                pkgs.haskellPackages.dhall
                 pkgs.coreutils
+                pkgs.git
               ];
               text = ''
                 set -euo pipefail
-                cd .ci/discovery
+                test -f FullCoupled/TheoremsMonolith.agda
+                agda="${agdaWithPrelude system}/bin/agda";
+                "$agda" --safe -i . FullCoupled/TheoremsMonolith.agda
+                cd .ci
+                mmc --make check_forbidden_theorems
+                ./check_forbidden_theorems
+                cd discovery
+                mmc --make theorem_registry_reconcile
+                ./theorem_registry_reconcile --check
+                mmc --make theorem_monolith_egraph_sync
+                ./theorem_monolith_egraph_sync
                 mmc --make novel_theorem_interpolator
                 ./novel_theorem_interpolator
                 test -s novel-theorem-interpolation.dhall
+                dhall text --file novel-theorem-interpolation.dhall >/dev/null
+                report=theorem-monolith-egraph-sync.dhall
+                test -s "$report"
+                grep -Fq 'graphSearch = "A* cost-guided dependency paths"' "$report"
+                grep -Fq 'forcedSymbolicTarget = False' "$report"
+                grep -Fq 'singleAgdaSource = True' "$report"
+                grep -Fq 'astarScoreOrdered = True' "$report"
+                grep -Fq 'newNonredundantTheoremCount = 0' "$report"
+                grep -Fq 'reviewFrontierCount = 13' "$report"
+                grep -Fq 'CanonicalIntegerLayerNormAStarExecutionBridgeTheorem' "$report"
+                grep -Fq 'status = "INTERPOLATED_AND_AGDA_TYPED"' novel-theorem-interpolation.dhall
+                echo "mercury-theorem-e2e=pass"
               '';
             };
           in {
             type = "app";
-            program = "${script}/bin/mercury-novel-theorem-interpolation";
+            program = "${script}/bin/mercury-theorem-e2e";
           };
 
           prune-theorem-registries = let
