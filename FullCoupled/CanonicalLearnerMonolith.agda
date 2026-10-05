@@ -2,6 +2,7 @@
 {-# OPTIONS --lossy-unification --backtracking-instance-search --experimental-lazy-instances --confluence-check --syntactic-equality --polarity --auto-inline --guarded --without-K --exact-split --no-infer-absurd-clauses --level-universe --keep-covering-clauses --no-projection-like --erasure #-}
 -- END MIRTH-SYNC GLOBAL OPTIONS
 
+
 {-# OPTIONS --safe #-}
 
 ------------------------------------------------------------------------
@@ -30,11 +31,23 @@
 module FullCoupled.CanonicalLearnerMonolith where
 
 -- BEGIN MIRTH-SYNC COMMON IMPORTS
--- Mirth-generated contract: this exact block is shared by both monoliths.
-open import Prelude
-open import Prelude.Nat.Properties using (add-assoc; add-suc-r; ≤-antisym; ≤-trans; n<1+n)
+-- Merged external import surface; internal FullCoupled imports remain module-local.
+import Prelude.Fin as F
 import Prelude.Int.Properties as IntegerProperties
+import Prelude.Vec as V
+open import Agda.Builtin.Float renaming (primFloatPlus to _+ᵣ_; primFloatLess to _≤?ᵣ_)
+open import Agda.Builtin.Reflection as Builtin
+open import Agda.Builtin.Sigma hiding (_,_)
+open import Agda.Primitive as Level
+open import Control.Monad.State using (State)
+open import Prelude
+open import Prelude.Char as Char
+open import Prelude.Nat.Properties
 -- END MIRTH-SYNC COMMON IMPORTS
+
+-- BEGIN MIRTH-SYNC CANONICAL COMMAND
+-- "$AGDA_COMMAND" -i .
+-- END MIRTH-SYNC CANONICAL COMMAND
 
 
 record Topology (A : Set) : Set₁ where

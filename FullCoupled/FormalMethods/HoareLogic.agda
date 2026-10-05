@@ -1,20 +1,7 @@
 -- BEGIN MIRTH-SYNC GLOBAL OPTIONS
-{-# OPTIONS --backtracking-instance-search #-}
-{-# OPTIONS --experimental-lazy-instances #-}
-{-# OPTIONS --polarity #-}
-{-# OPTIONS --auto-inline #-}
-{-# OPTIONS --confluence-check #-}
-{-# OPTIONS --syntactic-equality #-}
-{-# OPTIONS --guarded #-}
-{-# OPTIONS --cubical #-}
-{-# OPTIONS --exact-split #-}
-{-# OPTIONS -WnoUnsupportedIndexedMatch #-}
-{-# OPTIONS --erased-matches #-}
-{-# OPTIONS --erase-record-parameters #-}
-{-# OPTIONS --no-projection-like #-}
-{-# OPTIONS --lossy-unification #-}
-{-# OPTIONS --guardedness #-}
+{-# OPTIONS --lossy-unification --backtracking-instance-search --experimental-lazy-instances --confluence-check --syntactic-equality --polarity --auto-inline --guarded --without-K --exact-split --no-infer-absurd-clauses --level-universe --keep-covering-clauses --no-projection-like --erasure #-}
 -- END MIRTH-SYNC GLOBAL OPTIONS
+
 
 {-# OPTIONS --safe #-}
 
@@ -26,15 +13,25 @@
 
 module FullCoupled.FormalMethods.HoareLogic where
 
-open import Prelude.Nat
-open import Prelude.Bool using (true; false)
-open import Prelude.Product using (_×_; _,_; proj₁; proj₂)
-open import Prelude.String using (String)
-open import Prelude.Empty
-open import Agda.Primitive using (Level; lzero; lsuc; _⊔_; Set)
-open import Prelude.Decidable using (yes; no)
-open import Prelude.Decidable using (Dec)
-open import Prelude.Equality using (_≡_; refl; sym)
+-- BEGIN MIRTH-SYNC COMMON IMPORTS
+-- Merged external import surface; internal FullCoupled imports remain module-local.
+import Prelude.Fin as F
+import Prelude.Int.Properties as IntegerProperties
+import Prelude.Vec as V
+open import Agda.Builtin.Float renaming (primFloatPlus to _+ᵣ_; primFloatLess to _≤?ᵣ_)
+open import Agda.Builtin.Reflection as Builtin
+open import Agda.Builtin.Sigma hiding (_,_)
+open import Agda.Primitive as Level
+open import Control.Monad.State using (State)
+open import Prelude
+open import Prelude.Char as Char
+open import Prelude.Nat.Properties
+-- END MIRTH-SYNC COMMON IMPORTS
+
+-- BEGIN MIRTH-SYNC CANONICAL COMMAND
+-- "$AGDA_COMMAND" -i .
+-- END MIRTH-SYNC CANONICAL COMMAND
+
 
 open import FullCoupled.FormalMethods.IMP
 open import FullCoupled.FormalMethods.OperationalSemantics

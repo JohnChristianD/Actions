@@ -4,5 +4,96 @@ import std.prelude
 import std.world
 
 def main {
-    "set -euo pipefail; mode=\"${1:---write}\"; canonical=FullCoupled/CanonicalLearnerMonolith.agda; theorem=FullCoupled/TheoremsMonolith.agda; lockdir=.ci/.mirth-agda-import-sync.lock; global=$(mktemp); import_block=$(mktemp); trap 'rm -f \"$global\" \"$import_block\"; rmdir \"$lockdir\" 2>/dev/null || true' EXIT INT TERM; acquire_lock() { attempt=0; until mkdir \"$lockdir\" 2>/dev/null; do attempt=$((attempt + 1)); if [ \"$attempt\" -ge 200 ]; then echo \"mirth-agda-import-sync: lock timeout\" >&2; exit 1; fi; sleep 0.05; done; }; sources() { git ls-files \"*.agda\"; }; extract_global() { sed -n '/^-- BEGIN MIRTH-SYNC GLOBAL OPTIONS$/,/^-- END MIRTH-SYNC GLOBAL OPTIONS$/p' \"$canonical\" > \"$global\"; }; extract_import() { sed -n '/^-- BEGIN MIRTH-SYNC COMMON IMPORTS$/,/^-- END MIRTH-SYNC COMMON IMPORTS$/p' \"$canonical\" > \"$import_block\"; }; check_global_file() { file=\"$1\"; test \"$(grep -Fc -- \"-- BEGIN MIRTH-SYNC GLOBAL OPTIONS\" \"$file\" || true)\" -eq 1; test \"$(grep -Fc -- \"-- END MIRTH-SYNC GLOBAL OPTIONS\" \"$file\" || true)\" -eq 1; actual=$(mktemp); sed -n '/^-- BEGIN MIRTH-SYNC GLOBAL OPTIONS$/,/^-- END MIRTH-SYNC GLOBAL OPTIONS$/p' \"$file\" > \"$actual\"; cmp -s \"$global\" \"$actual\"; status=$?; rm -f \"$actual\"; return $status; }; check_monolith_imports() { test \"$(grep -Fc -- \"-- BEGIN MIRTH-SYNC COMMON IMPORTS\" \"$canonical\")\" -eq 1; test \"$(grep -Fc -- \"-- END MIRTH-SYNC COMMON IMPORTS\" \"$canonical\")\" -eq 1; test \"$(grep -Fc -- \"-- BEGIN MIRTH-SYNC COMMON IMPORTS\" \"$theorem\")\" -eq 1; test \"$(grep -Fc -- \"-- END MIRTH-SYNC COMMON IMPORTS\" \"$theorem\")\" -eq 1; actual=$(mktemp); sed -n '/^-- BEGIN MIRTH-SYNC COMMON IMPORTS$/,/^-- END MIRTH-SYNC COMMON IMPORTS$/p' \"$theorem\" > \"$actual\"; cmp -s \"$import_block\" \"$actual\"; status=$?; rm -f \"$actual\"; return $status; }; check_clones() { failures=0; while IFS= read -r file; do case \"$file\" in FullCoupled/CanonicalLearnerMonolith.agda|FullCoupled/TheoremsMonolith.agda) continue;; esac; if grep -Fq -- \"-- BEGIN MIRTH-SYNC COMMON IMPORTS\" \"$file\" || grep -Fq -- \"-- END MIRTH-SYNC COMMON IMPORTS\" \"$file\"; then echo \"clone import block must remain local: $file\" >&2; failures=$((failures + 1)); fi; case \"$file\" in FullCoupled/FormalMethods/*.agda|FullCoupled/FormalMethods/*/*.agda) grep -Fq -- \"{-# OPTIONS --safe #-}\" \"$file\" || { echo \"missing clone --safe: $file\" >&2; failures=$((failures + 1)); };; esac; done < <(sources); test \"$failures\" -eq 0; }; rewrite_global() { file=\"$1\"; tmp=\"$file.mirth-tmp\"; if grep -Fq -- \"-- BEGIN MIRTH-SYNC GLOBAL OPTIONS\" \"$file\"; then awk -v block=\"$global\" 'BEGIN { inside=0 } $0 == \"-- BEGIN MIRTH-SYNC GLOBAL OPTIONS\" { while ((getline line < block) > 0) print line; inside=1; next } $0 == \"-- END MIRTH-SYNC GLOBAL OPTIONS\" { inside=0; next } !inside { print }' \"$file\" > \"$tmp\"; else { cat \"$global\"; printf \"\n\"; cat \"$file\"; } > \"$tmp\"; fi; cmp -s \"$file\" \"$tmp\" || mv \"$tmp\" \"$file\"; rm -f \"$tmp\"; }; rewrite_theorem_imports() { tmp=\"$theorem.mirth-tmp\"; awk -v block=\"$import_block\" 'BEGIN { inside=0 } $0 == \"-- BEGIN MIRTH-SYNC COMMON IMPORTS\" { while ((getline line < block) > 0) print line; inside=1; next } $0 == \"-- END MIRTH-SYNC COMMON IMPORTS\" { inside=0; next } !inside { print }' \"$theorem\" > \"$tmp\"; mv \"$tmp\" \"$theorem\"; }; remove_clone_imports() { while IFS= read -r file; do case \"$file\" in FullCoupled/CanonicalLearnerMonolith.agda|FullCoupled/TheoremsMonolith.agda) continue;; esac; if grep -Fq -- \"-- BEGIN MIRTH-SYNC COMMON IMPORTS\" \"$file\"; then tmp=\"$file.mirth-tmp\"; awk '$0 == \"-- BEGIN MIRTH-SYNC COMMON IMPORTS\" { inside=1; next } $0 == \"-- END MIRTH-SYNC COMMON IMPORTS\" { inside=0; next } !inside { print }' \"$file\" > \"$tmp\"; mv \"$tmp\" \"$file\"; fi; done < <(sources); }; extract_global; extract_import; if [ \"$mode\" = \"--check\" ]; then failures=0; while IFS= read -r file; do check_global_file \"$file\" || { echo \"global option drift: $file\" >&2; failures=$((failures + 1)); }; done < <(sources); check_monolith_imports || { echo \"monolith import drift\" >&2; failures=$((failures + 1)); }; check_clones || failures=$((failures + 1)); test \"$failures\" -eq 0; elif [ \"$mode\" = \"--write\" ]; then acquire_lock; while IFS= read -r file; do rewrite_global \"$file\"; done < <(sources); rewrite_theorem_imports; remove_clone_imports; while IFS= read -r file; do check_global_file \"$file\" || { echo \"global option sync failed: $file\" >&2; exit 1; }; done < <(sources); check_monolith_imports; check_clones; else echo \"usage: agda-import-sync [--write|--check]\" >&2; exit 2; fi; count=$(sources | wc -l | tr -d \" \"); echo \"mirth-agda-import-sync=pass\"; echo \"canonical=$canonical\"; echo \"synced-agda-files=$count\"; echo \"global-options=canonical-to-all-tracked-agda\"; echo \"common-imports=canonical-learner-to-theorem-only\"; echo \"clone-imports=source-local\"; echo \"clone-safe=required\"" print
+  "set -euo pipefail
+canonical=FullCoupled/CanonicalLearnerMonolith.agda
+special=FullCoupled/Agda2HsSurface.agda
+mode=\"\${1:---check}\"
+block=\$(mktemp)
+merged=\$(mktemp)
+tmp=\$(mktemp)
+trap 'rm -f \"\$block\" \"\$merged\" \"\$tmp\"' EXIT
+sources() { git ls-files '*.agda' | LC_ALL=C sort; }
+common_sources() { sources | grep -Fvx \"\$special\" || true; }
+extract_block() { sed -n '/^-- BEGIN MIRTH-SYNC COMMON IMPORTS$/,/^-- END MIRTH-SYNC COMMON IMPORTS$/p' \"\$1\"; }
+collect_imports() {
+  while IFS= read -r file; do
+    awk '
+      \$0 == \"-- BEGIN MIRTH-SYNC COMMON IMPORTS\" { inside=1; next }
+      \$0 == \"-- END MIRTH-SYNC COMMON IMPORTS\" { inside=0; next }
+      !inside && \$0 ~ /^[[:space:]]*(open[[:space:]]+)?import[[:space:]]+/ {
+        line=\$0
+        if (line ~ /FullCoupled\\./ || line ~ /Haskell\\.Prelude/) next
+        print line
+      }
+    ' \"\$file\"
+  done < <(common_sources)
+}
+normalized_block() {
+  {
+    printf '%s\\n' '-- BEGIN MIRTH-SYNC COMMON IMPORTS'
+    printf '%s\\n' '-- Merged external import surface; internal FullCoupled imports remain module-local.'
+    collect_imports | sed 's/[[:space:]]*$//' | sed '/^$/d' | LC_ALL=C sort -u
+    printf '%s\\n' '-- END MIRTH-SYNC COMMON IMPORTS'
+  } > \"\$merged\"
+}
+check_one() {
+  file=\"\$1\"
+  extract_block \"\$file\" > \"\$block\"
+  cmp -s \"\$merged\" \"\$block\"
+}
+external_drift() {
+  file=\"\$1\"
+  awk '
+    \$0 == \"-- BEGIN MIRTH-SYNC COMMON IMPORTS\" { inside=1; next }
+    \$0 == \"-- END MIRTH-SYNC COMMON IMPORTS\" { inside=0; next }
+    !inside && \$0 ~ /^[[:space:]]*(open[[:space:]]+)?import[[:space:]]+/ {
+      mod=\$0
+      sub(/^[[:space:]]*(open[[:space:]]+)?import[[:space:]]+/, \"\", mod)
+      if (mod !~ /^FullCoupled\\./) print FILENAME \": \" \$0
+    }
+  ' \"\$file\"
+}
+rewrite_block() {
+  file=\"\$1\"
+  if grep -Fq -- '-- BEGIN MIRTH-SYNC COMMON IMPORTS' \"\$file\"; then
+    awk -v block=\"\$merged\" '
+      \$0 == \"-- BEGIN MIRTH-SYNC COMMON IMPORTS\" {
+        while ((getline line < block) > 0) print line
+        close(block); inside=1; next
+      }
+      \$0 == \"-- END MIRTH-SYNC COMMON IMPORTS\" { inside=0; next }
+      !inside { print }
+    ' \"\$file\" > \"\$tmp\"
+  else
+    awk -v block=\"\$merged\" '
+      /^module[[:space:]].*where[[:space:]]*$/ {
+        print; print \"\"
+        while ((getline line < block) > 0) print line
+        close(block); print \"\"; next
+      }
+      { print }
+    ' \"\$file\" > \"\$tmp\"
+  fi
+  mv \"\$tmp\" \"\$file\"
+}
+normalized_block
+if [ \"\$mode\" = \"--check\" ]; then
+  failures=0
+  while IFS= read -r file; do
+    check_one \"\$file\" || { echo \"common import drift: \$file\" >&2; failures=\$((failures + 1)); }
+    if [ -n \"\$(external_drift \"\$file\")\" ]; then external_drift \"\$file\" >&2; failures=\$((failures + 1)); fi
+  done < <(common_sources)
+  test \"\$failures\" -eq 0
+elif [ \"\$mode\" = \"--write\" ]; then
+  while IFS= read -r file; do rewrite_block \"\$file\"; done < <(common_sources)
+  check_one \"\$canonical\"
+else
+  echo 'usage: agda-import-sync [--check|--write]' >&2
+  exit 2
+fi
+echo 'mirth-agda-import-sync=pass'
+echo \"canonical=\$canonical\"
+echo \"merged-external-imports=\$(grep -Ec '^(open |import )' \"\$merged\" || true)\"
+echo \"sync-exception=\$special\""
+  print
 }

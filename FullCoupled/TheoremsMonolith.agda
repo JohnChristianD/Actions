@@ -2,6 +2,7 @@
 {-# OPTIONS --lossy-unification --backtracking-instance-search --experimental-lazy-instances --confluence-check --syntactic-equality --polarity --auto-inline --guarded --without-K --exact-split --no-infer-absurd-clauses --level-universe --keep-covering-clauses --no-projection-like --erasure #-}
 -- END MIRTH-SYNC GLOBAL OPTIONS
 
+
 {-# OPTIONS --guardedness #-}
 {-# OPTIONS --rewriting #-}
 {-# OPTIONS --no-termination-check #-}
@@ -17,6 +18,25 @@
 
 module FullCoupled.TheoremsMonolith where
 
+-- BEGIN MIRTH-SYNC COMMON IMPORTS
+-- Merged external import surface; internal FullCoupled imports remain module-local.
+import Prelude.Fin as F
+import Prelude.Int.Properties as IntegerProperties
+import Prelude.Vec as V
+open import Agda.Builtin.Float renaming (primFloatPlus to _+ᵣ_; primFloatLess to _≤?ᵣ_)
+open import Agda.Builtin.Reflection as Builtin
+open import Agda.Builtin.Sigma hiding (_,_)
+open import Agda.Primitive as Level
+open import Control.Monad.State using (State)
+open import Prelude
+open import Prelude.Char as Char
+open import Prelude.Nat.Properties
+-- END MIRTH-SYNC COMMON IMPORTS
+
+-- BEGIN MIRTH-SYNC CANONICAL COMMAND
+-- "$AGDA_COMMAND" -i .
+-- END MIRTH-SYNC CANONICAL COMMAND
+
 ------------------------------------------------------------------------
 -- BEGIN SCRIPTED EXTERNAL AGDA IMPORTS
 -- Synced by Mirth; keep this block in the theorem monolith and
@@ -27,15 +47,8 @@ module FullCoupled.TheoremsMonolith where
 -- END SCRIPTED EXTERNAL AGDA IMPORTS
 ------------------------------------------------------------------------
 
--- BEGIN MIRTH-SYNC COMMON IMPORTS
--- Mirth-generated contract: this exact block is shared by both monoliths.
-open import Prelude
-open import Prelude.Nat.Properties using (add-assoc; add-suc-r; ≤-antisym; ≤-trans; n<1+n)
-import Prelude.Int.Properties as IntegerProperties
--- END MIRTH-SYNC COMMON IMPORTS
 
 -- BEGIN THEOREM-LOCAL IMPORTS
-open import Control.Monad.State using (State)
 -- END THEOREM-LOCAL IMPORTS
 
 -- BEGIN THEOREM-SPECIFIC IMPORTS
@@ -501,7 +514,6 @@ zpfGRUGlobalInjectivityTheorem R =
   the canonical theorem layer without treating graph membership as a proof
   of a physical law.
 -}
-
 
 
 ------------------------------------------------------------------------
@@ -1042,7 +1054,6 @@ eGraphAStarStablePathPersists W {s = s} stableS (suc n) =
     W
     (stableNext W s stableS)
     n
-
 
 
 ------------------------------------------------------------------------
@@ -3760,7 +3771,6 @@ canonicalOrbit-state-injective K s {m} {n} eq =
         (C.canonicalTotalCountAfter K n s)))
 
 
-
 record DiscreteExactUAPTheorem
   (State Feature Output : Set)
   (observe : State → Feature)
@@ -5910,7 +5920,6 @@ eGraphAStarIterate-isomorphism step (suc n) s =
     step
     n
     (step s)
-
 
 
 ------------------------------------------------------------------------
@@ -10077,7 +10086,6 @@ canonical-integer-gru-global-conjugate-theorem =
     canonical-global-token-encoding-conjugacy
 
 
-
 ------------------------------------------------------------------------
 -- Current canonical arbitrary-limit Integer-GRU composition boundary.
 --
@@ -10140,7 +10148,6 @@ canonical-integer-gru-fractal-limit-composition K =
 -- unconditional implication already at one level, and hence also refutes
 -- the nested version.
 ------------------------------------------------------------------------
-
 
 
 ------------------------------------------------------------------------
