@@ -6,6 +6,7 @@
 {-# OPTIONS --guardedness #-}
 {-# OPTIONS --rewriting #-}
 {-# OPTIONS --no-termination-check #-}
+{-# OPTIONS --type-in-type #-}
 
 ------------------------------------------------------------------------
 -- Canonical theorem semantics and emergence layer.
@@ -22,8 +23,7 @@ open import Agda.Builtin.Reflection as Builtin
 open import Agda.Builtin.Sigma hiding (_,_)
 open import Agda.Primitive as Level
 open import Control.Monad.State using (State)
-open import Haskell.Prelude hiding (String; ⊥)
-open import Prelude
+open import Haskell.Prelude
 open import Prelude.Char as Char
 open import Prelude.Nat.Properties using (add-assoc; add-suc-r; ≤-antisym; ≤-trans; n<1+n)
 -- END MIRTH-SYNC COMMON IMPORTS
