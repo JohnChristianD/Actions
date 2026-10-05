@@ -371,7 +371,7 @@
                 mkdir -p "$out/ghc"
                 printf "%s\n" '{-# LANGUAGE NoMonomorphismRestriction, LocalMonoBinds #-}' | cat - "$out/FullCoupled/Agda2HsSurface.hs" > "$out/FullCoupled/Agda2HsSurface.hs.tmp"
                 mv "$out/FullCoupled/Agda2HsSurface.hs.tmp" "$out/FullCoupled/Agda2HsSurface.hs"
-                "${haskellLiquidGhc system}/bin/ghc" -XNoMonomorphismRestriction -XLocalMonoBinds -package rio -fplugin=LiquidHaskell -i "$out" -odir "$out/ghc" -hidir "$out/ghc" -c "$out/FullCoupled/Agda2HsSurface.hs"
+                "${haskellLiquidGhc system}/bin/ghc" -XNoMonomorphismRestriction -XLocalMonoBinds -fplugin=Plugin.InversionPlugin -package rio -fplugin=LiquidHaskell -i "$out" -odir "$out/ghc" -hidir "$out/ghc" -c "$out/FullCoupled/Agda2HsSurface.hs"
                 liquid --smtsolver=z3 -i "$out" "$out/FullCoupled/Agda2HsSurface.hs"
                 printf '%s\n' \
                   "source=FullCoupled/Agda2HsSurface.agda generated=build/agda-haskell/FullCoupled/Agda2HsSurface.hs ghc:pass liquid:z3:pass" \
