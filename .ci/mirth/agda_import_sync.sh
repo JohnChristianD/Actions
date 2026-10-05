@@ -26,7 +26,7 @@ collect_imports() {
       $0 == "-- END MIRTH-SYNC COMMON IMPORTS" { inside=0; next }
       !inside && $0 ~ /^[[:space:]]*(open[[:space:]]+)?import[[:space:]]+/ {
         line=$0
-        if (line ~ /FullCoupled[.]/ || line ~ /Haskell[.]Prelude/) next
+        if (line ~ /FullCoupled[.]/) next
         print line
       }
     ' "$file"
