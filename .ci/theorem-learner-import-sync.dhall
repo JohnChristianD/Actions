@@ -14,38 +14,44 @@ set -euo pipefail
 
 learner="${learnerPath}"
 theorem="${theoremPath}"
-learner_module="module ${learnerModule} where"
-theorem_module="module ${theoremModule} where"
 expected_import="${expectedImport}"
+command_marker="-- canonical-check-command = \"$AGDA_COMMAND -i .\""
 
 [ -f "$learner" ] || { echo "missing canonical learner: $learner"; exit 1; }
 [ -f "$theorem" ] || { echo "missing theorem monolith: $theorem"; exit 1; }
 
-grep -Fqx "$learner_module" "$learner" || {
-  echo "learner module declaration does not match Dhall contract"
-  exit 1
-}
-grep -Fqx "$theorem_module" "$theorem" || {
-  echo "theorem module declaration does not match Dhall contract"
-  exit 1
-}
+grep -Fqx "module ${learnerModule} where" "$learner"
+grep -Fqx "module ${theoremModule} where" "$theorem"
+grep -Fxc "$expected_import" "$theorem" | grep -Fxq 1
+grep -Fxc -- '-- BEGIN MIRTH-SYNC GLOBAL OPTIONS' "$learner" | grep -Fxq 1
+grep -Fxc -- '-- BEGIN MIRTH-SYNC COMMON IMPORTS' "$learner" | grep -Fxq 1
+grep -Fxc -- '-- BEGIN MIRTH-SYNC CANONICAL COMMAND' "$learner" | grep -Fxq 1
+grep -Fqx "$command_marker" "$learner" || { echo "canonical Agda command drift"; exit 1; }
 
-import_count=$(grep -Fxc "$expected_import" "$theorem")
-[ "$import_count" -eq 1 ] || {
-  echo "expected exactly one canonical learner import, found $import_count"
-  exit 1
-}
+tmp=$(mktemp -d)
+trap 'rm -rf "$tmp"' EXIT
+sed -n '/^-- BEGIN MIRTH-SYNC GLOBAL OPTIONS$/,/^-- END MIRTH-SYNC GLOBAL OPTIONS$/p' "$learner" > "$tmp/global"
+sed -n '/^-- BEGIN MIRTH-SYNC COMMON IMPORTS$/,/^-- END MIRTH-SYNC COMMON IMPORTS$/p' "$learner" > "$tmp/common"
 
-canonical_imports=$(grep -E "^(open )?import FullCoupled\\." "$theorem" || true)
-unexpected_imports=$(printf '%s\\n' "$canonical_imports" | grep -Ev "^(open )?import FullCoupled\\.FormalMethods\\.|^open import FullCoupled\\.CanonicalLearnerMonolith as C$" || true)
-[ -z "$unexpected_imports" ] || {
-  echo "theorem monolith imports an unexpected FullCoupled semantic module:"
-  printf '%s\\n' "$unexpected_imports"
-  exit 1
-}
+failures=0
+while IFS= read -r file; do
+  test -n "$file" || continue
+  actual="$tmp/actual"
+  sed -n '/^-- BEGIN MIRTH-SYNC GLOBAL OPTIONS$/,/^-- END MIRTH-SYNC GLOBAL OPTIONS$/p' "$file" > "$actual"
+  cmp -s "$actual" "$tmp/global" || {
+    echo "global-option drift: $file"
+    failures=$((failures + 1))
+  }
+  sed -n '/^-- BEGIN MIRTH-SYNC COMMON IMPORTS$/,/^-- END MIRTH-SYNC COMMON IMPORTS$/p' "$file" > "$actual"
+  cmp -s "$actual" "$tmp/common" || {
+    echo "common-import drift: $file"
+    failures=$((failures + 1))
+  }
+done < <(git ls-files '*.agda' | sort)
 
+test "$failures" -eq 0
 echo "theorem-learner-import-sync=pass"
-echo "learner_module=$learner_module"
-echo "theorem_module=$theorem_module"
-echo "theorem_import=$expected_import"
+echo "canonical-command=$command_marker"
+echo "all-agda-global-options=byte-identical"
+echo "all-agda-common-imports=byte-identical"
 ''

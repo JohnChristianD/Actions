@@ -338,17 +338,6 @@
         {
           liquid-haskell = liquidHaskellEnv system;
 
-          simple-haskell = pkgs.mkShell {
-            packages = [
-              (haskellLiquidGhc system)
-              pkgs.z3
-              pkgs.haskellPackages.rio
-            ];
-            shellHook = ''
-              export LIQUID_SOLVER=z3
-            '';
-          };
-
           default = pkgs.mkShell {
             packages = [
               pkgs.mercury

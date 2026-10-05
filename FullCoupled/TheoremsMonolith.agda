@@ -2,6 +2,7 @@
 {-# OPTIONS --lossy-unification --backtracking-instance-search --experimental-lazy-instances --confluence-check --syntactic-equality --polarity --auto-inline --guarded --without-K --exact-split --no-infer-absurd-clauses --level-universe --keep-covering-clauses --no-projection-like --erasure #-}
 -- END MIRTH-SYNC GLOBAL OPTIONS
 
+
 {-# OPTIONS --guardedness #-}
 {-# OPTIONS --rewriting #-}
 {-# OPTIONS --no-termination-check #-}
@@ -17,6 +18,14 @@
 
 module FullCoupled.TheoremsMonolith where
 
+-- BEGIN MIRTH-SYNC COMMON IMPORTS
+-- Mirth-generated contract: this exact block is shared by both monoliths.
+open import Prelude
+open import Prelude.Nat.Properties using (add-assoc; add-suc-r; ≤-antisym; ≤-trans; n<1+n)
+import Prelude.Int.Properties as IntegerProperties
+-- END MIRTH-SYNC COMMON IMPORTS
+
+
 ------------------------------------------------------------------------
 -- BEGIN SCRIPTED EXTERNAL AGDA IMPORTS
 -- Synced by Mirth; keep this block in the theorem monolith and
@@ -27,12 +36,6 @@ module FullCoupled.TheoremsMonolith where
 -- END SCRIPTED EXTERNAL AGDA IMPORTS
 ------------------------------------------------------------------------
 
--- BEGIN MIRTH-SYNC COMMON IMPORTS
--- Mirth-generated contract: this exact block is shared by both monoliths.
-open import Prelude
-open import Prelude.Nat.Properties using (add-assoc; add-suc-r; ≤-antisym; ≤-trans; n<1+n)
-import Prelude.Int.Properties as IntegerProperties
--- END MIRTH-SYNC COMMON IMPORTS
 
 -- BEGIN THEOREM-LOCAL IMPORTS
 open import Control.Monad.State using (State)

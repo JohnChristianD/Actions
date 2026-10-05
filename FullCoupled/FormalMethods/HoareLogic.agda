@@ -1,20 +1,7 @@
 -- BEGIN MIRTH-SYNC GLOBAL OPTIONS
-{-# OPTIONS --backtracking-instance-search #-}
-{-# OPTIONS --experimental-lazy-instances #-}
-{-# OPTIONS --polarity #-}
-{-# OPTIONS --auto-inline #-}
-{-# OPTIONS --confluence-check #-}
-{-# OPTIONS --syntactic-equality #-}
-{-# OPTIONS --guarded #-}
-{-# OPTIONS --cubical #-}
-{-# OPTIONS --exact-split #-}
-{-# OPTIONS -WnoUnsupportedIndexedMatch #-}
-{-# OPTIONS --erased-matches #-}
-{-# OPTIONS --erase-record-parameters #-}
-{-# OPTIONS --no-projection-like #-}
-{-# OPTIONS --lossy-unification #-}
-{-# OPTIONS --guardedness #-}
+{-# OPTIONS --lossy-unification --backtracking-instance-search --experimental-lazy-instances --confluence-check --syntactic-equality --polarity --auto-inline --guarded --without-K --exact-split --no-infer-absurd-clauses --level-universe --keep-covering-clauses --no-projection-like --erasure #-}
 -- END MIRTH-SYNC GLOBAL OPTIONS
+
 
 {-# OPTIONS --safe #-}
 
@@ -25,6 +12,14 @@
 ------------------------------------------------------------------------
 
 module FullCoupled.FormalMethods.HoareLogic where
+
+-- BEGIN MIRTH-SYNC COMMON IMPORTS
+-- Mirth-generated contract: this exact block is shared by both monoliths.
+open import Prelude
+open import Prelude.Nat.Properties using (add-assoc; add-suc-r; ≤-antisym; ≤-trans; n<1+n)
+import Prelude.Int.Properties as IntegerProperties
+-- END MIRTH-SYNC COMMON IMPORTS
+
 
 open import Prelude.Nat
 open import Prelude.Bool using (true; false)

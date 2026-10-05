@@ -29,6 +29,10 @@
 
 module FullCoupled.CanonicalLearnerMonolith where
 
+-- BEGIN MIRTH-SYNC CANONICAL COMMAND
+-- canonical-check-command = "$AGDA_COMMAND" -i .
+-- END MIRTH-SYNC CANONICAL COMMAND
+
 -- BEGIN MIRTH-SYNC COMMON IMPORTS
 -- Mirth-generated contract: this exact block is shared by both monoliths.
 open import Prelude

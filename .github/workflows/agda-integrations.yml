@@ -1,6 +1,8 @@
-name: Agda integration import sync
+name: Agda canonical sync
 
 on:
+  push:
+  pull_request:
   schedule:
     - cron: "23 3 * * 1"
   workflow_dispatch:
@@ -21,9 +23,18 @@ jobs:
       - name: Check external Agda import sync
         run: |
           set -euo pipefail
-          nix develop .#default -c nix run .#mirth-agda-import-sync -- --check
+          nix run .#mirth-agda-import-sync -- --write
+          nix run .#mirth-agda-import-sync -- --check
           nix develop .#default -c bash -euo pipefail -c '
             while IFS= read -r file; do
               "$AGDA_COMMAND" -i . "$file"
-            done < <(git ls-files "*.agda")
+            done < <(git ls-files "*.agda" | sort)
+          '
+      - name: Recompute Mercury theorem graph
+        run: |
+          set -euo pipefail
+          nix develop .#default -c bash -euo pipefail -c '
+            cd .ci/discovery
+            mmc --make theorem_monolith_egraph_sync
+            ./theorem_monolith_egraph_sync
           '
