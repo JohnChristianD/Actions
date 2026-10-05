@@ -206,7 +206,7 @@
                 cc -std=c99 "$tmp/agda-import-sync.c" -o "$tmp/agda-import-sync"
                 mode_arg="$1"
                 [ -n "$mode_arg" ] || mode_arg=--check
-                agda_import_sync_mode="$mode_arg" "$tmp/agda-import-sync" | bash
+                agdamode="$mode_arg" "$tmp/agda-import-sync" | bash
               '';
             };
           in {
