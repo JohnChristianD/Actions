@@ -614,6 +614,21 @@ hardSignGate x with hardSign x
 ... | zeroSign = zero8
 ... | positive = one8
 
+two8 : Int8
+two8 = int8Add one8 one8
+
+relu8 : Int8 → Int8
+relu8 x with hardSign x
+... | negativeSign = zero8
+... | zeroSign = zero8
+... | positive = x
+
+leaky2 : Int8 → Int8
+leaky2 x with hardSign x
+... | negativeSign = int8Mul two8 x
+... | zeroSign = zero8
+... | positive = x
+
 ------------------------------------------------------------------------
 -- Monoid LSTM recurrent core.
 --
