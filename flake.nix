@@ -154,15 +154,16 @@
       canonicalGhc = system:
         let
           pkgs = pkgsFor system;
+          hp = pkgs.haskell.packages.ghc9124;
           baseGhc =
-            pkgs.haskellPackages.ghcWithPackages (p: [
+            hp.ghcWithPackages (p: [
               p.rio
               p.liquidhaskell
               (inversionPlugin system)
             ]);
         in
         pkgs.symlinkJoin {
-          name = "canonical-ghc-with-global-flags";
+          name = "canonical-ghc-ghc9124-with-global-flags";
           paths = [ baseGhc ];
           nativeBuildInputs = [ pkgs.makeWrapper ];
           postBuild = ''
@@ -171,6 +172,7 @@
           '';
           passthru = {
             inherit baseGhc;
+            compilerVersion = "9.12.4";
           };
         };
 
@@ -189,8 +191,9 @@
       inversionPlugin = system:
         let
           pkgs = pluginPkgsFor system;
+          hp = pkgs.haskell.packages.ghc9124;
           pluginPackages =
-            pkgs.haskellPackages.override {
+            hp.override {
               overrides = self: super: {
                 tree-monad =
                   pkgs.haskell.lib.doJailbreak super.tree-monad;
@@ -411,7 +414,8 @@
                 grep -E '^agda2hs autonomous theorem-graph A\\*: [1-9][0-9]* dependency chains$' "$out/report.txt"
                 grep -Fq "autonomous-regression=True" "$out/report.txt"
                 printf '%s\n' \
-                  "compiler=canonical-pkgs.haskellPackages.ghc" \
+                  "compiler=canonical-pkgs.haskell.packages.ghc9124.ghc" \
+                  "ghcVersion=9.12.4" \
                   "plugins=Plugin.InversionPlugin,LiquidHaskell" \
                   "proofKernel=Agda" \
                   "searchKernel=Agda2Hs" \
