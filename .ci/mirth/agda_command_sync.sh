@@ -63,7 +63,7 @@ rewrite_theorem_graph_command() {
     printf '%s\n' '-- BEGIN THEOREM GRAPH COMMAND'
     printf '%s\n' '-- "$AGDA_COMMAND" --dependency-graph=.ci/discovery/theorems-monolith.dot -i . FullCoupled/TheoremsMonolith.agda'
     printf '%s\n' '-- END THEOREM GRAPH COMMAND'
-  } > "$tmp"
+  } > "$theorem_graph_plain_block"
   write_graph_block     '-- BEGIN MIRTH-SYNC THEOREM GRAPH COMMAND'     '-- END MIRTH-SYNC THEOREM GRAPH COMMAND'     "$theorem_graph_block"     '-- END MIRTH-SYNC CANONICAL COMMAND'
   write_graph_block     '-- BEGIN THEOREM GRAPH COMMAND'     '-- END THEOREM GRAPH COMMAND'     "$theorem_graph_plain_block"     '-- END MIRTH-SYNC THEOREM GRAPH COMMAND'
 }
