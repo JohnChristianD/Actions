@@ -374,7 +374,7 @@
                 test -f FullCoupled/TheoremsMonolith.agda
                 agda="${agdaWithPrelude system}/bin/agda"
                 agda2hs="${agda2hsWithHaskell system}/bin/agda2hs"
-                interpolation_manifest=.ci/discovery/.interpolation-imports
+                interpolation_manifest="$PWD/.ci/discovery/.interpolation-imports"
                 agda2hs_out=$(mktemp -d)
                 trap 'rm -rf "$agda2hs_out" "$interpolation_manifest"' EXIT
                 printf '%s\n' \
