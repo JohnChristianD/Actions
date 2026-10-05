@@ -509,43 +509,43 @@ updateLCBCount {A} a (lcbCountState counts total) =
 -- interpreted as 0ℚ rather than manufacturing a non-rational value.
 ------------------------------------------------------------------------
 
-natFractionToℚ : Nat → Nat → ℚ
-natFractionToℚ n zero = 0ℚ
-natFractionToℚ n (suc d) = toℚ ((+ n) , d)
+fromNatFraction : Nat → Nat → ℚ
+fromNatFraction n zero = 0ℚ
+fromNatFraction n (suc d) = toℚ ((+ n) , d)
 
-qNumerator : ℚ → Nat
-qNumerator q with to𝔽 q
+natNumerator : ℚ → Nat
+natNumerator q with to𝔽 q
 ... | (+ n) , d = n
 ... | (-[1+ n ]) , d = zero
 
-qDenominator : ℚ → Nat
-qDenominator q with to𝔽 q
+natDenominator : ℚ → Nat
+natDenominator q with to𝔽 q
 ... | (+ n) , d = suc d
 ... | (-[1+ n ]) , d = suc d
 
-finiteQLog8 : Int8 → ℚ
-finiteQLog8 x with int8Magnitude x
-... | zero = natFractionToℚ 1 1
-... | suc n = natFractionToℚ (128 ∸ suc n) (suc n)
+qLog8 : Int8 → ℚ
+qLog8 x with int8Magnitude x
+... | zero = fromNatFraction 1 1
+... | suc n = fromNatFraction (128 ∸ suc n) (suc n)
 
-negativeFiniteQLog8 : Int8 → ℚ
-negativeFiniteQLog8 x = finiteQLog8 x
+negativeQLog8 : Int8 → ℚ
+negativeQLog8 x = qLog8 x
 
 munchausenScale8 : Nat
 munchausenScale8 = 16
 
-finiteSignedRationalBias8 : ℚ → Int8
-finiteSignedRationalBias8 q with qNumerator q
+signedRationalBias8 : ℚ → Int8
+signedRationalBias8 q with natNumerator q
 ... | zero = zero8
 ... | suc n = int8Neg
   (int8OfNat
     (Data.Nat._/_
       (munchausenScale8 * suc n)
-      (qDenominator q)))
+      (natDenominator q)))
 
 qLog2Bias8 : Int8 → Int8
 qLog2Bias8 x =
-  finiteSignedRationalBias8 (finiteQLog8 x)
+  signedRationalBias8 (qLog8 x)
 
 negativeAlpha8 : Int8
 negativeAlpha8 = int8OfNat 255
@@ -786,7 +786,7 @@ monoidLSTMStep-respects-equivalence s t x eq =
 
 ------------------------------------------------------------------------
 -- Compatibility surface for downstream theorem modules.
--- Names remain stable; semantics now come from MonoidLSTM.
+-- GRU names are legacy aliases; canonical semantics are MonoidLSTM.
 ------------------------------------------------------------------------
 
 GRUMatrices : Set
@@ -829,7 +829,7 @@ zeroGlobalControl : GlobalControl
 zeroGlobalControl = zeroMonoidLSTMControl
 
 rationalCode : ℚ → Int8
-rationalCode q = int8OfNat (qNumerator q)
+rationalCode q = int8OfNat (natNumerator q)
 
 identityActivation8 : Int8 → Int8
 identityActivation8 x = x
@@ -1431,7 +1431,7 @@ canonicalCountStep : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) 
 canonicalCountStep K s = updateLCBCount (canonicalPolicy K s) (lcbCounts s)
 
 canonicalQLogStep : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) → ℚ
-canonicalQLogStep K s = negativeFiniteQLog8 (canonicalPolicyWeightCode K s)
+canonicalQLogStep K s = negativeQLog8 (canonicalPolicyWeightCode K s)
 
 canonicalFullStep : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) → FullLearnerState A
 canonicalFullStep K s =
