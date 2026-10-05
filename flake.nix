@@ -64,6 +64,7 @@
           version = "0-unstable-2026-10-05";
           libraryName = "TypeTopology";
           libraryFile = "typetopology.agda-lib";
+          meta = { description = "TypeTopology"; };
           src = typetopology;
           dontBuild = true;
           installPhase = ''
