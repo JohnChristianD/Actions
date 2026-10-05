@@ -89,6 +89,7 @@ let script = merge {
     set -euo pipefail
     nix run .#mirth-agda-sync -- --check
     nix run .#mirth-agda-command-sync -- --check
+    grep -Fq '-- BEGIN MIRTH-SYNC CANONICAL COMMAND' FullCoupled/Agda2HsSemanticSearch.agda
     nix run .#agda2hs-semantic-search
     nix run .#mercury-theorem-e2e
     tmp=$(mktemp -d)
