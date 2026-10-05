@@ -47,6 +47,7 @@ module FullCoupled.CanonicalLearnerMonolith where
 -- Canonical learner uses the minimal agda-prelude surface; solver-specific
 -- stdlib imports are not part of the semantics.
 open import Prelude
+open import Prelude.Nat.Properties using (add-assoc; add-suc-r; ≤-antisym; ≤-trans; n<1+n)
 -- END MIRTH-SYNC COMMON IMPORTS
 
 
