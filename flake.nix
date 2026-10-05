@@ -38,6 +38,8 @@
           pname = "agda-prelude";
           version = "0-unstable-2026-10-05";
           src = agda-prelude;
+          libraryName = "agda-prelude";
+          libraryFile = "agda-prelude.agda-lib";
           dontBuild = true;
           installPhase = ''
             mkdir -p "$out/src"
@@ -84,6 +86,7 @@
         pkgs.agdaPackages.agda.withPackages [
           (agdaPreludeLib system)
           (typeTopologyLib system)
+          (agda2hsBaseLib system)
         ];
 
       agdaWithPrelude = system:
@@ -93,6 +96,7 @@
         pkgs.agdaPackages.agda.withPackages [
           (agdaPreludeLib system)
           (typeTopologyLib system)
+          (agda2hsBaseLib system)
         ];
 
       haskellLiquidGhc = system:
@@ -340,6 +344,7 @@
                 printf '%s\n' \
                   "agda-prelude=${agdaPreludeLib system}" \
                   "TypeTopology=${typeTopologyLib system}" \
+                  "agda2hs-base=${agda2hsBaseLib system}" \
                   > "$interpolation_manifest"
                 "$agda" --dependency-graph="$dependency_graph" -i . FullCoupled/TheoremsMonolith.agda
                 bash .ci/discovery/agda_semantic_source_closure.sh \
@@ -347,7 +352,8 @@
                   "$semantic_manifest" \
                   "$PWD" \
                   "${agdaPreludeLib system}/src" \
-                  "${typeTopologyLib system}/source"
+                  "${typeTopologyLib system}/source" \
+                  "${agda2hsBaseLib system}"
                 test -s "$semantic_manifest"
                 "$agda2hs" -i . FullCoupled/Agda2HsSurface.agda -o "$agda2hs_out"
                 test -s "$agda2hs_out/FullCoupled/Agda2HsSurface.hs"
