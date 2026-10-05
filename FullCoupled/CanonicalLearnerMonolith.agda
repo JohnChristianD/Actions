@@ -819,14 +819,14 @@ GlobalControl = MonoidLSTMControl
 GRUState : Set
 GRUState = MonoidLSTMState
 
-gruMatrices : MonoidLSTMMatrices → MonoidLSTMMatrices
-gruMatrices = λ x → x
+gruMatrices : Int8 → Int8 → Int8 → GRUMatrices
+gruMatrices a b c = monoidLSTMMatrices a b c
 
-gruNoise : MonoidLSTMNoise → MonoidLSTMNoise
-gruNoise = λ x → x
+gruNoise : Int8 → Int8 → Int8 → GRUNoise
+gruNoise a b c = monoidLSTMNoise a b c
 
-mkGlobalControl : MonoidLSTMControl → MonoidLSTMControl
-mkGlobalControl = λ x → x
+mkGlobalControl : Int8 → Int8 → GlobalControl
+mkGlobalControl a b = monoidLSTMControl a b
 
 gruState :
   Int8 →
@@ -846,6 +846,9 @@ zeroGRUNoise = zeroMonoidLSTMNoise
 zeroGlobalControl : GlobalControl
 zeroGlobalControl = zeroMonoidLSTMControl
 
+rationalCode : FiniteRational → Int8
+rationalCode (finiteRational s n d) = int8OfNat n
+
 identityActivation8 : Int8 → Int8
 identityActivation8 x = x
 
@@ -854,6 +857,26 @@ identityActivation8-law x = refl
 
 identityActivation8-zero : identityActivation8 zero8 ≡ zero8
 identityActivation8-zero = refl
+
+gruCandidate8 : Int8 → Int8 → Int8
+gruCandidate8 h x = int8Add h x
+
+complement128 : Int8 → Int8
+complement128 g = int8Sub one8 g
+
+mix8 : Int8 → Int8 → Int8 → Int8
+mix8 g old new =
+  int8Add
+    (int8Mul (complement128 g) old)
+    (int8Mul g new)
+
+gateCode : Signed → Int8
+gateCode (signedNeg n) = zero8
+gateCode signedZer = zero8
+gateCode (signedPos n) = one8
+
+gateFromInput : Int8 → Int8
+gateFromInput x = gateCode (signedCode x)
 
 monoidLSTMRecurrentStep : MonoidLSTMState → Int8 → MonoidLSTMState
 monoidLSTMRecurrentStep = monoidLSTMStep
@@ -879,6 +902,22 @@ gruParameterPersistence :
   controlState (gruStep s x) ≡ controlState s
 gruParameterPersistence s x =
   monoidLSTMParameterPersistence s x
+
+GRUEquivalent : GRUState → GRUState → Set
+GRUEquivalent = MonoidLSTMEquivalent
+
+gruEquivalent-refl : ∀ s → GRUEquivalent s s
+gruEquivalent-refl = monoidLSTMEquivalent-refl
+  where
+    monoidLSTMEquivalent-refl : ∀ s → MonoidLSTMEquivalent s s
+    monoidLSTMEquivalent-refl s = refl
+
+gruStep-respects-equivalence :
+  ∀ (s t : GRUState) (x : Int8) →
+  GRUEquivalent s t →
+  GRUEquivalent (gruStep s x) (gruStep t x)
+gruStep-respects-equivalence =
+  monoidLSTMStep-respects-equivalence
 
 record GRUAction : Set₁ where
   constructor gruAction
@@ -1078,6 +1117,43 @@ canonicalMonoidLSTM-recurrent-prefix-split :
       s)
 canonicalMonoidLSTM-recurrent-prefix-split =
   recurrentPrefix-split canonicalMonoidLSTMRecurrentNetwork
+
+canonicalGRU-recurrent-prefix-correct :
+  ∀ (xs : Nat → Int8) (n : Nat) (s : GRUState) →
+  applyEndomorphism
+    (recurrentPrefixEndomorphism
+      canonicalGRURecurrentNetwork
+      xs
+      n)
+    s
+  ≡
+  recurrentPrefixState
+    canonicalGRURecurrentNetwork
+    xs
+    n
+    s
+canonicalGRU-recurrent-prefix-correct =
+  recurrentPrefix-correct canonicalGRURecurrentNetwork
+
+canonicalGRU-recurrent-prefix-split :
+  ∀ (xs : Nat → Int8) (m n : Nat) (s : GRUState) →
+  recurrentPrefixState
+    canonicalGRURecurrentNetwork
+    xs
+    (m + n)
+    s
+  ≡
+  recurrentPrefixState
+    canonicalGRURecurrentNetwork
+    (shiftInput xs m)
+    n
+    (recurrentPrefixState
+      canonicalGRURecurrentNetwork
+      xs
+      m
+      s)
+canonicalGRU-recurrent-prefix-split =
+  recurrentPrefix-split canonicalGRURecurrentNetwork
 
 gruInputActionAssociativity :
   ∀ x y z s →
