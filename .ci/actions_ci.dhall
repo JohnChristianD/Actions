@@ -658,14 +658,8 @@ DHALL
     (cd .ci && mmc --make check_forbidden_theorems && ./check_forbidden_theorems)
     nix run .#mercury-theorem-e2e
     (cd .ci/discovery && mmc --make symbolic_egraph_test && ./symbolic_egraph_test)    (cd .ci/discovery && mmc --make interpolated_theorem_egraph_test && ./interpolated_theorem_egraph_test)
-    ''} lane
+in script
 
-in script FullCoupled/CanonicalLearnerMonolith.agda; then
-      echo "agda-safe=enabled"
-      "$AGDA_COMMAND" --safe -i . FullCoupled/CanonicalLearnerMonolith.agda
-    else
-      echo "agda-safe=not-applicable; canonical surface uses non-coinfective Prelude-compatible options"
-    fi
     '',
   Agda2HsLiquid = ''
     set -euo pipefail
