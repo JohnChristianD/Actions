@@ -147,6 +147,7 @@
         pkgs.haskellPackages.ghcWithPackages (p: [
           p.rio
           p.liquidhaskell
+          (inversionPlugin system)
         ]);
 
       agda2hsWithHaskell = system:
