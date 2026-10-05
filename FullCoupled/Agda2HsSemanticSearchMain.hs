@@ -5,6 +5,7 @@ module Main where
 import Data.List (isInfixOf)
 import Plugin.InversionPlugin
 import FullCoupled.Agda2HsSemanticSearch
+import FullCoupled.Agda2HsTheoremGraphEGraph
 import System.Environment (getArgs)
 
 graphEdgeCount : String -> Int
@@ -36,6 +37,8 @@ main = do
       inverted = splits splitTarget
       complete = canonicalSearchComplete
       nontrivial = canonicalPlanNontrivial
+      egraphComplete = symbolicEGraphRegression
+      egraphAssociative = eGraphAssociativityRegression
 
   putStrLn semanticSearchReport
   putStrLn graphSummary
@@ -43,3 +46,5 @@ main = do
   print inverted
   print complete
   print nontrivial
+  print egraphComplete
+  print egraphAssociative
