@@ -97,7 +97,7 @@
         let
           pkgs = pkgsFor system;
         in
-        pkgs.emacsWithPackages (epkgs: [
+        (pkgs.emacsPackagesFor pkgs.emacs).emacsWithPackages (epkgs: [
           epkgs.agda2-mode
         ]);
 
