@@ -16,6 +16,38 @@
 {-# OPTIONS --no-save-metas #-}
 -- END MIRTH-SYNC GLOBAL OPTIONS
 
+-- BEGIN MIRTH-SYNC GLOBAL IMPORTS
+import Agda.Builtin.Float
+import Agda.Builtin.Reflection
+import Agda.Builtin.Sigma
+import Agda.Primitive
+import Control.Monad.State
+import FullCoupled.FormalMethods.HoareLogic
+import FullCoupled.FormalMethods.IMP
+import FullCoupled.FormalMethods.OperationalSemantics
+import FullCoupled.FormalMethods.Security
+import FullCoupled.FormalMethods.SeparationLogic
+import FullCoupled.FormalMethods.Types
+import FullCoupled.FormalMethods.VerificationConditions
+import Prelude
+import Prelude.Bool
+import Prelude.Char
+import Prelude.Decidable
+import Prelude.Empty
+import Prelude.Equality
+import Prelude.Fin
+import Prelude.Int.Properties
+import Prelude.List
+import Prelude.Maybe
+import Prelude.Nat
+import Prelude.Nat.Properties
+import Prelude.Product
+import Prelude.String
+import Prelude.Sum
+import Prelude.Unit
+import Prelude.Vec
+-- END MIRTH-SYNC GLOBAL IMPORTS
+
 {-# OPTIONS --safe #-}
 
 ------------------------------------------------------------------------

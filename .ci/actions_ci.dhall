@@ -5,11 +5,14 @@ let lane : Lane = env:CI_LANE
 let script = merge {
   AgdaLearner = ''
     set -euo pipefail
+    nix run .#mirth-agda-import-sync -- --write
+    nix run .#mirth-agda-import-sync -- --check
     "$AGDA_COMMAND" --version
     "$AGDA_COMMAND" -i . FullCoupled/CanonicalLearnerMonolith.agda
     '',
   AgdaTheorem = ''
     set -euo pipefail
+    nix run .#mirth-agda-import-sync -- --write
     nix run .#mirth-agda-import-sync -- --check
     while IFS= read -r file; do
       "$AGDA_COMMAND" -i . "$file"
@@ -32,7 +35,8 @@ let script = merge {
     test -s build/agda-haskell/agda2hs-liquid-manifest.tsv
     echo "agda2hs-ghc=pass"
     echo "liquidhaskell-z3=pass"
-    ''  Vehicle = ''
+    '',
+  Vehicle = ''
     set -euo pipefail
     test -n "$VEHICLE_AGDA_SOURCE"
     test -f "$VEHICLE_AGDA_SOURCE/Vehicle.agda"

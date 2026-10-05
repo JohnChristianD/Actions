@@ -6,14 +6,14 @@
 {-# OPTIONS --confluence-check #-}
 {-# OPTIONS --syntactic-equality #-}
 {-# OPTIONS --guarded #-}
-{-# OPTIONS --cubical #-}
+{-# OPTIONS --without-K #-}
 {-# OPTIONS --exact-split #-}
-{-# OPTIONS -WnoUnsupportedIndexedMatch #-}
-{-# OPTIONS --erased-matches #-}
-{-# OPTIONS --erase-record-parameters #-}
+{-# OPTIONS --no-print-pattern-synonyms #-}
+{-# OPTIONS --no-infer-absurd-clauses #-}
+{-# OPTIONS --level-universe #-}
 {-# OPTIONS --no-projection-like #-}
 {-# OPTIONS --lossy-unification #-}
-{-# OPTIONS --guardedness #-}
+{-# OPTIONS --no-save-metas #-}
 -- END MIRTH-SYNC GLOBAL OPTIONS
 
 {-# OPTIONS --safe #-}
