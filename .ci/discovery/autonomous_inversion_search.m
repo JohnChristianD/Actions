@@ -116,10 +116,21 @@ all_required_covered([C | Cs], Covered) :-
     covered(C, Covered),
     all_required_covered(Cs, Covered).
 
+:- pred discovery_source(
+    semantic_law::in) is semidet.
+discovery_source(Law) :-
+    Source = law_source(Law),
+    (
+        string.sub_string_search(Source, "FullCoupled/CanonicalLearnerMonolith.agda", _)
+    ;
+        string.sub_string_search(Source, "FullCoupled/TheoremsMonolith.agda", _)
+    ).
+
 :- pred law_is_candidate(
     capability::in,
     semantic_law::in) is semidet.
 law_is_candidate(C, Law) :-
+    discovery_source(Law),
     not is_reflexive(Law),
     not is_record_field(Law),
     has_capability(C, Law),
