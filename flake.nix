@@ -78,6 +78,23 @@
           };
         };
 
+      agda2hsBaseLib = system:
+        agda2hs.packages.${system}.base-lib;
+
+      agda2hsContainersLib = system:
+        agda2hs.packages.${system}.containers-lib;
+
+      agdaWithTheoremGraphLibraries = system:
+        let
+          pkgs = pkgsFor system;
+        in
+        pkgs.agdaPackages.agda.withPackages [
+          (agdaPreludeLib system)
+          (typeTopologyLib system)
+          (agda2hsBaseLib system)
+          (agda2hsContainersLib system)
+        ];
+
       agdaWithPrelude = system:
         let
           pkgs = pkgsFor system;
@@ -362,7 +379,7 @@
             script = pkgs.writeShellApplication {
               name = "mercury-theorem-e2e";
               runtimeInputs = [
-                (agdaWithPrelude system)
+                (agdaWithTheoremGraphLibraries system)
                 (agda2hsWithHaskell system)
                 pkgs.mercury
                 pkgs.haskellPackages.dhall
@@ -372,17 +389,29 @@
               text = ''
                 set -euo pipefail
                 test -f FullCoupled/TheoremsMonolith.agda
-                agda="${agdaWithPrelude system}/bin/agda"
+                agda="${agdaWithTheoremGraphLibraries system}/bin/agda"
                 agda2hs="${agda2hsWithHaskell system}/bin/agda2hs"
+                semantic_manifest="$PWD/.ci/discovery/.semantic-source-files"
                 interpolation_manifest="$PWD/.ci/discovery/.interpolation-imports"
                 agda2hs_out=$(mktemp -d)
-                trap 'rm -rf "$agda2hs_out" "$interpolation_manifest"' EXIT
+                dependency_graph="$agda2hs_out/theorem-imports.dot"
+                trap 'rm -rf "$agda2hs_out" "$semantic_manifest" "$interpolation_manifest"' EXIT
                 printf '%s\n' \
                   "agda-prelude=${agdaPreludeLib system}" \
                   "TypeTopology=${typeTopologyLib system}" \
-                  "agda2hs=$agda2hs" \
+                  "agda2hs-base=${agda2hsBaseLib system}" \
+                  "agda2hs-containers=${agda2hsContainersLib system}" \
                   > "$interpolation_manifest"
-                "$agda" --safe -i . FullCoupled/TheoremsMonolith.agda
+                "$agda" --safe --dependency-graph="$dependency_graph" -i . FullCoupled/TheoremsMonolith.agda
+                bash .ci/discovery/agda_semantic_source_closure.sh \
+                  "$dependency_graph" \
+                  "$semantic_manifest" \
+                  "$PWD" \
+                  "${agdaPreludeLib system}/src" \
+                  "${typeTopologyLib system}/source" \
+                  "${agda2hsBaseLib system}" \
+                  "${agda2hsContainersLib system}"
+                test -s "$semantic_manifest"
                 "$agda2hs" -i . FullCoupled/Agda2HsSurface.agda -o "$agda2hs_out"
                 test -s "$agda2hs_out/FullCoupled/Agda2HsSurface.hs"
                 cd .ci
