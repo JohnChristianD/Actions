@@ -14,9 +14,20 @@
     agda2hs = {
       url = "github:agda/agda2hs/4e6de7ec2109b3bed6a820728b57d31ad7ffd698";
     };
+    inversion-plugin-src = {
+      url = "github:cau-placc/inversion-plugin/aad4886742bed127b63f8378b1ec5fe8987f8e4d";
+      flake = false;
+    };
   };
 
-  outputs = { self, nixpkgs, agda-prelude, typetopology, agda2hs }:
+  outputs = {
+    self,
+    nixpkgs,
+    agda-prelude,
+    typetopology,
+    agda2hs,
+    inversion-plugin-src
+  }:
     let
       systems = [
         "x86_64-linux"
@@ -138,6 +149,16 @@
           p.liquidhaskell
         ]);
 
+      haskellInversionGhc = system:
+        let
+          pkgs = pkgsFor system;
+        in
+        pkgs.haskellPackages.ghcWithPackages (p: [
+          p.rio
+          p.liquidhaskell
+          (inversionPlugin system)
+        ]);
+
       agda2hsWithHaskell = system:
         let
           ghc = haskellLiquidGhc system;
@@ -148,6 +169,25 @@
           ];
           inherit ghc;
         };
+
+      inversionPlugin = system:
+        let
+          pkgs = pkgsFor system;
+        in
+        pkgs.haskell.lib.overrideCabal
+          (pkgs.haskell.lib.doJailbreak
+            (pkgs.haskellPackages.callCabal2nix
+              "inversion-plugin"
+              inversion-plugin-src
+              {}))
+          (drv: {
+            doCheck = false;
+            meta = drv.meta // {
+              description = "GHC plugin for automatic function inversion and functional patterns";
+              homepage = "https://github.com/cau-placc/inversion-plugin";
+              license = pkgs.lib.licenses.bsd3;
+            };
+          });
 
       liquidHaskellEnv = system:
         let
@@ -181,6 +221,8 @@
           ci = pkgs.haskellPackages.dhall;
           yamlscript = pkgs.yamlscript;
           default = pkgs.haskellPackages.dhall;
+        } // pkgs.lib.optionalAttrs pkgs.stdenv.isLinux {
+          inversion-plugin = inversionPlugin system;
         });
 
       apps = forAllSystems (system:
@@ -321,7 +363,7 @@
               runtimeInputs = [
                 (agdaWithPrelude system)
                 (agda2hsWithHaskell system)
-                (haskellLiquidGhc system)
+                (haskellInversionGhc system)
                 pkgs.z3
                 pkgs.coreutils
                 pkgs.findutils
@@ -339,7 +381,7 @@
                 mkdir -p "$out/ghc"
                 printf "%s\n" '{-# LANGUAGE NoMonomorphismRestriction, LocalMonoBinds #-}' | cat - "$out/FullCoupled/Agda2HsSurface.hs" > "$out/FullCoupled/Agda2HsSurface.hs.tmp"
                 mv "$out/FullCoupled/Agda2HsSurface.hs.tmp" "$out/FullCoupled/Agda2HsSurface.hs"
-                "${haskellLiquidGhc system}/bin/ghc" -XNoMonomorphismRestriction -XLocalMonoBinds -package rio -fplugin=LiquidHaskell -i "$out" -odir "$out/ghc" -hidir "$out/ghc" -c "$out/FullCoupled/Agda2HsSurface.hs"
+                "${haskellInversionGhc system}/bin/ghc" -XNoMonomorphismRestriction -XLocalMonoBinds -fplugin=Plugin.InversionPlugin -package rio -fplugin=LiquidHaskell -i "$out" -odir "$out/ghc" -hidir "$out/ghc" -c "$out/FullCoupled/Agda2HsSurface.hs"
                 liquid --smtsolver=z3 -i "$out" "$out/FullCoupled/Agda2HsSurface.hs"
                 printf '%s\n' \
                   "source=FullCoupled/Agda2HsSurface.agda generated=build/agda-haskell/FullCoupled/Agda2HsSurface.hs ghc:pass liquid:z3:pass" \
