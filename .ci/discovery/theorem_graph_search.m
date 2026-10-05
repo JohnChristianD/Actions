@@ -637,6 +637,7 @@ graph_required_theorems = [
     "ListMonoidSolverNormalizationTheorem",
     "CanonicalAlgebraicTacticBackendTheorem",
     "CanonicalSafeTacticNormalizationTheorem",
+    "inverse-csearchable",
     "CanonicalIntegerLayerNormEGraphAStarInfiniteHorizonStabilityTheorem",
     "AStarPlanMonoidTheorem",
     "CanonicalTokenArbitraryLengthGenerationTheorem",
