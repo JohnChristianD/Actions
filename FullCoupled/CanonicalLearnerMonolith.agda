@@ -296,27 +296,28 @@ instance
   OrdInt8 : Ord Int8
   OrdInt8 = OrdBy int8-code-injective
 
-scoreComesFirst : ScoreEntry → ScoreEntry → Bool
-scoreComesFirst (s₁ , a₁) (s₂ , a₂) with compare s₁ s₂
-... | less _ = false
-... | greater _ = true
-... | equal _ with compare a₁ a₂
-... | less _ = false
-... | greater _ = true
-... | equal _ = false
+scoreEntryCompare : ScoreEntry → ScoreEntry → Comparison _<_ 
+  where
+  _<_ : ScoreEntry → ScoreEntry → Set
+  _<_ (s₁ , a₁) (s₂ , a₂) = s₁ > s₂ ⊎ (s₁ ≡ s₂ × a₁ > a₂)
 
-insertScore : ScoreEntry → List ScoreEntry → List ScoreEntry
-insertScore x [] = x ∷ []
-insertScore x (y ∷ ys) with scoreComesFirst x y
-... | true = x ∷ y ∷ ys
-... | false = y ∷ insertScore x ys
+  scoreEntryCompare (s₁ , a₁) (s₂ , a₂) with compare s₁ s₂
+  ... | less p = greater p
+  ... | greater p = less p
+  ... | equal refl with compare a₁ a₂
+  ... | less p = greater p
+  ... | greater p = less p
+  ... | equal refl = equal refl
+
+instance
+  OrdScoreEntry : Ord ScoreEntry
+  OrdScoreEntry = defaultOrd scoreEntryCompare
 
 scoreList : ∀ {A : Set} → ActionSpace A → QFunction {A} → CountFunction {A} → List ScoreEntry
 scoreList {A} K q c = map (λ a → (scoreA {A = A} q c a , a)) (candidates K)
 
 sortScores : List ScoreEntry → List ScoreEntry
-sortScores [] = []
-sortScores (x ∷ xs) = insertScore x (sortScores xs) scoreEntryOrder
+sortScores = sort
 
 natAt : Nat → List Nat → Nat
 natAt k [] = zero
