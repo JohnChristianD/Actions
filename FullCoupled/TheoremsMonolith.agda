@@ -142,7 +142,7 @@ module ExactSearchInversion (fe : FunExt) where
   open import TWA.Thesis.Chapter3.ClosenessSpaces fe
   open import TWA.Thesis.Chapter3.SearchableTypes fe
 
-  record ExactSearchEquivalence
+  record SearchableEquivalence
     (X Y : ClosenessSpace 𝓤₀) : Set₁ where
     constructor exactSearchEquivalence
     field
@@ -159,36 +159,36 @@ module ExactSearchInversion (fe : FunExt) where
       searchable-domain :
         csearchable 𝓤₀ X
 
-  open ExactSearchEquivalence public
+  open SearchableEquivalence public
 
-  exact-search-inverse-selects-preimage :
+  inverse-selects-preimage :
     ∀ {X Y : ClosenessSpace 𝓤₀}
-    (E : ExactSearchEquivalence X Y)
+    (E : SearchableEquivalence X Y)
     (y : ⟨ Y ⟩)
     (x : ⟨ X ⟩) →
     forward E x ≡ y →
     inverse E y ≡ x
-  exact-search-inverse-selects-preimage E y x h =
+  inverse-selects-preimage E y x h =
     trans
       (cong (inverse E) (sym h))
       (inverse-forward E x)
 
-  exact-search-forward-is-equiv :
+  forward-is-equiv :
     ∀ {X Y : ClosenessSpace 𝓤₀}
-    (E : ExactSearchEquivalence X Y) →
+    (E : SearchableEquivalence X Y) →
     is-equiv (forward E)
-  exact-search-forward-is-equiv E =
+  forward-is-equiv E =
     invertibles-are-equivs
       (forward E)
       (inverse E , (λ y → forward-inverse E y)
                   , (λ x → inverse-forward E x))
 
-  pullback-uc-predicate :
+  pullback-decidable-uc-predicate :
     ∀ {X Y : ClosenessSpace 𝓤₀}
-    (E : ExactSearchEquivalence X Y) →
+    (E : SearchableEquivalence X Y) →
     decidable-uc-predicate 𝓤₀ Y →
     decidable-uc-predicate 𝓤₀ X
-  pullback-uc-predicate E ((p , d) , ϕ) =
+  pullback-decidable-uc-predicate E ((p , d) , ϕ) =
     ((p ∘ forward E , d ∘ forward E)
     , p-ucontinuous-comp
         _ _
@@ -198,13 +198,13 @@ module ExactSearchInversion (fe : FunExt) where
 
   inverse-preserves-csearchability :
     ∀ {X Y : ClosenessSpace 𝓤₀}
-    (E : ExactSearchEquivalence X Y) →
+    (E : SearchableEquivalence X Y) →
     csearchable 𝓤₀ Y
   inverse-preserves-csearchability E ((p , d) , ϕ) =
     y₀ , γ
     where
       pulled : decidable-uc-predicate 𝓤₀ X
-      pulled = pullback-uc-predicate E ((p , d) , ϕ)
+      pulled = pullback-decidable-uc-predicate E ((p , d) , ϕ)
 
       x₀ : ⟨ X ⟩
       x₀ = pr₁ (searchable-domain E pulled)
@@ -233,21 +233,21 @@ module ExactSearchInversion (fe : FunExt) where
 -- Public theorem-shaped aliases consumed by the autonomous graph.
 ------------------------------------------------------------------------
 
-exact-search-inverse-correct :
+inverse-correct :
   ∀ {X Y : ClosenessSpace 𝓤₀}
-  (E : ExactSearchEquivalence X Y)
+  (E : SearchableEquivalence X Y)
   (y : ⟨ Y ⟩)
   (x : ⟨ X ⟩) →
   forward E x ≡ y →
   inverse E y ≡ x
-exact-search-inverse-correct =
-  exact-search-inverse-selects-preimage
+inverse-correct =
+  inverse-selects-preimage
 
-exact-search-inverse-csearchable :
+inverse-csearchable :
   ∀ {X Y : ClosenessSpace 𝓤₀}
-  (E : ExactSearchEquivalence X Y) →
+  (E : SearchableEquivalence X Y) →
   csearchable 𝓤₀ Y
-exact-search-inverse-csearchable =
+inverse-csearchable =
   inverse-preserves-csearchability
 
 
