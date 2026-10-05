@@ -90,6 +90,23 @@ let script = merge {
     nix run .#mirth-agda-sync -- --check
     nix run .#mirth-agda-command-sync -- --check
     grep -Fq '-- BEGIN MIRTH-SYNC CANONICAL COMMAND' FullCoupled/Agda2HsSemanticSearch.agda
+    grep -Fq '-- BEGIN THEOREM GRAPH COMMAND' FullCoupled/TheoremsMonolith.agda
+    grep -Fq '-- "$AGDA_COMMAND" --dependency-graph=.ci/discovery/theorems-monolith.dot -i . FullCoupled/TheoremsMonolith.agda' FullCoupled/TheoremsMonolith.agda
+    awk '
+      /-- BEGIN MIRTH-SYNC THEOREM GRAPH COMMAND/ { in_mirth=1 }
+      /-- END MIRTH-SYNC THEOREM GRAPH COMMAND/ { in_mirth=0 }
+      !in_mirth && /-- "\$AGDA_COMMAND" --dependency-graph=.ci\/discovery\/theorems-monolith\.dot -i \. FullCoupled\/TheoremsMonolith\.agda/ { found=1 }
+      END { exit(found ? 0 : 1) }
+    ' FullCoupled/TheoremsMonolith.agda
+    grep -Fq 'open import Haskell.Prelude' FullCoupled/Agda2HsSemanticSearch.agda
+    grep -Fq 'open import Unsafe.Haskell' FullCoupled/Agda2HsSemanticSearch.agda
+    grep -Fq 'open import Equality' FullCoupled/Agda2HsSemanticSearch.agda
+    grep -Fq 'open import Naturals' FullCoupled/Agda2HsSemanticSearch.agda
+    grep -Fq 'open import Naturals.Properties' FullCoupled/Agda2HsSemanticSearch.agda
+    grep -Fq 'open import MLTT.Two-Properties' FullCoupled/Agda2HsSemanticSearch.agda
+    grep -Fq 'open import TWA.Thesis.Chapter3.SearchableTypes' FullCoupled/Agda2HsSemanticSearch.agda
+    grep -Fq 'open import TWA.Thesis.Chapter3.ClosenessSpaces' FullCoupled/Agda2HsSemanticSearch.agda
+    ! grep -Fq 'open import Unsafe.Type-in-Type-False' FullCoupled/Agda2HsSemanticSearch.agda
     nix run .#agda2hs-semantic-search
     nix run .#mercury-theorem-e2e
     tmp=$(mktemp -d)
