@@ -133,16 +133,46 @@
               "$@"
           '';
         };
+      ghcLanguageFlags = [
+        "-XNoMonomorphismRestriction"
+        "-XLocalMonoBinds"
+        "-XTemplateHaskell"
+        "-XFlexibleContexts"
+      ];
+
+      ghcPluginFlags = [
+        "-fplugin=Plugin.InversionPlugin"
+        "-fplugin=LiquidHaskell"
+      ];
+
+      ghcGlobalFlags =
+        ghcLanguageFlags ++ ghcPluginFlags;
+
+      ghcGlobalFlagsText =
+        builtins.concatStringsSep " " ghcGlobalFlags;
+
       canonicalGhc = system:
         let
           pkgs = pkgsFor system;
+          baseGhc =
+            pkgs.haskellPackages.ghcWithPackages (p: [
+              p.rio
+              p.liquidhaskell
+              (inversionPlugin system)
+            ]);
         in
-        pkgs.haskellPackages.ghcWithPackages (p: [
-          p.rio
-          p.liquidhaskell
-          (inversionPlugin system)
-        ]);
-
+        pkgs.symlinkJoin {
+          name = "canonical-ghc-with-global-flags";
+          paths = [ baseGhc ];
+          nativeBuildInputs = [ pkgs.makeWrapper ];
+          postBuild = ''
+            wrapProgram "$out/bin/ghc" --add-flags "${ghcGlobalFlagsText}"
+            wrapProgram "$out/bin/ghci" --add-flags "${ghcGlobalFlagsText}"
+          '';
+          passthru = {
+            inherit baseGhc;
+          };
+        };
 
       agda2hsWithHaskell = system:
         let
@@ -155,13 +185,6 @@
           inherit ghc;
         };
 
-      ghcPluginFlags = [
-        "-fplugin=Plugin.InversionPlugin"
-        "-fplugin=LiquidHaskell"
-      ];
-
-      ghcPluginFlagsText =
-        builtins.concatStringsSep " " ghcPluginFlags;
 
       inversionPlugin = system:
         let
@@ -369,11 +392,8 @@
                 grep -Fq "inverse-preserves-csearchability" FullCoupled/TheoremsMonolith.agda
                 grep -Fq "SearchableEquivalence" FullCoupled/TheoremsMonolith.agda
                 ghc \
-                  -XNoMonomorphismRestriction \
-                  -XLocalMonoBinds \
                   -O0 \
                   -dcore-lint \
-                  ${ghcPluginFlagsText} \
                   -i "$out" \
                   -odir "$out/ghc" \
                   -hidir "$out/ghc" \
@@ -446,7 +466,7 @@
                 mkdir -p "$out/ghc"
                 printf "%s\n" '{-# LANGUAGE NoMonomorphismRestriction, LocalMonoBinds #-}' | cat - "$out/FullCoupled/Agda2HsSurface.hs" > "$out/FullCoupled/Agda2HsSurface.hs.tmp"
                 mv "$out/FullCoupled/Agda2HsSurface.hs.tmp" "$out/FullCoupled/Agda2HsSurface.hs"
-                "${canonicalGhc system}/bin/ghc" -XNoMonomorphismRestriction -XLocalMonoBinds -O0 -dcore-lint ${ghcPluginFlagsText} -package rio -i "$out" -odir "$out/ghc" -hidir "$out/ghc" -c "$out/FullCoupled/Agda2HsSurface.hs"
+                "${canonicalGhc system}/bin/ghc" -O0 -dcore-lint -package rio -i "$out" -odir "$out/ghc" -hidir "$out/ghc" -c "$out/FullCoupled/Agda2HsSurface.hs"
                 liquid --smtsolver=z3 -i "$out" "$out/FullCoupled/Agda2HsSurface.hs"
                 printf '%s\n' \
                   "source=FullCoupled/Agda2HsSurface.agda generated=build/agda-haskell/FullCoupled/Agda2HsSurface.hs ghc:pass liquid:z3:pass" \
@@ -650,7 +670,7 @@
                 mkdir -p "$out/ghc"
                 printf "%s\n" '{-# LANGUAGE NoMonomorphismRestriction, LocalMonoBinds #-}' | cat - "$out/FullCoupled/Agda2HsSurface.hs" > "$out/FullCoupled/Agda2HsSurface.hs.tmp"
                 mv "$out/FullCoupled/Agda2HsSurface.hs.tmp" "$out/FullCoupled/Agda2HsSurface.hs"
-                "${canonicalGhc system}/bin/ghc" -XNoMonomorphismRestriction -XLocalMonoBinds -O0 -dcore-lint ${ghcPluginFlagsText} -package rio -i "$out" -odir "$out/ghc" -hidir "$out/ghc" -c "$out/FullCoupled/Agda2HsSurface.hs"
+                "${canonicalGhc system}/bin/ghc" -O0 -dcore-lint -package rio -i "$out" -odir "$out/ghc" -hidir "$out/ghc" -c "$out/FullCoupled/Agda2HsSurface.hs"
                 liquid --smtsolver=z3 -i "$out" "$out/FullCoupled/Agda2HsSurface.hs"
                 printf '%s\n' \
                   "source=FullCoupled/Agda2HsSurface.agda generated=build/agda-haskell/FullCoupled/Agda2HsSurface.hs ghc:pass liquid:z3:pass" \
@@ -854,7 +874,7 @@
                 mkdir -p "$out/ghc"
                 printf "%s\n" '{-# LANGUAGE NoMonomorphismRestriction, LocalMonoBinds #-}' | cat - "$out/FullCoupled/Agda2HsSurface.hs" > "$out/FullCoupled/Agda2HsSurface.hs.tmp"
                 mv "$out/FullCoupled/Agda2HsSurface.hs.tmp" "$out/FullCoupled/Agda2HsSurface.hs"
-                "${canonicalGhc system}/bin/ghc" -XNoMonomorphismRestriction -XLocalMonoBinds -O0 -dcore-lint ${ghcPluginFlagsText} -package rio -i "$out" -odir "$out/ghc" -hidir "$out/ghc" -c "$out/FullCoupled/Agda2HsSurface.hs"
+                "${canonicalGhc system}/bin/ghc" -O0 -dcore-lint -package rio -i "$out" -odir "$out/ghc" -hidir "$out/ghc" -c "$out/FullCoupled/Agda2HsSurface.hs"
                 liquid --smtsolver=z3 -i "$out" "$out/FullCoupled/Agda2HsSurface.hs"
                 printf '%s\n' \
                   "source=FullCoupled/Agda2HsSurface.agda generated=build/agda-haskell/FullCoupled/Agda2HsSurface.hs ghc:pass liquid:z3:pass" \
