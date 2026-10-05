@@ -1,19 +1,5 @@
 -- BEGIN MIRTH-SYNC GLOBAL OPTIONS
-{-# OPTIONS --backtracking-instance-search #-}
-{-# OPTIONS --experimental-lazy-instances #-}
-{-# OPTIONS --polarity #-}
-{-# OPTIONS --auto-inline #-}
-{-# OPTIONS --confluence-check #-}
-{-# OPTIONS --syntactic-equality #-}
-{-# OPTIONS --guarded #-}
-{-# OPTIONS --without-K #-}
-{-# OPTIONS --exact-split #-}
-{-# OPTIONS --no-print-pattern-synonyms #-}
-{-# OPTIONS --no-infer-absurd-clauses #-}
-{-# OPTIONS --level-universe #-}
-{-# OPTIONS --no-projection-like #-}
-{-# OPTIONS --lossy-unification #-}
-{-# OPTIONS --no-save-metas #-}
+{-# OPTIONS --lossy-unification --backtracking-instance-search --experimental-lazy-instances --confluence-check --syntactic-equality --polarity --auto-inline --guarded --without-K --exact-split --no-infer-absurd-clauses --level-universe --keep-covering-clauses --no-projection-like --erasure #-}
 -- END MIRTH-SYNC GLOBAL OPTIONS
 
 {-# OPTIONS --safe #-}
