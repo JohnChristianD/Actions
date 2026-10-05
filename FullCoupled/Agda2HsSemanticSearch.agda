@@ -90,17 +90,6 @@ coversLaw : Capability → SemanticLaw → Bool
 coversLaw capability law =
   capabilityCovered capability (capabilities law)
 
-lawForCapability :
-  Capability →
-  List SemanticLaw →
-  List SemanticLaw
-lawForCapability capability [] = []
-lawForCapability capability (law ∷ laws) =
-  if coversLaw capability law then
-    law ∷ lawForCapability capability laws
-  else
-    lawForCapability capability laws
-
 firstMissing :
   List Capability →
   List Capability →
