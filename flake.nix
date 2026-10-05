@@ -204,7 +204,8 @@
                 trap 'rm -rf "$tmp"' EXIT
                 mirthc .ci/mirth/agda_import_sync.mth -o "$tmp/agda-import-sync.c"
                 cc -std=c99 "$tmp/agda-import-sync.c" -o "$tmp/agda-import-sync"
-                "$tmp/agda-import-sync" | bash -s -- "$@"
+                mode_arg="${1:---check}"
+                AGDA_IMPORT_SYNC_MODE="$mode_arg" "$tmp/agda-import-sync" | bash
               '';
             };
           in {
@@ -250,7 +251,8 @@
                 trap 'rm -rf "$tmp"' EXIT
                 mirthc .ci/mirth/agda_import_sync.mth -o "$tmp/agda-import-sync.c"
                 cc -std=c99 "$tmp/agda-import-sync.c" -o "$tmp/agda-import-sync"
-                "$tmp/agda-import-sync" | bash -s -- "$@"
+                mode_arg="${1:---check}"
+                AGDA_IMPORT_SYNC_MODE="$mode_arg" "$tmp/agda-import-sync" | bash
                 mirthc .ci/mirth/agda_command_sync.mth -o "$tmp/agda-command-sync.c"
                 cc -std=c99 "$tmp/agda-command-sync.c" -o "$tmp/agda-command-sync"
                 "$tmp/agda-command-sync" "$@"
