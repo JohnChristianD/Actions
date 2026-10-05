@@ -83,22 +83,33 @@
         let
           pkgs = pkgsFor system;
         in
-        pkgs.agdaPackages.agda.withPackages [
-          (agdaPreludeLib system)
-          (typeTopologyLib system)
-          (agda2hsBaseLib system)
-        ];
+        pkgs.writeShellApplication {
+          name = "agda-with-theorem-graph";
+          runtimeInputs = [ pkgs.agdaPackages.agda ];
+          text = ''
+            exec ${pkgs.agdaPackages.agda}/bin/agda \
+              -i "${agdaPreludeLib system}/src" \
+              -i "${typeTopologyLib system}/source" \
+              -i "${agda2hsBaseLib system}" \
+              "$@"
+          '';
+        };
 
       agdaWithPrelude = system:
         let
           pkgs = pkgsFor system;
         in
-        pkgs.agdaPackages.agda.withPackages [
-          (agdaPreludeLib system)
-          (typeTopologyLib system)
-          (agda2hsBaseLib system)
-        ];
-
+        pkgs.writeShellApplication {
+          name = "agda-with-prelude";
+          runtimeInputs = [ pkgs.agdaPackages.agda ];
+          text = ''
+            exec ${pkgs.agdaPackages.agda}/bin/agda \
+              -i "${agdaPreludeLib system}/src" \
+              -i "${typeTopologyLib system}/source" \
+              -i "${agda2hsBaseLib system}" \
+              "$@"
+          '';
+        };
       haskellLiquidGhc = system:
         let
           pkgs = pkgsFor system;
@@ -334,7 +345,7 @@
               text = ''
                 set -euo pipefail
                 test -f FullCoupled/TheoremsMonolith.agda
-                agda="${agdaWithTheoremGraphLibraries system}/bin/agda"
+                agda="${agdaWithTheoremGraphLibraries system}/bin/agda-with-theorem-graph"
                 agda2hs="${agda2hsWithHaskell system}/bin/agda2hs"
                 semantic_manifest="$PWD/.ci/discovery/.semantic-source-files"
                 interpolation_manifest="$PWD/.ci/discovery/.interpolation-imports"
@@ -441,7 +452,7 @@
             ];
             shellHook = ''
               export PATH="${pkgs.mercury}/bin:$PATH"
-              export AGDA_COMMAND="${agdaWithPrelude system}/bin/agda"
+              export AGDA_COMMAND="${agdaWithPrelude system}/bin/agda-with-prelude"
               export LIQUID_SOLVER=z3
             '';
           };
