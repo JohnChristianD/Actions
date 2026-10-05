@@ -45,21 +45,10 @@ let script = merge {
     grep -Fq 'siteTitle : String' .ci/mirth/agda_to_elm.mth
     grep -Fq 'Graph.nodes' .ci/mirth/agda_to_elm.mth
 
-    mirthc .ci/mirth/ascii_surface.mth -o "$tmp/ascii-surface.c"
-    cc -std=c99 "$tmp/ascii-surface.c" -o "$tmp/ascii-surface"
-    "$tmp/ascii-surface" | bash
-
-    mirthc .ci/mirth/agda_import_sync.mth -o "$tmp/agda-import-sync.c"
-    cc -std=c99 "$tmp/agda-import-sync.c" -o "$tmp/agda-import-sync"
-    "$tmp/agda-import-sync" | bash -s -- --check
-
-    mirthc .ci/mirth/agda_command_sync.mth -o "$tmp/agda-command-sync.c"
-    cc -std=c99 "$tmp/agda-command-sync.c" -o "$tmp/agda-command-sync"
-    "$tmp/agda-command-sync" | bash -s -- --check
-
-    mirthc .ci/mirth/agda_graph.mth -o "$tmp/agda-graph.c"
-    cc -std=c99 "$tmp/agda-graph.c" -o "$tmp/agda-graph"
-    "$tmp/agda-graph" "$tmp/GeneratedAgdaGraph.elm" | bash -s -- "$tmp/GeneratedAgdaGraph.elm"
+    nix run .#mirth-ascii-sync
+    nix run .#mirth-agda-import-sync -- --check
+    nix run .#mirth-agda-command-sync -- --check
+    nix run .#mirth-agda-graph -- "$tmp/GeneratedAgdaGraph.elm" | bash -s -- "$tmp/GeneratedAgdaGraph.elm"
     test -s "$tmp/GeneratedAgdaGraph.elm"
     grep -Fq 'module GeneratedAgdaGraph exposing (Node, Edge, nodes, edges)' "$tmp/GeneratedAgdaGraph.elm"
     grep -Fq 'FullCoupled.TheoremsMonolith' "$tmp/GeneratedAgdaGraph.elm"
@@ -119,10 +108,8 @@ let script = merge {
     mkdir -p "$tmp/src"
     cp site/Main.elm "$tmp/src/Main.elm"
     echo "pages-stage=mirth-graph-compile"
-    mirthc .ci/mirth/agda_graph.mth -o "$tmp/agda-graph.c"
     echo "pages-stage=mirth-graph-compile-done"
-    cc -std=c99 "$tmp/agda-graph.c" -o "$tmp/agda-graph"
-    "$tmp/agda-graph" "$tmp/src/GeneratedAgdaGraph.elm" | bash -s -- "$tmp/src/GeneratedAgdaGraph.elm"
+    nix run .#mirth-agda-graph -- "$tmp/src/GeneratedAgdaGraph.elm" | bash -s -- "$tmp/src/GeneratedAgdaGraph.elm"
     echo "pages-stage=mirth-surface-compile"
     mirthc .ci/mirth/agda_to_elm.mth -o "$tmp/agda-to-elm.c"
     echo "pages-stage=mirth-surface-compile-done"
