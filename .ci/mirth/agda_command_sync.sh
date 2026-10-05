@@ -49,9 +49,9 @@ check_theorem_graph_command() {
     printf '%s\n' '-- BEGIN THEOREM GRAPH COMMAND'
     printf '%s\n' '-- "$AGDA_COMMAND" --dependency-graph=.ci/discovery/theorems-monolith.dot -i . FullCoupled/TheoremsMonolith.agda'
     printf '%s\n' '-- END THEOREM GRAPH COMMAND'
-  } > "$tmp"
+  } > "$theorem_graph_plain_block"
   sed -n '/^-- BEGIN MIRTH-SYNC THEOREM GRAPH COMMAND$/,/^-- END MIRTH-SYNC THEOREM GRAPH COMMAND$/p' "$theorem_graph" | cmp -s "$theorem_graph_block"
-  sed -n '/^-- BEGIN THEOREM GRAPH COMMAND$/,/^-- END THEOREM GRAPH COMMAND$/p' "$theorem_graph" | cmp -s "$tmp"
+  sed -n '/^-- BEGIN THEOREM GRAPH COMMAND$/,/^-- END THEOREM GRAPH COMMAND$/p' "$theorem_graph" | cmp -s "$theorem_graph_plain_block"
 }
 rewrite_theorem_graph_command() {
   {
