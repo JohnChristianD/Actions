@@ -210,6 +210,9 @@ mergeRoots left right graph =
 equivalent : Nat -> Nat -> EGraph -> Bool
 equivalent left right graph = root graph left == root graph right
 
+merge : Nat -> Nat -> EGraph -> EGraph
+merge left right graph = rebuild (mergeRoots left right graph)
+
 findOtherNode :
   ENode -> Nat -> List Binding -> Maybe Nat
 findOtherNode _ _ [] = Nothing
@@ -370,10 +373,17 @@ saturatePass (rule ∷ rules) roots graph =
       (graph'' , tailCount) = saturatePass rules roots graph'
   in graph'' , count + tailCount
 
+classCount : EGraph -> Nat
+classCount graph = length (rootClasses graph)
+
+enodeCount : EGraph -> Nat
+enodeCount graph = length (bindings graph)
+
 saturateWithFuel :
-  Nat -> List RewriteRule -> EGraph -> Nat -> EGraph × Nat
-saturateWithFuel zero _ graph total = graph , total
-saturateWithFuel (suc fuel) rules graph total =
+  Nat -> List RewriteRule -> EGraph -> Nat -> Nat -> EGraph × Nat × Nat
+saturateWithFuel zero _ graph total iterations =
+  graph , total , iterations
+saturateWithFuel (suc fuel) rules graph total iterations =
   let roots = rootClasses graph
       (graph' , rewrites) = saturatePass rules roots graph
       graph'' = rebuild graph'
@@ -381,15 +391,17 @@ saturateWithFuel (suc fuel) rules graph total =
         rewrites == zero &&
         classCount graph == classCount graph'' &&
         enodeCount graph == enodeCount graph''
-  in if stable then graph'' , total
-     else saturateWithFuel fuel rules graph'' (total + rewrites)
+      nextIterations = suc iterations
+  in if stable then
+       graph'' , total + rewrites , nextIterations
+     else
+       saturateWithFuel fuel rules graph'' (total + rewrites) nextIterations
 
 saturateUntilStable :
   List RewriteRule -> EGraph -> EGraph × SaturationReport
 saturateUntilStable rules graph =
-  let (graph' , rewrites) =
-        saturateWithFuel (suc (enodeCount graph)) rules graph zero
-      iterations = if rewrites == zero then suc zero else suc (suc zero)
+  let (graph' , rewrites , iterations) =
+        saturateWithFuel (suc (enodeCount graph)) rules graph zero zero
       changed = if rewrites == zero then False else True
   in graph' ,
      saturationReport iterations rewrites changed
@@ -488,12 +500,6 @@ mutual
   extractBest : Nat -> EGraph -> Nat -> Maybe Extraction
     extractBest class graph depth = extractBestSeen class graph depth []
 
-classCount : EGraph -> Nat
-classCount graph = length (rootClasses graph)
-
-enodeCount : EGraph -> Nat
-enodeCount graph = length (bindings graph)
-
 associativityRule : RewriteRule
 associativityRule =
   rewriteRule
@@ -516,7 +522,7 @@ regressionGraph =
       (b , g2) = addExpr (atom "b") g1
       (fa , g3) = addExpr (app "f" (atom "a" ∷ [])) g2
       (fb , g4) = addExpr (app "f" (atom "b" ∷ [])) g3
-      g5 = rebuild (mergeRoots a b g4)
+      g5 = merge a b g4
       (nested , g6) =
         addExpr
           (app "proof-compose"
