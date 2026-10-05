@@ -3,10 +3,6 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/0439f75413ace6c42e4c722cafd4d6e5401de648";
-    vehicle = {
-      url = "github:vehicle-lang/vehicle/6312434dfc109a800c618c4c6a43089b116b7c42";
-      flake = false;
-    };
     agda-prelude = {
       url = "github:UlfNorell/agda-prelude/4230566d3ae229b6a00258587651ac7bfd38d088";
       flake = false;
@@ -20,7 +16,7 @@
     };
   };
 
-  outputs = { self, nixpkgs, vehicle, agda-prelude, typetopology, agda2hs }:
+  outputs = { self, nixpkgs, agda-prelude, typetopology, agda2hs }:
     let
       systems = [
         "x86_64-linux"
@@ -42,11 +38,17 @@
           pname = "agda-prelude";
           version = "0-unstable-2026-10-05";
           src = agda-prelude;
+          libraryName = "agda-prelude";
+          libraryFile = "agda-prelude.agda-lib";
           dontBuild = true;
           installPhase = ''
             mkdir -p "$out/src"
             cp -R src/. "$out/src/"
-            cp agda-prelude.agda-lib "$out/agda-prelude.agda-lib"
+            printf "%s\n" \
+              "name: agda-prelude" \
+              "include: src" \
+              "flags: --safe --without-K --level-universe" \
+              > "$out/agda-prelude.agda-lib"
           '';
           meta = {
             description = "Minimal Agda programming prelude";
@@ -78,15 +80,56 @@
           };
         };
 
+      agda2hsBaseLib = system:
+        agda2hs.packages.${system}.base-lib;
+
+      agdaWithTheoremGraphLibraries = system:
+        let
+          pkgs = pkgsFor system;
+        in
+        pkgs.writeShellApplication {
+          name = "agda-with-theorem-graph";
+          runtimeInputs = [ pkgs.agdaPackages.agda pkgs.coreutils ];
+          text = ''
+            set -euo pipefail
+            tmp=$(mktemp -d)
+            trap 'rm -rf "$tmp"' EXIT
+            mkdir -p "$tmp/agda-prelude" "$tmp/TypeTopology" "$tmp/agda2hs-base"
+            cp -R "${agdaPreludeLib system}/src/." "$tmp/agda-prelude/"
+            cp -R "${typeTopologyLib system}/source/." "$tmp/TypeTopology/"
+            cp -R "${agda2hsBaseLib system}/." "$tmp/agda2hs-base/"
+            chmod -R u+rwX "$tmp/agda-prelude" "$tmp/TypeTopology" "$tmp/agda2hs-base"
+            exec ${pkgs.agdaPackages.agda}/bin/agda \
+              -i "$tmp/agda-prelude" \
+              -i "$tmp/TypeTopology" \
+              -i "$tmp/agda2hs-base" \
+              "$@"
+          '';
+        };
+
       agdaWithPrelude = system:
         let
           pkgs = pkgsFor system;
         in
-        pkgs.agdaPackages.agda.withPackages [
-          (agdaPreludeLib system)
-          (typeTopologyLib system)
-        ];
-
+        pkgs.writeShellApplication {
+          name = "agda-with-prelude";
+          runtimeInputs = [ pkgs.agdaPackages.agda pkgs.coreutils ];
+          text = ''
+            set -euo pipefail
+            tmp=$(mktemp -d)
+            trap 'rm -rf "$tmp"' EXIT
+            mkdir -p "$tmp/agda-prelude" "$tmp/TypeTopology" "$tmp/agda2hs-base"
+            cp -R "${agdaPreludeLib system}/src/." "$tmp/agda-prelude/"
+            cp -R "${typeTopologyLib system}/source/." "$tmp/TypeTopology/"
+            cp -R "${agda2hsBaseLib system}/." "$tmp/agda2hs-base/"
+            chmod -R u+rwX "$tmp/agda-prelude" "$tmp/TypeTopology" "$tmp/agda2hs-base"
+            exec ${pkgs.agdaPackages.agda}/bin/agda \
+              -i "$tmp/agda-prelude" \
+              -i "$tmp/TypeTopology" \
+              -i "$tmp/agda2hs-base" \
+              "$@"
+          '';
+        };
       haskellLiquidGhc = system:
         let
           pkgs = pkgsFor system;
@@ -127,8 +170,6 @@
 
     in
     {
-      vehicleAgdaSource = "${vehicle}/vehicle-agda/src";
-
       packages = forAllSystems (system:
         let
           pkgs = pkgsFor system;
@@ -186,19 +227,10 @@
           mirth-agda-import-sync = let
             script = pkgs.writeShellApplication {
               name = "mirth-agda-import-sync";
-              runtimeInputs = [
-                pkgs.mirth
-                pkgs.stdenv.cc
-                pkgs.coreutils
-                pkgs.git
-              ];
+              runtimeInputs = [ pkgs.coreutils pkgs.git ];
               text = ''
                 set -euo pipefail
-                tmp=$(mktemp -d)
-                trap 'rm -rf "$tmp"' EXIT
-                mirthc .ci/mirth/agda_import_sync.mth -o "$tmp/agda-import-sync.c"
-                cc -std=c99 "$tmp/agda-import-sync.c" -o "$tmp/agda-import-sync"
-                "$tmp/agda-import-sync" | bash -s -- "$@"
+                bash .ci/mirth/agda_import_sync.sh "$@"
               '';
             };
           in {
@@ -209,19 +241,10 @@
           mirth-agda-command-sync = let
             script = pkgs.writeShellApplication {
               name = "mirth-agda-command-sync";
-              runtimeInputs = [
-                pkgs.mirth
-                pkgs.stdenv.cc
-                pkgs.coreutils
-                pkgs.git
-              ];
+              runtimeInputs = [ pkgs.coreutils pkgs.git ];
               text = ''
                 set -euo pipefail
-                tmp=$(mktemp -d)
-                trap 'rm -rf "$tmp"' EXIT
-                mirthc .ci/mirth/agda_command_sync.mth -o "$tmp/agda-command-sync.c"
-                cc -std=c99 "$tmp/agda-command-sync.c" -o "$tmp/agda-command-sync"
-                "$tmp/agda-command-sync" | bash -s -- "$@"
+                bash .ci/mirth/agda_command_sync.sh "$@"
               '';
             };
           in {
@@ -232,44 +255,25 @@
           mirth-agda-sync = let
             script = pkgs.writeShellApplication {
               name = "mirth-agda-sync";
-              runtimeInputs = [
-                pkgs.mirth
-                pkgs.stdenv.cc
-                pkgs.coreutils
-                pkgs.git
-              ];
+              runtimeInputs = [ pkgs.coreutils pkgs.git ];
               text = ''
                 set -euo pipefail
-                tmp=$(mktemp -d)
-                trap 'rm -rf "$tmp"' EXIT
-                mirthc .ci/mirth/agda_import_sync.mth -o "$tmp/agda-import-sync.c"
-                cc -std=c99 "$tmp/agda-import-sync.c" -o "$tmp/agda-import-sync"
-                "$tmp/agda-import-sync" | bash -s -- "$@"
-                mirthc .ci/mirth/agda_command_sync.mth -o "$tmp/agda-command-sync.c"
-                cc -std=c99 "$tmp/agda-command-sync.c" -o "$tmp/agda-command-sync"
-                "$tmp/agda-command-sync" "$@"
+                bash .ci/mirth/agda_import_sync.sh "$@"
+                bash .ci/mirth/agda_command_sync.sh "$@"
               '';
             };
           in {
             type = "app";
             program = "${script}/bin/mirth-agda-sync";
           };
+
           mirth-ascii-sync = let
             script = pkgs.writeShellApplication {
               name = "mirth-ascii-sync";
-              runtimeInputs = [
-                pkgs.mirth
-                pkgs.stdenv.cc
-                pkgs.coreutils
-                pkgs.git
-              ];
+              runtimeInputs = [ pkgs.coreutils pkgs.git ];
               text = ''
                 set -euo pipefail
-                tmp=$(mktemp -d)
-                trap 'rm -rf "$tmp"' EXIT
-                mirthc .ci/mirth/ascii_surface.mth -o "$tmp/ascii-surface.c"
-                cc -std=c99 "$tmp/ascii-surface.c" -o "$tmp/ascii-surface"
-                "$tmp/ascii-surface" | bash
+                bash .ci/mirth/ascii_surface.sh
               '';
             };
           in {
@@ -277,30 +281,19 @@
             program = "${script}/bin/mirth-ascii-sync";
           };
 
-
           mirth-agda-graph = let
             script = pkgs.writeShellApplication {
               name = "mirth-agda-graph";
-              runtimeInputs = [
-                pkgs.mirth
-                pkgs.stdenv.cc
-                pkgs.coreutils
-                pkgs.git
-              ];
+              runtimeInputs = [ pkgs.coreutils pkgs.git ];
               text = ''
                 set -euo pipefail
-                tmp=$(mktemp -d)
-                trap 'rm -rf "$tmp"' EXIT
-                mirthc .ci/mirth/agda_graph.mth -o "$tmp/agda-graph.c"
-                cc -std=c99 "$tmp/agda-graph.c" -o "$tmp/agda-graph"
-                "$tmp/agda-graph" "$@"
+                bash .ci/mirth/agda_graph.sh "$@"
               '';
             };
           in {
             type = "app";
             program = "${script}/bin/mirth-agda-graph";
           };
-
           agda2hs-extract = let
             script = pkgs.writeShellApplication {
               name = "agda2hs-extract";
@@ -356,6 +349,68 @@
           in {
             type = "app";
             program = "${script}/bin/agda-haskell-pipeline";
+          };
+
+          mercury-theorem-e2e = let
+            script = pkgs.writeShellApplication {
+              name = "mercury-theorem-e2e";
+              runtimeInputs = [
+                (agdaWithTheoremGraphLibraries system)
+                (agda2hsWithHaskell system)
+                pkgs.mercury
+                pkgs.haskellPackages.dhall
+                pkgs.coreutils
+                pkgs.git
+              ];
+              text = ''
+                set -euo pipefail
+                test -f FullCoupled/TheoremsMonolith.agda
+                agda="${agdaWithTheoremGraphLibraries system}/bin/agda-with-theorem-graph"
+                agda2hs="${agda2hsWithHaskell system}/bin/agda2hs"
+                semantic_manifest="$PWD/.ci/discovery/.semantic-source-files"
+                interpolation_manifest="$PWD/.ci/discovery/.interpolation-imports"
+                agda2hs_out=$(mktemp -d)
+                dependency_graph="$agda2hs_out/theorem-imports.dot"
+                trap 'rm -rf "$agda2hs_out" "$semantic_manifest" "$interpolation_manifest"' EXIT
+                printf '%s\n' \
+                  "agda-prelude=${agdaPreludeLib system}" \
+                  "TypeTopology=${typeTopologyLib system}" \
+                  "agda2hs-base=${agda2hsBaseLib system}" \
+                  > "$interpolation_manifest"
+                "$agda" --dependency-graph="$dependency_graph" -i . FullCoupled/TheoremsMonolith.agda
+                bash .ci/discovery/agda_semantic_source_closure.sh \
+                  "$dependency_graph" \
+                  "$semantic_manifest" \
+                  "$PWD" \
+                  "${agdaPreludeLib system}/src" \
+                  "${typeTopologyLib system}/source" \
+                  "${agda2hsBaseLib system}"
+                test -s "$semantic_manifest"
+                "$agda2hs" -i . FullCoupled/Agda2HsSurface.agda -o "$agda2hs_out"
+                test -s "$agda2hs_out/FullCoupled/Agda2HsSurface.hs"
+                cd .ci
+                mmc --make check_forbidden_theorems
+                ./check_forbidden_theorems
+                cd discovery
+                mmc --make theorem_registry_reconcile
+                ./theorem_registry_reconcile --check
+                mmc --make theorem_monolith_egraph_sync
+                ./theorem_monolith_egraph_sync
+                mmc --make novel_theorem_interpolator
+                ./novel_theorem_interpolator
+                test -s novel-theorem-interpolation.dhall
+                dhall text --file novel-theorem-interpolation.dhall >/dev/null
+                report=theorem-monolith-egraph-sync.dhall
+                test -s "$report"
+                dhall text --file "$report" >/dev/null
+                test -s novel-theorem-interpolation.dhall
+                dhall text --file novel-theorem-interpolation.dhall >/dev/null
+                echo "mercury-theorem-e2e=pass"
+              '';
+            };
+          in {
+            type = "app";
+            program = "${script}/bin/mercury-theorem-e2e";
           };
 
           prune-theorem-registries = let
@@ -417,9 +472,8 @@
             ];
             shellHook = ''
               export PATH="${pkgs.mercury}/bin:$PATH"
-              export AGDA_COMMAND="${agdaWithPrelude system}/bin/agda"
+              export AGDA_COMMAND="${agdaWithPrelude system}/bin/agda-with-prelude"
               export LIQUID_SOLVER=z3
-              export VEHICLE_AGDA_SOURCE="${vehicle}/vehicle-agda/src"
             '';
           };
         });

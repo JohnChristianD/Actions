@@ -1,4 +1,4 @@
-let Lane = < AgdaLearner | AgdaTheorem | AgdaSafe | Agda2HsLiquid | Vehicle | MirthFastDirty | MercuryPurity | Mercury | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >
+let Lane = < AgdaLearner | AgdaTheorem | AgdaSafe | Agda2HsLiquid | MirthFastDirty | MercuryPurity | Mercury | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >
 
 let lane : Lane = env:CI_LANE
 
@@ -18,8 +18,6 @@ let script = merge {
     grep -Fq -- '{-# OPTIONS --erased-cubical #-}' FullCoupled/TheoremsMonolith.agda
     grep -Fq -- '{-# OPTIONS --guarded #-}' FullCoupled/TheoremsMonolith.agda
     grep -Fq -- '{-# OPTIONS --guardedness #-}' FullCoupled/TheoremsMonolith.agda
-    vehicle_source="$(nix eval --raw .#vehicleAgdaSource)"
-    test -f "$vehicle_source/Vehicle.agda"
     '',
   AgdaSafe = ''
     set -euo pipefail
@@ -33,13 +31,6 @@ let script = merge {
     test -s build/agda-haskell/agda2hs-liquid-manifest.tsv
     echo "agda2hs-ghc=pass"
     echo "liquidhaskell-z3=pass"
-    ''  Vehicle = ''
-    set -euo pipefail
-    test -n "$VEHICLE_AGDA_SOURCE"
-    test -f "$VEHICLE_AGDA_SOURCE/Vehicle.agda"
-    grep -Fq 'VEHICLE_COMMAND' "$VEHICLE_AGDA_SOURCE/Vehicle.agda"
-    grep -Fq -- '--allow-exec' "$VEHICLE_AGDA_SOURCE/Vehicle.agda"
-    echo "vehicle-agda-interface=pass"
     '',
   MirthFastDirty = ''
     set -euo pipefail
@@ -54,21 +45,10 @@ let script = merge {
     grep -Fq 'siteTitle : String' .ci/mirth/agda_to_elm.mth
     grep -Fq 'Graph.nodes' .ci/mirth/agda_to_elm.mth
 
-    mirthc .ci/mirth/ascii_surface.mth -o "$tmp/ascii-surface.c"
-    cc -std=c99 "$tmp/ascii-surface.c" -o "$tmp/ascii-surface"
-    "$tmp/ascii-surface" | bash
-
-    mirthc .ci/mirth/agda_import_sync.mth -o "$tmp/agda-import-sync.c"
-    cc -std=c99 "$tmp/agda-import-sync.c" -o "$tmp/agda-import-sync"
-    "$tmp/agda-import-sync" | bash -s -- --check
-
-    mirthc .ci/mirth/agda_command_sync.mth -o "$tmp/agda-command-sync.c"
-    cc -std=c99 "$tmp/agda-command-sync.c" -o "$tmp/agda-command-sync"
-    "$tmp/agda-command-sync" | bash -s -- --check
-
-    mirthc .ci/mirth/agda_graph.mth -o "$tmp/agda-graph.c"
-    cc -std=c99 "$tmp/agda-graph.c" -o "$tmp/agda-graph"
-    "$tmp/agda-graph" "$tmp/GeneratedAgdaGraph.elm" | bash -s -- "$tmp/GeneratedAgdaGraph.elm"
+    nix run .#mirth-ascii-sync
+    nix run .#mirth-agda-import-sync -- --check
+    nix run .#mirth-agda-command-sync -- --check
+    nix run .#mirth-agda-graph -- "$tmp/GeneratedAgdaGraph.elm"
     test -s "$tmp/GeneratedAgdaGraph.elm"
     grep -Fq 'module GeneratedAgdaGraph exposing (Node, Edge, nodes, edges)' "$tmp/GeneratedAgdaGraph.elm"
     grep -Fq 'FullCoupled.TheoremsMonolith' "$tmp/GeneratedAgdaGraph.elm"
@@ -103,11 +83,11 @@ let script = merge {
     '',
   Mercury = ''
     set -euo pipefail
-    (cd .ci && mmc --make check_forbidden_theorems && ./check_forbidden_theorems)
-    (cd .ci/discovery && mmc --make theorem_registry_reconcile && ./theorem_registry_reconcile --check)
+    nix run .#mercury-theorem-e2e
     '',
   Pages = ''
     set -euo pipefail
+    nix run .#mercury-theorem-e2e
     tmp=$(mktemp -d)
     trap 'rm -rf "$tmp"' EXIT
     grep -Fq 'module FullCoupled.CanonicalLearnerMonolith' FullCoupled/CanonicalLearnerMonolith.agda
@@ -128,10 +108,8 @@ let script = merge {
     mkdir -p "$tmp/src"
     cp site/Main.elm "$tmp/src/Main.elm"
     echo "pages-stage=mirth-graph-compile"
-    mirthc .ci/mirth/agda_graph.mth -o "$tmp/agda-graph.c"
     echo "pages-stage=mirth-graph-compile-done"
-    cc -std=c99 "$tmp/agda-graph.c" -o "$tmp/agda-graph"
-    "$tmp/agda-graph" "$tmp/src/GeneratedAgdaGraph.elm" | bash -s -- "$tmp/src/GeneratedAgdaGraph.elm"
+    nix run .#mirth-agda-graph -- "$tmp/src/GeneratedAgdaGraph.elm"
     echo "pages-stage=mirth-surface-compile"
     mirthc .ci/mirth/agda_to_elm.mth -o "$tmp/agda-to-elm.c"
     echo "pages-stage=mirth-surface-compile-done"
@@ -165,8 +143,7 @@ let script = merge {
     nix run .#mirth-agda-graph -- "$tmp_graph/GeneratedAgdaGraph.elm" | bash -s -- "$tmp_graph/GeneratedAgdaGraph.elm"
     test -s "$tmp_graph/GeneratedAgdaGraph.elm"
     grep -Fq 'FullCoupled.TheoremsMonolith' "$tmp_graph/GeneratedAgdaGraph.elm"
-    (cd .ci/discovery && mmc --make theorem_registry_reconcile && ./theorem_registry_reconcile --check)
-    (cd .ci/discovery && mmc --make theorem_monolith_egraph_sync && ./theorem_monolith_egraph_sync)
+    nix run .#mercury-theorem-e2e
     (cd .ci/discovery && mmc --make symbolic_egraph_test && ./symbolic_egraph_test)
     (cd .ci/discovery && mmc --make interpolated_theorem_egraph_test && ./interpolated_theorem_egraph_test)
     (cd .ci/discovery && mmc --make real_semantic_egraph && ./real_semantic_egraph)
@@ -179,7 +156,7 @@ let script = merge {
     grep -Fq 'astarScoreOrdered = True' "$report" || { echo "A* order gate failed"; exit 1; }
     grep -Fq 'emergentCompositionCount = 0' "$report" && { echo "no emergent composition"; exit 1; } || true
     grep -Fq 'newNonredundantTheoremCount = 0' "$report" || { echo "unexpected new nonredundant theorem claim"; exit 1; }
-    grep -Fq 'reviewFrontierCount = 12' "$report" || { echo "theorem review frontier is incomplete"; exit 1; }
+    grep -Fq 'reviewFrontierCount = 13' "$report" || { echo "theorem review frontier is incomplete"; exit 1; }
     grep -Fq 'CanonicalIntegerLayerNormEGraphAStarInfiniteHorizonStabilityTheorem' "$report" || { echo "existing LayerNorm infinite-horizon review frontier missing"; exit 1; }
     grep -Fq 'AStarPlanMonoidTheorem' "$report" || { echo "A* plan-monoid review frontier missing"; exit 1; }
     grep -Fq 'CanonicalTokenArbitraryLengthGenerationTheorem' "$report" || { echo "token-generation review frontier missing"; exit 1; }
@@ -200,7 +177,7 @@ let script = merge {
     [ -f "$theorem" ] || { echo "missing theorem monolith"; exit 1; }
     [ -f "$learner" ] || { echo "missing learner monolith"; exit 1; }
 
-    for symbol in       CanonicalMARLLawCompositionTheorem       CanonicalGRUF4WatkinsPrefixCompositionTheorem       ContinuousHodgeMaxwellExactRepresentationData       ConnectedContinuousHodgeMaxwellGRURepresentationTheorem       CanonicalLearnerHodgeMaxwellCompositionTheorem       NLabMaxwellSemanticClosure       NLabMaxwellFourLawSemanticallyClosed       nLabMaxwellEulerLagrangeShell-equivalence       nLabMaxwellFourLawOneStepClosed       nLabMaxwellIterateConjugacyClosed       canonical-learner-hodge-maxwell-step-conjugacy       CanonicalF4GlobalOptimizerStabilityTheorem       AStarPlanMonoidTheorem       CanonicalIntegerLayerNormEGraphAStarInfiniteHorizonStabilityTheorem       integerLayerNorm-egraph-astar-finite-rank-witness       AStarHaskellMonadSurface       aStar-plan-append-associative       aStar-plan-append-identity-left       aStar-plan-append-identity-right       CanonicalIntegerLayerNormEGraphAStarTheorem       integerLayerNorm-a-star-semantic-closure       IntegerLayerNormConfigurationStabilityTheorem       integer-layernorm-configuration-stability-theorem       IntegerLayerNormEpsilonRayGrowthTheorem       integer-layernorm-epsilon-ray-growth-theorem       CanonicalIntegerLayerNormStabilityGrowthTheorem       canonical-integer-layernorm-stability-growth-theorem       CanonicalF4IntegerLayerNormStabilityBoundaryTheorem       canonical-f4-integer-layernorm-stability-boundary-theorem       canonicalTotalCountSuccessorWitness       canonical-token-arbitrary-length-generation-theorem       f4-unit-forcing-linear-growth       f4-unit-forcing-no-upper-bound       GRUInjectiveTailStabilityConvergenceIdentifiabilityTheorem       BrouwerMixedNashExistence       nashEveryFiniteGameViaBrouwer       brouwerMixedNashFixedPointBridge       finiteMixedNash-brouwer-egraph-astar-proof       finiteMixedNash-brouwer-gru-egraph-astar-distribution-proof       finiteMixedNash-brouwer-gru-egraph-astar-distribution-proof-nash       finiteMixedNash-brouwer-gru-egraph-astar-distribution-fixed       finiteMixedNash-egraph-astar-convergence       finiteMixedNash-egraph-astar-eventualStationarity       finiteMixedNash-egraph-astar-proof       finiteMixedNash-cycle-transport       finiteMixedNash-from-GRU-tail       EGraphEconomicComposition       EGraphEconomicConvergenceFixedPointWitness       GeneralizedIndividualDemandWitness       GeneralizedFirmSupplyWitness       GeneralizedAggregateDemandSupplyWitness       GeneralizedAggregateExcessDemandWitness       GeneralizedAggregateExcessDemandRegularityWitness       GeneralizedAggregateMarketClearingWitness       GeneralizedAggregateSupportingPriceWitness       ExpandedGeneralizedAggregateExcessDemandKernel       expandedGeneralizedAggregateExcessDemand-closure       GeneralizedAggregateExcessDemandFixedPointWitness       expandedGeneralizedAggregateExcessDemand-fixedPoint       EGraphEconomicAggregateExcessDemandFixedPointComposition       eGraphEconomicAggregateExcessDemand-fixedPointClosure       EGraphEconomicAggregateExcessDemandComposition canonicalStationaryPriceUpdate canonicalStationaryPriceLaw UnconditionalEGraphEconomicStationaryPriceComposition unconditionalEGraphEconomicStationaryPriceClosure unconditionalEGraphEconomicStationaryPriceComposition-from-path       eGraphEconomicAggregateExcessDemand-closure       EGraphEconomicRepresentationWitness       EGraphEconomicWalrasianWitness       eGraphEconomicComposition-closure       eGraphEconomicComposition-injective       eGraphEconomicFixedOrbit       eGraphEconomicRepresentationInjective       eGraphEconomicSemanticEquality       eGraphEconomicWalrasianEquilibrium       GeneralizedWalrasianEquilibrium       CompetitiveProductionEconomy       CompetitiveWalrasianEquilibriumWithProduction       megaNoEquilibriumGeneralizedWalrasian       noUnconditionalMegaGeneralizedWalrasianExistence       FiniteCandidateDecision       FiniteCandidatePriceResult       finiteCandidatePriceSearch       finiteCandidatePriceSearch-complete       EGraphEconomicFiniteCandidatePriceComposition       eGraphEconomicFiniteCandidatePriceClosure       eGraphEconomicFiniteCandidatePriceComposition-from-path       CommonsPreservationDerivation       CommonsNonDerivabilityCounterexample       noUnconditionalCommonsPreservation       twoNotLeOne       twoAgentCommonsCounterexample       noUnconditionalCommonsPreservation-twoAgent
+    for symbol in       CanonicalMARLLawCompositionTheorem       CanonicalGRUF4WatkinsPrefixCompositionTheorem       ContinuousHodgeMaxwellExactRepresentationData       ConnectedContinuousHodgeMaxwellGRURepresentationTheorem       CanonicalLearnerHodgeMaxwellCompositionTheorem       NLabMaxwellSemanticClosure       NLabMaxwellFourLawSemanticallyClosed       nLabMaxwellEulerLagrangeShell-equivalence       nLabMaxwellFourLawOneStepClosed       nLabMaxwellIterateConjugacyClosed       canonical-learner-hodge-maxwell-step-conjugacy       CanonicalF4GlobalOptimizerStabilityTheorem       AStarPlanMonoidTheorem       CanonicalIntegerLayerNormEGraphAStarInfiniteHorizonStabilityTheorem       CanonicalIntegerLayerNormAStarExecutionBridgeTheorem       integerLayerNorm-egraph-astar-finite-rank-witness       AStarHaskellMonadSurface       aStar-plan-append-associative       aStar-plan-append-identity-left       aStar-plan-append-identity-right       CanonicalIntegerLayerNormEGraphAStarTheorem       integerLayerNorm-a-star-semantic-closure       IntegerLayerNormConfigurationStabilityTheorem       integer-layernorm-configuration-stability-theorem       IntegerLayerNormEpsilonRayGrowthTheorem       integer-layernorm-epsilon-ray-growth-theorem       CanonicalIntegerLayerNormStabilityGrowthTheorem       canonical-integer-layernorm-stability-growth-theorem       CanonicalF4IntegerLayerNormStabilityBoundaryTheorem       canonical-f4-integer-layernorm-stability-boundary-theorem       canonicalTotalCountSuccessorWitness       canonical-token-arbitrary-length-generation-theorem       f4-unit-forcing-linear-growth       f4-unit-forcing-no-upper-bound       GRUInjectiveTailStabilityConvergenceIdentifiabilityTheorem       BrouwerMixedNashExistence       nashEveryFiniteGameViaBrouwer       brouwerMixedNashFixedPointBridge       finiteMixedNash-brouwer-egraph-astar-proof       finiteMixedNash-brouwer-gru-egraph-astar-distribution-proof       finiteMixedNash-brouwer-gru-egraph-astar-distribution-proof-nash       finiteMixedNash-brouwer-gru-egraph-astar-distribution-fixed       finiteMixedNash-egraph-astar-convergence       finiteMixedNash-egraph-astar-eventualStationarity       finiteMixedNash-egraph-astar-proof       finiteMixedNash-cycle-transport       finiteMixedNash-from-GRU-tail       EGraphEconomicComposition       EGraphEconomicConvergenceFixedPointWitness       GeneralizedIndividualDemandWitness       GeneralizedFirmSupplyWitness       GeneralizedAggregateDemandSupplyWitness       GeneralizedAggregateExcessDemandWitness       GeneralizedAggregateExcessDemandRegularityWitness       GeneralizedAggregateMarketClearingWitness       GeneralizedAggregateSupportingPriceWitness       ExpandedGeneralizedAggregateExcessDemandKernel       expandedGeneralizedAggregateExcessDemand-closure       GeneralizedAggregateExcessDemandFixedPointWitness       expandedGeneralizedAggregateExcessDemand-fixedPoint       EGraphEconomicAggregateExcessDemandFixedPointComposition       eGraphEconomicAggregateExcessDemand-fixedPointClosure       EGraphEconomicAggregateExcessDemandComposition canonicalStationaryPriceUpdate canonicalStationaryPriceLaw UnconditionalEGraphEconomicStationaryPriceComposition unconditionalEGraphEconomicStationaryPriceClosure unconditionalEGraphEconomicStationaryPriceComposition-from-path       eGraphEconomicAggregateExcessDemand-closure       EGraphEconomicRepresentationWitness       EGraphEconomicWalrasianWitness       eGraphEconomicComposition-closure       eGraphEconomicComposition-injective       eGraphEconomicFixedOrbit       eGraphEconomicRepresentationInjective       eGraphEconomicSemanticEquality       eGraphEconomicWalrasianEquilibrium       GeneralizedWalrasianEquilibrium       CompetitiveProductionEconomy       CompetitiveWalrasianEquilibriumWithProduction       megaNoEquilibriumGeneralizedWalrasian       noUnconditionalMegaGeneralizedWalrasianExistence       FiniteCandidateDecision       FiniteCandidatePriceResult       finiteCandidatePriceSearch       finiteCandidatePriceSearch-complete       EGraphEconomicFiniteCandidatePriceComposition       eGraphEconomicFiniteCandidatePriceClosure       eGraphEconomicFiniteCandidatePriceComposition-from-path       CommonsPreservationDerivation       CommonsNonDerivabilityCounterexample       noUnconditionalCommonsPreservation       twoNotLeOne       twoAgentCommonsCounterexample       noUnconditionalCommonsPreservation-twoAgent
     do
       grep -Fq "$symbol" "$theorem" || { echo "current theorem symbol missing: $symbol"; exit 1; }
     done
@@ -219,7 +196,6 @@ let script = merge {
     grep -Fq 'eGraphEconomicRepresentationInjective' "$theorem" || { echo "economic representation injectivity theorem missing"; exit 1; }
     grep -Fq 'canonicalGRUStatisticalEncodeInjective' "$theorem" || { echo "GRU statistical injectivity theorem missing"; exit 1; }
     grep -Fq 'CanonicalGRUStatisticalInjectivityTheorem' "$theorem" || { echo "GRU statistical injectivity package missing"; exit 1; }
-    grep -Fq 'vehicleCommandName' "$theorem" || { echo "Vehicle theorem-monolith witness missing"; exit 1; }
     grep -Fq 'ConnectedContinuousHodgeMaxwellGRURepresentationTheorem' "$theorem" || { echo "connected Hodge-Maxwell GRU injectivity package missing"; exit 1; }
     [ ! -f FullCoupled/CarrierPolymorphicFrontier.agda ] || { echo "redundant frontier Agda module remains"; exit 1; }
     grep -Fq 'FactorTransitionWitness' FullCoupled/TheoremsMonolith.agda || { echo "factor transition kernel missing"; exit 1; }
@@ -666,10 +642,9 @@ DHALL
     while IFS= read -r file; do
       "$AGDA_COMMAND" -i . "$file"
     done < <(git ls-files '*.agda')
-    "$AGDA_COMMAND" --allow-exec -i . -i "$VEHICLE_AGDA_SOURCE" FullCoupled/TheoremsMonolith.agda
+    "$AGDA_COMMAND" --allow-exec -i . FullCoupled/TheoremsMonolith.agda
     (cd .ci && mmc --make check_forbidden_theorems && ./check_forbidden_theorems)
-    (cd .ci/discovery && mmc --make theorem_registry_reconcile && ./theorem_registry_reconcile --check)
-    (cd .ci/discovery && mmc --make theorem_monolith_egraph_sync && ./theorem_monolith_egraph_sync)
+    nix run .#mercury-theorem-e2e
     (cd .ci/discovery && mmc --make symbolic_egraph_test && ./symbolic_egraph_test)    (cd .ci/discovery && mmc --make interpolated_theorem_egraph_test && ./interpolated_theorem_egraph_test)
     ''} lane
 

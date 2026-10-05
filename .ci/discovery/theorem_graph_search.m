@@ -88,6 +88,10 @@
     list(semantic_law)::in,
     list(string)::out) is semidet.
 
+:- pred graph_interpolated_execution_bridge_plan(
+    list(semantic_law)::in,
+    list(string)::out) is semidet.
+
 :- pred graph_review_frontier_plans(
     list(semantic_law)::in,
     list(list(string))::out) is det.
@@ -848,6 +852,12 @@ graph_canonical_integer_gru_token_encoding_injective_plan(Laws, Plan) :-
         Plan).
 
 :- func graph_review_frontier_names = list(string).
+graph_interpolated_execution_bridge_plan(Laws, Plan) :-
+    search_named_required_plan(
+        "CanonicalIntegerLayerNormAStarExecutionBridgeTheorem",
+        Laws,
+        Plan).
+
 graph_review_frontier_names = [
     "CanonicalIntegerLayerNormEGraphAStarInfiniteHorizonStabilityTheorem",
     "AStarPlanMonoidTheorem",
@@ -860,7 +870,8 @@ graph_review_frontier_names = [
     "ZPFGRUGlobalInjectivityTheorem",
     "canonicalIntegerGRUTokenEncodingInjective",
     "GRUInjectiveTailStabilityConvergenceIdentifiabilityTheorem",
-    "finiteMixedNash-brouwer-gru-egraph-astar-distribution-proof"
+    "finiteMixedNash-brouwer-gru-egraph-astar-distribution-proof",
+    "CanonicalIntegerLayerNormAStarExecutionBridgeTheorem"
 ].
 
 graph_review_frontier_plans(Laws, Plans) :-

@@ -76,10 +76,26 @@
 :- func concat_strings(list(string)) = string.
 concat_strings(Parts) = string.join_list("", Parts).
 
-:- func source_files = list(string).
-source_files = [
-    "../../FullCoupled/TheoremsMonolith.agda"
-].
+:- pred source_files(list(string)::out, io::di, io::uo) is det.
+source_files(Files, !IO) :-
+    io.read_named_file_as_lines(
+        ".semantic-source-files",
+        Result, !IO),
+    (
+        Result = ok(Lines),
+        list.filter(
+            (pred(Line::in) is semidet :- string.strip(Line) \= ""),
+            Lines,
+            Files)
+    ;
+        Result = error(_),
+        io.write_string(
+            "ERROR: Agda semantic source closure manifest is missing
+",
+            !IO),
+        io.set_exit_status(1, !IO),
+        Files = []
+    ).
 
 :- func syntax_heads = list(string).
 syntax_heads = [
@@ -466,7 +482,8 @@ read_all_sources([File | Files], Acc, Result, !IO) :-
 :- pred semantic_declarations(
     io.res(list(semantic_decl))::out, io::di, io::uo) is det.
 semantic_declarations(Result, !IO) :-
-    read_all_sources(source_files, [], Result, !IO).
+    source_files(Files, !IO),
+    read_all_sources(Files, [], Result, !IO).
 
 :- pred dependency_names(semantic_decl::in, list(semantic_decl)::in,
     list(string)::out) is det.
