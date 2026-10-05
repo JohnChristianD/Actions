@@ -206,13 +206,23 @@ insertAll required (node ∷ nodes) frontier =
     nodes
     (insertByScore required node frontier)
 
-astar :
+factorial : Nat → Nat
+factorial zero = suc zero
+factorial (suc n) = suc n * factorial n
+
+searchFuel : List SemanticLaw → Nat
+searchFuel laws =
+  suc (suc (suc (factorial (length laws))))
+
+astarWithFuel :
+  Nat →
   List Capability →
   List SemanticLaw →
   List SearchNode →
   Maybe SearchNode
-astar required laws [] = Nothing
-astar required laws (node ∷ frontier) =
+astarWithFuel zero required laws frontier = Nothing
+astarWithFuel (suc fuel) required laws [] = Nothing
+astarWithFuel (suc fuel) required laws (node ∷ frontier) =
   if allRequiredCovered required (covered node) then
     Just node
   else
@@ -224,7 +234,19 @@ astar required laws (node ∷ frontier) =
         let children = expandForCapability capability laws node
             frontier' = insertAll required children frontier
         in
-        astar required laws frontier'
+        astarWithFuel fuel required laws frontier'
+
+astar :
+  List Capability →
+  List SemanticLaw →
+  List SearchNode →
+  Maybe SearchNode
+astar required laws frontier =
+  astarWithFuel
+    (searchFuel laws)
+    required
+    laws
+    frontier
 
 canonicalLaws : List SemanticLaw
 canonicalLaws =
