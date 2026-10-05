@@ -50,19 +50,7 @@ jobs:
           '
 
       - name: Re-check registry freshness and graph extraction
-        run: |
-          set -euo pipefail
-          nix develop .#default -c bash -e -c '
-            tmp_graph=$(mktemp -d)
-            trap 'rm -rf "$tmp_graph"' EXIT
-            nix run .#mirth-agda-graph -- "$tmp_graph/GeneratedAgdaGraph.elm" | bash -s -- "$tmp_graph/GeneratedAgdaGraph.elm"
-            grep -Fq 'FullCoupled.TheoremsMonolith' "$tmp_graph/GeneratedAgdaGraph.elm"
-            cd .ci/discovery
-            mmc --make theorem_registry_reconcile
-            ./theorem_registry_reconcile --check
-            mmc --make theorem_monolith_egraph_sync
-            ./theorem_monolith_egraph_sync
-          '
+        run: nix run .#mercury-theorem-e2e
 
       - name: Commit registry reconciliation
         run: |
