@@ -330,12 +330,16 @@
                 (haskellLiquidGhc system)
                 pkgs.z3
                 pkgs.coreutils
+                pkgs.git
               ];
               text = ''
                 set -euo pipefail
                 out="build/agda2hs-semantic-search"
                 rm -rf "$out"
                 mkdir -p "$out"
+                bash .ci/mirth/agda_command_sync.sh --check
+                "${agdaWithLibraries system}/bin/agda-with-libraries" --dependency-graph="$out/theorems-monolith.dot" -i . FullCoupled/TheoremsMonolith.agda
+                test -s "$out/theorems-monolith.dot"
                 "${agdaWithLibraries system}/bin/agda-with-libraries" -i . FullCoupled/Agda2HsSemanticSearch.agda
                 "${agda2hsWithHaskell system}/bin/agda2hs" -i . FullCoupled/Agda2HsSemanticSearch.agda -o "$out"
                 test -s "$out/FullCoupled/Agda2HsSemanticSearch.hs"
@@ -355,7 +359,7 @@
                   -o "$out/agda2hs-semantic-search" \
                   FullCoupled/Agda2HsSemanticSearchMain.hs
                 liquid --smtsolver=z3 -i "$out" "$out/FullCoupled/Agda2HsSemanticSearch.hs"
-                "$out/agda2hs-semantic-search" > "$out/report.txt"
+                "$out/agda2hs-semantic-search" "$out/theorems-monolith.dot" > "$out/report.txt"
                 grep -Fq "True" "$out/report.txt"
                 grep -Fq "inverse-correct" "$out/report.txt"
                 grep -Fq "inverse-csearchable" "$out/report.txt"
