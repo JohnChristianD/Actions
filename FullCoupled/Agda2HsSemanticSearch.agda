@@ -972,7 +972,6 @@ main = do
 {-# COMPILE AGDA2HS autonomousCanonicalGraphSearch #-}
 {-# COMPILE AGDA2HS autonomousCanonicalGraphSearchCount #-}
 {-# COMPILE AGDA2HS autonomousCanonicalGraphReport #-}
-{-# COMPILE AGDA2HS autonomousGraphSearchRegression #-}
 {-# COMPILE AGDA2HS semanticGraphLaw #-}
 {-# COMPILE AGDA2HS semanticGraphLaws #-}
 {-# COMPILE AGDA2HS requiredTheoremNames #-}
