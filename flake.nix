@@ -203,7 +203,6 @@
         {
           agda = agdaWithLibraries system;
           agda2hs = agda2hsWithHaskell system;
-          agda-prelude = agdaPreludeLib system;
           typetopology = typeTopologyLib system;
           ci = pkgs.haskellPackages.dhall;
           yamlscript = pkgs.yamlscript;
@@ -403,7 +402,6 @@
                 dependency_graph="$agda2hs_out/theorem-imports.dot"
                 trap 'rm -rf "$agda2hs_out" "$semantic_manifest" "$interpolation_manifest"' EXIT
                 printf '%s\n' \
-                  "agda-prelude=${agdaPreludeLib system}" \
                   "TypeTopology=${typeTopologyLib system}" \
                   "agda2hs-base=${agda2hsBaseLib system}" \
                   > "$interpolation_manifest"
