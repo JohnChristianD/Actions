@@ -6,11 +6,6 @@
 {-# OPTIONS --guardedness #-}
 {-# OPTIONS --rewriting #-}
 {-# OPTIONS --no-termination-check #-}
-{-# OPTIONS --dependency-graph #-}
-{-# OPTIONS --allow-exec #-}
-{-# OPTIONS --interaction #-}
-{-# OPTIONS --interaction-exit-on-error #-}
-{-# OPTIONS --interaction-json #-}
 
 ------------------------------------------------------------------------
 -- Canonical theorem semantics and emergence layer.
