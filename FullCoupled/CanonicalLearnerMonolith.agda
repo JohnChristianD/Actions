@@ -16,7 +16,7 @@
 {-# OPTIONS --no-save-metas #-}
 -- END MIRTH-SYNC GLOBAL OPTIONS
 
--- BEGIN MIRTH-SYNC GLOBAL IMPORTS
+-- BEGIN MIRTH-SYNC GLOBAL IMPORTS SAFE
 import Agda.Builtin.Float
 import Agda.Builtin.Reflection
 import Agda.Builtin.Sigma
@@ -26,7 +26,6 @@ import FullCoupled.FormalMethods.HoareLogic
 import FullCoupled.FormalMethods.IMP
 import FullCoupled.FormalMethods.OperationalSemantics
 import FullCoupled.FormalMethods.Security
-import FullCoupled.FormalMethods.SeparationLogic
 import FullCoupled.FormalMethods.Types
 import FullCoupled.FormalMethods.VerificationConditions
 import Prelude
@@ -46,7 +45,7 @@ import Prelude.String
 import Prelude.Sum
 import Prelude.Unit
 import Prelude.Vec
--- END MIRTH-SYNC GLOBAL IMPORTS
+-- END MIRTH-SYNC GLOBAL IMPORTS SAFE
 
 {-# OPTIONS --safe #-}
 
