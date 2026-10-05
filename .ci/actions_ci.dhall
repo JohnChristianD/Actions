@@ -107,6 +107,9 @@ let script = merge {
     grep -Fq 'open import TWA.Thesis.Chapter3.SearchableTypes' FullCoupled/Agda2HsSemanticSearch.agda
     grep -Fq 'open import TWA.Thesis.Chapter3.ClosenessSpaces' FullCoupled/Agda2HsSemanticSearch.agda
     ! grep -Fq 'open import Unsafe.Type-in-Type-False' FullCoupled/Agda2HsSemanticSearch.agda
+    test -f FullCoupled/Agda2HsTheoremGraphEGraph.agda
+    grep -Fq 'symbolicEGraphRegression' FullCoupled/Agda2HsTheoremGraphEGraph.agda
+    grep -Fq 'eGraphAssociativityRegression' FullCoupled/Agda2HsTheoremGraphEGraph.agda
     nix run .#agda2hs-semantic-search
     nix run .#mercury-theorem-e2e
     tmp=$(mktemp -d)
