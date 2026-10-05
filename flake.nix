@@ -404,11 +404,12 @@
                   -i "$out" \
                   -odir "$out/ghc" \
                   -hidir "$out/ghc" \
+                  -main-is FullCoupled.Agda2HsSemanticSearch.main \
                   -o "$out/agda2hs-semantic-search" \
-                  FullCoupled/Agda2HsSemanticSearchMain.hs
+                  "$out/FullCoupled/Agda2HsSemanticSearch.hs"
                 liquid --smtsolver=z3 -i "$out" "$out/FullCoupled/Agda2HsSemanticSearch.hs"
                 liquid --smtsolver=z3 -i "$out" "$out/FullCoupled/Agda2HsTheoremGraphEGraph.hs"
-                "$out/agda2hs-semantic-search" "$out/theorems-monolith.dot" > "$out/report.txt"
+                "$out/agda2hs-semantic-search" > "$out/report.txt"
                 grep -Fq "True" "$out/report.txt"
                 grep -E '^theorem-graph-edges=[1-9][0-9]* autonomous-a-star-chains=[1-9][0-9]*$' "$out/report.txt"
                 grep -E '^agda2hs autonomous theorem-graph A\\*: [1-9][0-9]* dependency chains$' "$out/report.txt"
