@@ -386,14 +386,26 @@
                 bash .ci/mirth/agda_command_sync.sh --check
                 "${agdaWithLibraries system}/bin/agda-with-libraries" --dependency-graph="$out/theorems-monolith.dot" -i . FullCoupled/TheoremsMonolith.agda
                 test -s "$out/theorems-monolith.dot"
+                bash .ci/discovery/agda_semantic_source_closure.sh \
+                  "$out/theorems-monolith.dot" \
+                  "$out/.semantic-source-files" \
+                  "$PWD/FullCoupled/TheoremsMonolith.agda" \
+                  "${typeTopologyLib system}/source" \
+                  "${agda2hsBaseLib system}"
+                test -s "$out/.semantic-source-files"
+                "${agdaWithLibraries system}/bin/agda-with-libraries" -i . FullCoupled/Agda2HsSemanticExtractor.agda
                 "${agdaWithLibraries system}/bin/agda-with-libraries" -i . FullCoupled/Agda2HsSemanticSearch.agda
                 "${agdaWithLibraries system}/bin/agda-with-libraries" -i . FullCoupled/Agda2HsTheoremGraphEGraph.agda
+                "${agda2hsWithHaskell system}/bin/agda2hs" -i . FullCoupled/Agda2HsSemanticExtractor.agda -o "$out"
                 "${agda2hsWithHaskell system}/bin/agda2hs" -i . FullCoupled/Agda2HsSemanticSearch.agda -o "$out"
                 "${agda2hsWithHaskell system}/bin/agda2hs" -i . FullCoupled/Agda2HsTheoremGraphEGraph.agda -o "$out"
+                test -s "$out/FullCoupled/Agda2HsSemanticExtractor.hs"
                 test -s "$out/FullCoupled/Agda2HsSemanticSearch.hs"
                 test -s "$out/FullCoupled/Agda2HsTheoremGraphEGraph.hs"
                 grep -Fq "symbolicEGraphRegression" FullCoupled/Agda2HsTheoremGraphEGraph.agda
                 grep -Fq "eGraphAssociativityRegression" FullCoupled/Agda2HsTheoremGraphEGraph.agda
+                grep -Fq "requiredTheoremNames" FullCoupled/Agda2HsSemanticSearch.agda
+                grep -Fq "requiredPlanComplete" FullCoupled/Agda2HsSemanticSearch.agda
                 grep -Fq "inverse-correct" FullCoupled/TheoremsMonolith.agda
                 grep -Fq "inverse-csearchable" FullCoupled/TheoremsMonolith.agda
                 grep -Fq "inverse-preserves-csearchability" FullCoupled/TheoremsMonolith.agda
@@ -407,6 +419,7 @@
                   -main-is FullCoupled.Agda2HsSemanticSearch.main \
                   -o "$out/agda2hs-semantic-search" \
                   "$out/FullCoupled/Agda2HsSemanticSearch.hs"
+                liquid --smtsolver=z3 -i "$out" "$out/FullCoupled/Agda2HsSemanticExtractor.hs"
                 liquid --smtsolver=z3 -i "$out" "$out/FullCoupled/Agda2HsSemanticSearch.hs"
                 liquid --smtsolver=z3 -i "$out" "$out/FullCoupled/Agda2HsTheoremGraphEGraph.hs"
                 "$out/agda2hs-semantic-search" > "$out/report.txt"
@@ -414,6 +427,9 @@
                 grep -E '^theorem-graph-edges=[1-9][0-9]* autonomous-a-star-chains=[1-9][0-9]*$' "$out/report.txt"
                 grep -E '^agda2hs autonomous theorem-graph A\\*: [1-9][0-9]* dependency chains$' "$out/report.txt"
                 grep -Fq "autonomous-regression=True" "$out/report.txt"
+                grep -E "^semantic-laws=[1-9][0-9]* nonreflexive=[1-9][0-9]* composite=[1-9][0-9]*$" "$out/report.txt"
+                grep -E "^required-plan-count=[1-9][0-9]* required-plan-total=[1-9][0-9]* required-plan-regression=True$" "$out/report.txt"
+                grep -Fq "egraph-regression=True egraph-associativity-regression=True" "$out/report.txt"
                 printf '%s\n' \
                   "compiler=canonical-pkgs.haskell.packages.ghc9124.ghc" \
                   "ghcVersion=9.12.4" \
