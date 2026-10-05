@@ -7,9 +7,7 @@ module tangled where
 
 -- BEGIN MIRTH-SYNC COMMON IMPORTS
 -- Merged external import surface; internal FullCoupled imports remain module-local.
-import Prelude.Fin as F
 import Prelude.Int.Properties as IntegerProperties
-import Prelude.Vec as V
 open import Agda.Builtin.Float renaming (primFloatPlus to _+ᵣ_; primFloatLess to _≤?ᵣ_)
 open import Agda.Builtin.Reflection as Builtin
 open import Agda.Builtin.Sigma hiding (_,_)
@@ -98,10 +96,10 @@ _ = refl
 _ : quoteTerm ℕ ≡ def (quote ℕ) []
 _ = refl
 
-_ : quoteTerm V.Vec ≡ def (quote V.Vec) []
+_ : quoteTerm List ≡ def (quote List) []
 _ = refl
 
-_ : quoteTerm (F.Fin 3) ≡ def (quote F.Fin) (𝓋𝓇𝒶 (lit (nat 3)) ∷ [])
+_ : quoteTerm (List ℕ) ≡ def (quote List) (𝓋𝓇𝒶 (quoteTerm ℕ) ∷ [])
 _ = refl
 {- Example: Simple Types:1 ends here -}
 
