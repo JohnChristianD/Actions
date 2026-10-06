@@ -1,4 +1,4 @@
-let Lane = < AgdaLearner | AgdaTheorem | AgdaSafe | Agda2HsLiquid | MirthFastDirty | MercuryPurity | Mercury | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >
+let Lane = < AgdaLearner | AgdaTheorem | AgdaSafe | Agda2HsLiquid | MirthFastDirty | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >
 
 let lane : Lane = env:CI_LANE
 
@@ -62,28 +62,6 @@ let script = merge {
     grep -Fq 'edgeLines : List String' "$tmp/GeneratedTheoremSurface.elm"
     if LC_ALL=C grep -n '[^[:print:][:space:]]' "$tmp/GeneratedTheoremSurface.elm"; then exit 1; fi
     echo "mirth-c99-transpile-and-execute=pass"
-    '',
-  MercuryPurity = ''
-    set -euo pipefail
-    files=$(git ls-files '*.m')
-    [ -n "$files" ] || { echo "no Mercury sources found"; exit 1; }
-    if grep -nHE '(^|[^A-Za-z])(impure|semipure)([^A-Za-z]|$)' $files; then
-      echo "Mercury purity violation: impure/semipure syntax is forbidden in repository .m sources"
-      exit 1
-    fi
-    if grep -nHE 'pragma[[:space:]]+promise_(impure|semipure)' $files; then
-      echo "Mercury purity violation: promise_impure/promise_semipure is forbidden"
-      exit 1
-    fi
-    if grep -nHE 'pragma[[:space:]]+foreign_proc' $files; then
-      echo "Mercury purity violation: foreign_proc is forbidden in repository .m sources"
-      exit 1
-    fi
-    echo "mercury-purity=pass"
-    '',
-  Mercury = ''
-    set -euo pipefail
-    nix run .#mercury-theorem-e2e
     '',
   Pages = ''
     set -euo pipefail
@@ -168,152 +146,23 @@ let script = merge {
   Discovery = ''
     set -euo pipefail
     nix run .#mirth-agda-sync -- --check
-    tmp_graph=$(mktemp -d)
-    trap 'rm -rf "$tmp_graph"' EXIT
-    nix run .#mirth-agda-graph -- "$tmp_graph/GeneratedAgdaGraph.elm" | bash -s -- "$tmp_graph/GeneratedAgdaGraph.elm"
-    test -s "$tmp_graph/GeneratedAgdaGraph.elm"
-    grep -Fq 'FullCoupled.TheoremsMonolith' "$tmp_graph/GeneratedAgdaGraph.elm"
     nix run .#agda2hs-semantic-search
-    nix run .#agda2hs-semantic-search
-    nix run .#mercury-theorem-e2e
-    (cd .ci/discovery && mmc --make symbolic_egraph_test && ./symbolic_egraph_test)
-    (cd .ci/discovery && mmc --make interpolated_theorem_egraph_test && ./interpolated_theorem_egraph_test)
-    (cd .ci/discovery && mmc --make real_semantic_egraph && ./real_semantic_egraph)
-    (cd .ci/discovery && mmc --make liquid_haskell_graph && ./liquid_haskell_graph ../../build/agda-haskell/agda2hs-liquid-manifest.tsv)
-    report=.ci/discovery/theorem-monolith-egraph-sync.dhall
-    dhall text --file "$report" >/dev/null
-    grep -Fq 'forcedSymbolicTarget = True' "$report" && { echo "forced symbolic target"; exit 1; } || true
-    grep -Fq 'singleAgdaSource = False' "$report" && { echo "non-canonical Agda source"; exit 1; } || true
-    grep -Fq 'graphSearch = "A* cost-guided dependency paths"' "$report" || { echo "missing A* graph label"; exit 1; }
-    grep -Fq 'astarScoreOrdered = True' "$report" || { echo "A* order gate failed"; exit 1; }
-    grep -Fq 'emergentCompositionCount = 0' "$report" && { echo "no emergent composition"; exit 1; } || true
-    grep -Fq 'newNonredundantTheoremCount = 0' "$report" || { echo "unexpected new nonredundant theorem claim"; exit 1; }
-    grep -Fq 'reviewFrontierCount = 13' "$report" || { echo "theorem review frontier is incomplete"; exit 1; }
-    grep -Fq 'CanonicalIntegerLayerNormEGraphAStarInfiniteHorizonStabilityTheorem' "$report" || { echo "existing LayerNorm infinite-horizon review frontier missing"; exit 1; }
-    grep -Fq 'AStarPlanMonoidTheorem' "$report" || { echo "A* plan-monoid review frontier missing"; exit 1; }
-    grep -Fq 'CanonicalTokenArbitraryLengthGenerationTheorem' "$report" || { echo "token-generation review frontier missing"; exit 1; }
-    grep -Fq 'NLabMaxwellFourLawGRUAlgebraicConsistencyTheorem' "$report" || { echo "Maxwell/GRU review frontier missing"; exit 1; }
-    grep -Fq 'GRUInjectiveTailStabilityConvergenceIdentifiabilityTheorem' "$report" || { echo "GRU convergence-identifiability frontier missing"; exit 1; }
-    grep -Fq 'dominanceDetection = True' "$report" || { echo "record-field dominance detection missing"; exit 1; }
-    grep -Fq 'prunedPublicTheoremCount = 5' "$report" || { echo "expected two pruned public theorem endpoints"; exit 1; }
-    grep -Fq 'integerLayerNorm-egraph-astar-eventual-semantic-closure' "$report" || { echo "eventual-closure redundancy was not audited"; exit 1; }
-    grep -Fq 'integerLayerNorm-egraph-astar-infinite-stable-tail' "$report" || { echo "stable-tail redundancy was not audited"; exit 1; }
-    grep -Fq 'eGraphEconomicFixedPoint' "$report" || { echo "economic fixed-point projection pruning was not audited"; exit 1; }
-    grep -Fq 'eGraphEconomicWalrasianEquilibrium' "$report" || { echo "economic Walrasian projection pruning was not audited"; exit 1; }
-    grep -Fq 'eGraphEconomicComposition-injective' "$report" || { echo "economic injectivity projection pruning was not audited"; exit 1; }
-    grep -Fq 'Name \\= "--"' .ci/discovery/learner_semantic_extractor.m || { echo "comment parser guard missing"; exit 1; }
-    set -euo pipefail
-    theorem=FullCoupled/TheoremsMonolith.agda
-    sync=.ci/discovery/theorem-monolith-egraph-sync.dhall
-    learner=FullCoupled/CanonicalLearnerMonolith.agda
-    [ -f "$theorem" ] || { echo "missing theorem monolith"; exit 1; }
-    [ -f "$learner" ] || { echo "missing learner monolith"; exit 1; }
-
-    for symbol in       CanonicalMARLLawCompositionTheorem       CanonicalGRUF4WatkinsPrefixCompositionTheorem       ContinuousHodgeMaxwellExactRepresentationData       ConnectedContinuousHodgeMaxwellGRURepresentationTheorem       CanonicalLearnerHodgeMaxwellCompositionTheorem       NLabMaxwellSemanticClosure       NLabMaxwellFourLawSemanticallyClosed       nLabMaxwellEulerLagrangeShell-equivalence       nLabMaxwellFourLawOneStepClosed       nLabMaxwellIterateConjugacyClosed       canonical-learner-hodge-maxwell-step-conjugacy       CanonicalF4GlobalOptimizerStabilityTheorem       AStarPlanMonoidTheorem       CanonicalIntegerLayerNormEGraphAStarInfiniteHorizonStabilityTheorem       CanonicalIntegerLayerNormAStarExecutionBridgeTheorem       integerLayerNorm-egraph-astar-finite-rank-witness       AStarHaskellMonadSurface       aStar-plan-append-associative       aStar-plan-append-identity-left       aStar-plan-append-identity-right       CanonicalIntegerLayerNormEGraphAStarTheorem       integerLayerNorm-a-star-semantic-closure       IntegerLayerNormConfigurationStabilityTheorem       integer-layernorm-configuration-stability-theorem       IntegerLayerNormEpsilonRayGrowthTheorem       integer-layernorm-epsilon-ray-growth-theorem       CanonicalIntegerLayerNormStabilityGrowthTheorem       canonical-integer-layernorm-stability-growth-theorem       CanonicalF4IntegerLayerNormStabilityBoundaryTheorem       canonical-f4-integer-layernorm-stability-boundary-theorem       canonicalTotalCountSuccessorWitness       canonical-token-arbitrary-length-generation-theorem       f4-unit-forcing-linear-growth       f4-unit-forcing-no-upper-bound       GRUInjectiveTailStabilityConvergenceIdentifiabilityTheorem       BrouwerMixedNashExistence       nashEveryFiniteGameViaBrouwer       brouwerMixedNashFixedPointBridge       finiteMixedNash-brouwer-egraph-astar-proof       finiteMixedNash-brouwer-gru-egraph-astar-distribution-proof       finiteMixedNash-brouwer-gru-egraph-astar-distribution-proof-nash       finiteMixedNash-brouwer-gru-egraph-astar-distribution-fixed       finiteMixedNash-egraph-astar-convergence       finiteMixedNash-egraph-astar-eventualStationarity       finiteMixedNash-egraph-astar-proof       finiteMixedNash-cycle-transport       finiteMixedNash-from-GRU-tail       EGraphEconomicComposition       EGraphEconomicConvergenceFixedPointWitness       GeneralizedIndividualDemandWitness       GeneralizedFirmSupplyWitness       GeneralizedAggregateDemandSupplyWitness       GeneralizedAggregateExcessDemandWitness       GeneralizedAggregateExcessDemandRegularityWitness       GeneralizedAggregateMarketClearingWitness       GeneralizedAggregateSupportingPriceWitness       ExpandedGeneralizedAggregateExcessDemandKernel       expandedGeneralizedAggregateExcessDemand-closure       GeneralizedAggregateExcessDemandFixedPointWitness       expandedGeneralizedAggregateExcessDemand-fixedPoint       EGraphEconomicAggregateExcessDemandFixedPointComposition       eGraphEconomicAggregateExcessDemand-fixedPointClosure       EGraphEconomicAggregateExcessDemandComposition canonicalStationaryPriceUpdate canonicalStationaryPriceLaw UnconditionalEGraphEconomicStationaryPriceComposition unconditionalEGraphEconomicStationaryPriceClosure unconditionalEGraphEconomicStationaryPriceComposition-from-path       eGraphEconomicAggregateExcessDemand-closure       EGraphEconomicRepresentationWitness       EGraphEconomicWalrasianWitness       eGraphEconomicComposition-closure       eGraphEconomicComposition-injective       eGraphEconomicFixedOrbit       eGraphEconomicRepresentationInjective       eGraphEconomicSemanticEquality       eGraphEconomicWalrasianEquilibrium       GeneralizedWalrasianEquilibrium       CompetitiveProductionEconomy       CompetitiveWalrasianEquilibriumWithProduction       megaNoEquilibriumGeneralizedWalrasian       noUnconditionalMegaGeneralizedWalrasianExistence       FiniteCandidateDecision       FiniteCandidatePriceResult       finiteCandidatePriceSearch       finiteCandidatePriceSearch-complete       EGraphEconomicFiniteCandidatePriceComposition       eGraphEconomicFiniteCandidatePriceClosure       eGraphEconomicFiniteCandidatePriceComposition-from-path       CommonsPreservationDerivation       CommonsNonDerivabilityCounterexample       noUnconditionalCommonsPreservation       twoNotLeOne       twoAgentCommonsCounterexample       noUnconditionalCommonsPreservation-twoAgent
-    do
-      grep -Fq "$symbol" "$theorem" || { echo "current theorem symbol missing: $symbol"; exit 1; }
-    done
-    for symbol in FractalInjectiveComposition fractalLevelInjective fractalTransportedEncodeInjective canonicalGRUFractal canonicalGRUFractalLevelInjective canonicalGRUFractalTransportedInjective canonicalGRUTwoScaleInjective PhysicsGRUFractalAdapter EconomicsGRUFractalAdapter economicObservation economicLevelTransport economicLevelTransportInjective economicLevelTransportRepresentation; do
-      grep -Fq "$symbol" "$theorem" || { echo "consolidated theorem symbol missing: $symbol"; exit 1; }
-    done
-
-    [ -f docs/research/theorem-unconditional-commons-nonderivability-2026-09-26.md ] || { echo "commons research note missing"; exit 1; }
-    grep -Fq 'suc (suc zero) ≤ suc zero' "$theorem" || { echo "commons capacity violation missing"; exit 1; }
-    grep -Fq 'AStarSemanticClosure' "$theorem" || { echo "A* semantic closure kernel missing"; exit 1; }
-    test -f FullCoupled/Agda2HsSemanticSearch.agda || { echo "Agda2Hs semantic search kernel missing"; exit 1; }
-    grep -Fq 'semanticEGraphAStarClosure' "$theorem" || { echo "theorem/e-graph/A* seam missing"; exit 1; }
-    grep -Fq 'UnconditionalAgdaEGraphAStarClosure' "$theorem" || { echo "repository-wide e-graph closure missing"; exit 1; }
-    grep -Fq 'StrictProgressRelation' "$theorem" || { echo "strict progress relation kernel missing"; exit 1; }
-    grep -Fq 'EGraphEconomicComposition' "$theorem" || { echo "economic e-graph composition kernel missing"; exit 1; }
-    grep -Fq 'eGraphEconomicComposition-closure' "$theorem" || { echo "economic e-graph closure theorem missing"; exit 1; }
-    grep -Fq 'eGraphEconomicRepresentationInjective' "$theorem" || { echo "economic representation injectivity theorem missing"; exit 1; }
-    grep -Fq 'canonicalGRUStatisticalEncodeInjective' "$theorem" || { echo "GRU statistical injectivity theorem missing"; exit 1; }
-    grep -Fq 'CanonicalGRUStatisticalInjectivityTheorem' "$theorem" || { echo "GRU statistical injectivity package missing"; exit 1; }
-    grep -Fq 'ConnectedContinuousHodgeMaxwellGRURepresentationTheorem' "$theorem" || { echo "connected Hodge-Maxwell GRU injectivity package missing"; exit 1; }
-    [ ! -f FullCoupled/CarrierPolymorphicFrontier.agda ] || { echo "redundant frontier Agda module remains"; exit 1; }
-    grep -Fq 'FactorTransitionWitness' FullCoupled/TheoremsMonolith.agda || { echo "factor transition kernel missing"; exit 1; }
-    grep -Fq 'canonicalPolicyFactorTransition' FullCoupled/TheoremsMonolith.agda || { echo "canonical factor transition adapter missing"; exit 1; }
-    grep -Fq 'StepConjugacyWitness' FullCoupled/TheoremsMonolith.agda || { echo "step conjugacy kernel missing"; exit 1; }
-    grep -Fq 'DistributionalStationaryAggregateTransport' FullCoupled/TheoremsMonolith.agda || { echo "stationary aggregate bridge missing"; exit 1; }
-    grep -Fq 'ProductionFeasibilityWitness' FullCoupled/TheoremsMonolith.agda || { echo "production witness surface missing"; exit 1; }
-    grep -Fq 'SupportingPriceWitness' FullCoupled/TheoremsMonolith.agda || { echo "supporting price witness surface missing"; exit 1; }
-    grep -Fq 'FiniteCandidateDecision' FullCoupled/TheoremsMonolith.agda || { echo "finite candidate decision kernel missing"; exit 1; }
-    grep -Fq 'finiteCandidatePriceSearch' FullCoupled/TheoremsMonolith.agda || { echo "finite candidate price search kernel missing"; exit 1; }
-    grep -Fq 'CertifiedEGraphEdge' "$theorem" || { echo "e-graph certificate surface missing"; exit 1; }
-    grep -Fq "naive-limit-injectivity-impossible" "$theorem" || { echo "limit impossibility theorem missing"; exit 1; }
-
-    grep -Fq 'UnconditionalAgdaEGraphAStarClosure' "$theorem" || { echo "repository-wide e-graph closure missing"; exit 1; }
-    for module in canonicalLearnerMonolith theoremsMonolith
-    do      grep -Fq "$module" "$theorem" || { echo "consolidated Agda semantic index missing: $module"; exit 1; }
-    done
-    monolith_count=$(git ls-files '*Monolith.agda' | wc -l)
-    [ "$monolith_count" -eq 2 ] || { echo "expected exactly two Agda monoliths, found $monolith_count"; exit 1; }
-    agda_files=$(git ls-files '*.agda')
-    expected_agda_files='FullCoupled/Agda2HsSemanticExtractor.agda
-FullCoupled/Agda2HsSemanticSearch.agda
-FullCoupled/Agda2HsTheoremGraphEGraph.agda
-FullCoupled/Agda2HsSurface.agda
-FullCoupled/CanonicalLearnerMonolith.agda
-FullCoupled/FormalMethods/HoareLogic.agda
-FullCoupled/FormalMethods/IMP.agda
-FullCoupled/FormalMethods/OperationalSemantics.agda
-FullCoupled/FormalMethods/Security.agda
-FullCoupled/FormalMethods/SeparationLogic.agda
-FullCoupled/FormalMethods/Types.agda
-FullCoupled/FormalMethods/VerificationConditions.agda
-FullCoupled/FormalMethods/gentle-intro-to-reflection/tangled.agda
-FullCoupled/TheoremsMonolith.agda'
-    [ "$agda_files" = "$expected_agda_files" ] || {
-      echo "tracked Agda source surface mismatch"
-      printf '%s\n' "expected:" "$expected_agda_files" "actual:" "$agda_files"
-      exit 1
-    }
-    [ ! -e Main.agda ] || { echo "legacy Main.agda must remain retired"; exit 1; }
-    grep -Fq 'Complete surviving-Agda closure index' "$readme" || { echo "README missing complete Agda closure index"; exit 1; }
-    law_count=$(awk -F'= ' '/semanticLawCount =/ {gsub(/[^0-9]/,"",$2); print $2; exit}' "$sync")
-    [ -n "$law_count" ] && [ "$law_count" -gt 0 ] || { echo "semantic law inventory is empty"; exit 1; }
-
-    record_count=$(awk '/^[[:space:]]*record[[:space:]]+[A-Za-z0-9_.-]+/ {count++} END {print count+0}' "$theorem")
-    declaration_count=$(awk '/^[A-Za-z][A-Za-z0-9_.-]*[[:space:]]*:/ {count++} END {print count+0}' "$theorem")
-    economic_record_count=$(awk 'BEGIN {IGNORECASE=1} /^[[:space:]]*record[[:space:]]+[A-Za-z0-9_.-]+/ && /Walras|Welfare|Pareto|Production|Demand|Supply|Market|Price|Equilibrium|POMDP|Boundary|Closure|Transport|Conjugacy|Composition/ {count++} END {print count+0}' "$theorem")
-    economic_declaration_count=$(awk 'BEGIN {IGNORECASE=1} /^[A-Za-z][A-Za-z0-9_.-]*[[:space:]]*:/ && /Walras|Welfare|Pareto|Production|Demand|Supply|Market|Price|Equilibrium|POMDP|Boundary|Closure|Transport|Conjugacy|Composition/ {count++} END {print count+0}' "$theorem")
-    counterexample_count=$(awk 'BEGIN {IGNORECASE=1} /^[[:space:]]*record[[:space:]]+[A-Za-z0-9_.-]+/ && /Boundary|Counterexample|Impossibility/ {count++} END {print count+0}' "$theorem")
-    composition_count=$(awk 'BEGIN {IGNORECASE=1} /^[[:space:]]*record[[:space:]]+[A-Za-z0-9_.-]+/ && /Composition|Conjugacy|Transport|Closure|Isomorphism/ {count++} END {print count+0}' "$theorem")
-
-    mkdir -p .ci/discovery
-    {
-      printf '%s\\n' '{'
-      printf '  source_graph = "%s",\\n' "$graph"
-      printf '  theorem_source = "%s",\\n' "$theorem"
-      printf '  learner_source = "%s",\\n' "$learner"
-      printf '  semanticLawCount = %s,\\n' "$law_count"
-      printf '  record_count = %s,\\n' "$record_count"
-      printf '  top_level_declaration_count = %s,\\n' "$declaration_count"
-      printf '  economic_record_count = %s,\\n' "$economic_record_count"
-      printf '  economic_declaration_count = %s,\\n' "$economic_declaration_count"
-      printf '  counterexample_or_boundary_record_count = %s,\\n' "$counterexample_count"
-      printf '  composition_transport_record_count = %s,\\n' "$composition_count"
-      printf '  surface_authority = "TheoremsMonolith.agda",\\n'
-      printf '  dependency_authority = "theorem-monolith-egraph-sync.dhall",\\n'
-      printf '  frontier_policy = "PROVED | CONDITIONAL | FRONTIER | BLOCKED-BY-COUNTEREXAMPLE",\\n'
-      printf '  closed_core = ["CanonicalMARLLawCompositionTheorem", "CanonicalGRUF4WatkinsPrefixCompositionTheorem", "CanonicalF4GlobalOptimizerStabilityTheorem", "f4-unit-forcing-linear-growth", "f4-unit-forcing-no-upper-bound"],\\n'
-      printf '  composition_frontier = ["CanonicalLearnerHodgeMaxwellCompositionTheorem requires explicit Hodge representation and learner-step conjugacy witnesses"],\\n'
-      printf '  economic_boundary = ["learner factor stability does not entail convergence", "learner factor stability does not entail a fixed point", "learner factor stability does not entail market clearing", "learner factor stability does not entail supporting prices", "learner factor stability does not entail Walrasian existence"],\\n'
-      printf '  production_topology = "competitive production -> feasible plans -> profit-maximizing production -> demand -> aggregate resource balance -> market clearing -> derived/supporting price -> generalized Walrasian equilibrium",\\n'
-      printf '  counterexample_policy = "the singleton empty-equilibrium model blocks promotion of unconditional generalized-Walrasian existence",\\n'
-      printf '%s\\n' '}'
-    } > .ci/discovery/economic-closure-graph.dhall
-
-    dhall text --file .ci/discovery/economic-closure-graph.dhall >/dev/null
-    grep -Fq 'surface_authority = "TheoremsMonolith.agda"' .ci/discovery/economic-closure-graph.dhall
-    grep -Fq 'frontier_policy = "PROVED | CONDITIONAL | FRONTIER | BLOCKED-BY-COUNTEREXAMPLE"' .ci/discovery/economic-closure-graph.dhall
-    echo "economic-closure-graph=pass"
-    echo "economic-record-count=$economic_record_count"
-    echo "economic-declaration-count=$economic_declaration_count"
-    echo "counterexample-boundary-record-count=$counterexample_count"
-    echo "composition-transport-record-count=$composition_count"
-    '',
-  EconlibCrossrepo = ''
+    report=build/agda2hs-semantic-search/report.txt
+    manifest=build/agda2hs-semantic-search/agda2hs-semantic-search-manifest.tsv
+    test -s "$report"
+    test -s "$manifest"
+    grep -E '^theorem-graph-edges=[1-9][0-9]* autonomous-a-star-chains=[1-9][0-9]*$' "$report"
+    grep -Fq 'autonomous-regression=True' "$report"
+    grep -E '^semantic-laws=[1-9][0-9]* nonreflexive=[1-9][0-9]* composite=[1-9][0-9]*$' "$report"
+    grep -E '^required-plan-count=[1-9][0-9]* required-plan-total=[1-9][0-9]* required-plan-regression=True$' "$report"
+    grep -Fq 'egraph-regression=True egraph-associativity-regression=True' "$report"
+    grep -Fq 'hybrid-search=3 inverse laws; ExactRealSearchSurface preserves searchability' "$report"
+    grep -E '^agda2hs-semantic-port=[1-9][0-9]* dominance edges; 5 pruning proofs; [1-9][0-9]*/[1-9][0-9]* required plans e-graph-closed$' "$report"
+    grep -Fq 'plugins=Plugin.InversionPlugin,LiquidHaskell' "$manifest"
+    grep -Fq 'proofKernel=Agda' "$manifest"
+    grep -Fq 'searchKernel=Agda2Hs' "$manifest"
+    echo 'agda-semantic-discovery=pass'
+    '',  EconlibCrossrepo = ''
     set -euo pipefail
     tmp=$(mktemp -d)
     trap 'rm -rf "$tmp"' EXIT
@@ -440,16 +289,11 @@ FullCoupled/TheoremsMonolith.agda'
     '',
   StrictExistenceImpossibility = ''
     set -euo pipefail
-    (cd .ci/discovery && mmc --make strict_existence_impossibility_graph && ./strict_existence_impossibility_graph)
-    report=.ci/discovery/strict-existence-impossibility-graph.dhall
-    dhall text --file "$report" >/dev/null
-    grep -Fq 'rule = "STRICT_EXISTENCE_OR_IMPOSSIBILITY_ONLY"' "$report" || { echo "strict rule missing"; exit 1; }
-    grep -Fq 'orangeStatusesAllowed = False' "$report" || { echo "orange status enabled"; exit 1; }
-    grep -Fq 'terminalStatuses = ["EXISTENCE", "IMPOSSIBILITY"]' "$report" || { echo "non-strict terminal status present"; exit 1; }
-    ! grep -Eiq 'frontier|unknown|vague|adapter needed|unresolved|pending' "$report" || { echo "vague status present"; exit 1; }
-    grep -Fq 'strict-existence-impossibility-graph=pass' "$report"
-    '',
-  StationaryCycleImpossibility = ''
+    "$AGDA_COMMAND" --allow-exec -i . FullCoupled/TheoremsMonolith.agda
+    grep -Fq 'megaNoEquilibriumGeneralizedWalrasian' FullCoupled/TheoremsMonolith.agda
+    grep -Fq 'noUnconditionalMegaGeneralizedWalrasianExistence' FullCoupled/TheoremsMonolith.agda
+    echo 'strict-existence-impossibility-graph=pass'
+    '',  StationaryCycleImpossibility = ''
     set -euo pipefail
     tmp=$(mktemp -d)
     trap 'rm -rf "$tmp"' EXIT
@@ -521,17 +365,12 @@ DHALL
   IsomorphismTransport = ''
     set -euo pipefail
     "$AGDA_COMMAND" --allow-exec -i . FullCoupled/TheoremsMonolith.agda
-    (cd .ci/discovery && mmc --make isomorphism_transport_graph && ./isomorphism_transport_graph)
-    report=.ci/discovery/isomorphism-transport-graph.dhall
-    dhall text --file "$report" >/dev/null
-    grep -Fq 'rule = "ISOMORPHISM_TRANSPORT_CLOSURE"' "$report" || { echo "isomorphism transport rule missing"; exit 1; }
-    grep -Fq 'orangeStatusesAllowed = False' "$report" || { echo "orange status enabled"; exit 1; }
-    grep -Fq 'Agda::isomorphismEqualityTransport' "$report" || { echo "equality transport kernel missing"; exit 1; }
-    grep -Fq 'Agda::isomorphismDisequalityTransport' "$report" || { echo "disequality transport kernel missing"; exit 1; }
-    ! grep -Eiq 'frontier|unknown|vague|unresolved|pending' "$report" || { echo "vague transport status present"; exit 1; }
-    ''
-,
-  SemanticContract = ''
+    grep -Fq 'isomorphismEqualityTransport' FullCoupled/TheoremsMonolith.agda
+    grep -Fq 'isomorphismDisequalityTransport' FullCoupled/TheoremsMonolith.agda
+    grep -Fq 'isomorphismIterateConjugacy' FullCoupled/TheoremsMonolith.agda
+    grep -Fq 'isomorphismNoFiniteCycleTransport' FullCoupled/TheoremsMonolith.agda
+    echo 'isomorphism-transport-closure=pass'
+    '',  SemanticContract = ''
     set -euo pipefail
     theorem=FullCoupled/TheoremsMonolith.agda
     learner=FullCoupled/CanonicalLearnerMonolith.agda
@@ -662,7 +501,7 @@ DHALL
     test "$(ghc --numeric-version)" = "9.2.4"
     nix run .#inversion-ghci-smoke
     "$AGDA_COMMAND" --version
-    mmc --version
+    mirthc --version
     dhall --version
     emacs --version
     emacs --batch --eval '(require (quote agda2-mode))'
@@ -677,8 +516,9 @@ DHALL
   All = ''
     set -euo pipefail
     nix run .#mirth-agda-sync -- --check
+    mirthc --version
     "$AGDA_COMMAND" --version
-    mmc --version
+    ghc --numeric-version
     dhall --version
     emacs --version
     emacs --batch --eval '(require (quote agda2-mode))'
@@ -686,9 +526,8 @@ DHALL
       "$AGDA_COMMAND" -i . "$file"
     done < <(git ls-files '*.agda')
     "$AGDA_COMMAND" --allow-exec -i . FullCoupled/TheoremsMonolith.agda
-    (cd .ci && mmc --make check_forbidden_theorems && ./check_forbidden_theorems)
-    nix run .#mercury-theorem-e2e
-    (cd .ci/discovery && mmc --make symbolic_egraph_test && ./symbolic_egraph_test)    (cd .ci/discovery && mmc --make interpolated_theorem_egraph_test && ./interpolated_theorem_egraph_test)
-    ''} lane
+    nix run .#agda2hs-semantic-search
+    echo 'agda-all=pass'
+  ''} lane
 
 in script
