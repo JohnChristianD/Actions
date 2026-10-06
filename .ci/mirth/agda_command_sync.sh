@@ -13,6 +13,62 @@ extract_block() { sed -n '/^-- BEGIN MIRTH-SYNC CANONICAL COMMAND$/,/^-- END MIR
 extract_block "$canonical" > "$block"
 [ -s "$block" ] || { echo 'canonical command block missing' >&2; exit 1; }
 check_one() { file="$1"; extract_block "$file" | cmp -s "$block"; }
+
+normalize_options() {
+  file="$1"
+  awk '
+    BEGIN { in_options=0 }
+    {
+      line=$0
+      if (!in_options && line ~ /^[[:space:]]*{-# OPTIONS([[:space:]]|$)/) {
+        sub(/^[[:space:]]*{-# OPTIONS[[:space:]]*/, "", line)
+        if (line ~ /[[:space:]]+#-}[[:space:]]*$/) {
+          sub(/[[:space:]]+#-}[[:space:]]*$/, "", line)
+          print "{-# OPTIONS"
+          if (line != "") {
+            count = split(line, parts, /[[:space:]]+/)
+            for (i = 1; i <= count; i++)
+              if (parts[i] != "") print "  " parts[i]
+          }
+          print "#-}"
+          next
+        }
+        print "{-# OPTIONS"
+        if (line != "") {
+          count = split(line, parts, /[[:space:]]+/)
+          for (i = 1; i <= count; i++)
+            if (parts[i] != "") print "  " parts[i]
+        }
+        in_options=1
+        next
+      }
+      if (in_options) {
+        if (line ~ /^[[:space:]]*#-}[[:space:]]*$/) {
+          print "#-}"
+          in_options=0
+          next
+        }
+        count = split(line, parts, /[[:space:]]+/)
+        for (i = 1; i <= count; i++)
+          if (parts[i] != "") print "  " parts[i]
+        next
+      }
+      print
+    }
+  ' "$file"
+}
+
+check_options_format() {
+  file="$1"
+  normalize_options "$file" > "$tmp"
+  cmp -s "$file" "$tmp"
+}
+
+rewrite_options() {
+  file="$1"
+  normalize_options "$file" > "$tmp"
+  mv "$tmp" "$file"
+}
 write_graph_block() {
   local start="$1"
   local end="$2"
@@ -94,10 +150,14 @@ if [ "$mode" = "--check" ]; then
   failures=0
   while IFS= read -r file; do
     check_one "$file" || { echo "canonical command drift: $file" >&2; failures=$((failures + 1)); }
+    check_options_format "$file" || { echo "Agda OPTIONS formatting drift: $file" >&2; failures=$((failures + 1)); }
   done < <(sources)
   test "$failures" -eq 0
 elif [ "$mode" = "--write" ]; then
-  while IFS= read -r file; do rewrite_one "$file"; done < <(sources)
+  while IFS= read -r file; do
+    rewrite_one "$file"
+    rewrite_options "$file"
+  done < <(sources)
   rewrite_theorem_graph_command
 else
   echo 'usage: agda-command-sync [--check|--write]' >&2
