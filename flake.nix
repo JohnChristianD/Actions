@@ -155,7 +155,6 @@
         };
       ghcLanguageFlags = [
         "-XNoMonomorphismRestriction"
-        "-XLocalMonoBinds"
       ];
 
       ghcPluginFlags = [
@@ -174,7 +173,6 @@
           hp = canonicalHaskellPackages system;
         in
         hp.ghcWithPackages (p: [
-          p.rio
           p.liquidhaskell
           (inversionPlugin system)
         ]);
@@ -366,7 +364,7 @@
                 init=$(mktemp)
                 trap 'rm -f "$init"' EXIT
                 cat > "$init" <<'GHCISCRIPT'
-                :set -XNoMonomorphismRestriction -XLocalMonoBinds
+                :set -XNoMonomorphismRestriction
                 import Plugin.InversionPlugin
                 GHCISCRIPT
                 exec ${canonicalGhc system}/bin/ghci \
@@ -393,7 +391,7 @@
                 init=$(mktemp)
                 trap 'rm -f "$init"' EXIT
                 cat > "$init" <<'GHCISCRIPT'
-                :set -XNoMonomorphismRestriction -XLocalMonoBinds
+                :set -XNoMonomorphismRestriction
                 import Plugin.InversionPlugin
                 :quit
                 GHCISCRIPT
@@ -535,9 +533,7 @@
                 "${agda2hsWithHaskell system}/bin/agda2hs" -i . FullCoupled/Agda2HsSurface.agda -o "$out"
                 test -s "$out/FullCoupled/Agda2HsSurface.hs"
                 mkdir -p "$out/ghc"
-                printf "%s\n" '{-# LANGUAGE NoMonomorphismRestriction, LocalMonoBinds #-}' | cat - "$out/FullCoupled/Agda2HsSurface.hs" > "$out/FullCoupled/Agda2HsSurface.hs.tmp"
-                mv "$out/FullCoupled/Agda2HsSurface.hs.tmp" "$out/FullCoupled/Agda2HsSurface.hs"
-                "${canonicalGhc system}/bin/ghc" ${ghcGlobalFlagsText} -O0 -dcore-lint -package rio -i "$out" -odir "$out/ghc" -hidir "$out/ghc" -c "$out/FullCoupled/Agda2HsSurface.hs"
+                "${canonicalGhc system}/bin/ghc" ${ghcGlobalFlagsText} -O0 -dcore-lint -i "$out" -odir "$out/ghc" -hidir "$out/ghc" -c "$out/FullCoupled/Agda2HsSurface.hs"
                 liquid --smtsolver=z3 -i "$out" "$out/FullCoupled/Agda2HsSurface.hs"
                 printf '%s\n' \
                   "source=FullCoupled/Agda2HsSurface.agda generated=build/agda-haskell/FullCoupled/Agda2HsSurface.hs ghc:pass liquid:z3:pass" \
@@ -583,7 +579,6 @@
             packages = [
               (canonicalGhc system)
               pkgs.z3
-              (canonicalHaskellPackages system).rio
             ];
             shellHook = ''
               export LIQUID_SOLVER=z3
