@@ -29,7 +29,9 @@ let script = merge {
     nix run .#agda-haskell-pipeline
     test -s build/agda-haskell/FullCoupled/Agda2HsSurface.hs
     test -s build/agda-haskell/agda2hs-manifest.tsv
-    echo "agda2hs-ghc=pass"    '',
+    liquid --version
+    echo "agda2hs-ghc=pass"
+    echo "agda2hs-plugins=enabled"    '',
   MirthFastDirty = ''
     set -euo pipefail
     tmp=$(mktemp -d)
