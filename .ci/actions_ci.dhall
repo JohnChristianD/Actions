@@ -29,8 +29,9 @@ let script = merge {
     nix run .#agda-haskell-pipeline
     test -s build/agda-haskell/FullCoupled/Agda2HsSurface.hs
     test -s build/agda-haskell/agda2hs-manifest.tsv
+    liquid --version
     echo "agda2hs-ghc=pass"
-    echo "agda2hs-plugins=disabled"    '',
+    echo "agda2hs-plugins=enabled"    '',
   MirthFastDirty = ''
     set -euo pipefail
     tmp=$(mktemp -d)
@@ -502,7 +503,7 @@ DHALL
   Versions = ''
     set -euo pipefail
     ghc --numeric-version
-    test "$(ghc --numeric-version)" = "9.12.4"
+    test "$(ghc --numeric-version)" = "9.2.4"
     "$AGDA_COMMAND" --version
     mirthc --version
     dhall --version
