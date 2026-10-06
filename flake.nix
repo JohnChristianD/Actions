@@ -34,7 +34,12 @@
       forAllSystems = nixpkgs.lib.genAttrs systems;
 
       pkgsFor = system:
-        import nixpkgs { inherit system; };
+        import nixpkgs {
+          inherit system;
+          # inversion-plugin depends on tree-monad-0.3.2, which this pinned
+          # nixpkgs marks broken even though the jailbroken plugin can use it.
+          config.allowBroken = true;
+        };
 
       typeTopologyLib = system:
         let
