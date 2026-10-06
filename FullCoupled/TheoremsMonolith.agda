@@ -13,6 +13,7 @@
   --erased-matches
   --erase-record-parameters
   --without-K
+  --level-universe
 #-}
 -- END MIRTH-SYNC GLOBAL OPTIONS
 
@@ -20,7 +21,7 @@
 {-# OPTIONS
   --guardedness
   --rewriting
-  --no-termination-check
+  --termination-check
   --type-in-type
   --no-positivity-check
 #-}
