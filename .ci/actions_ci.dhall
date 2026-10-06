@@ -660,6 +660,7 @@ DHALL
     set -euo pipefail
     ghc --numeric-version
     test "$(ghc --numeric-version)" = "9.2.4"
+    nix run .#inversion-ghci-smoke
     "$AGDA_COMMAND" --version
     mmc --version
     dhall --version
