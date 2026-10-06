@@ -18,7 +18,11 @@
 
 
 {-# OPTIONS
-  --allow-exec
+  --guardedness
+  --rewriting
+  --no-termination-check
+  --type-in-type
+  --no-positivity-check
 #-}
 
 ------------------------------------------------------------------------
