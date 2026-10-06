@@ -190,7 +190,7 @@ jobs:
           CI_LANE: '(< AgdaLearner | AgdaTheorem | AgdaSafe | Agda2HsLiquid | MirthFastDirty | MercuryPurity | Mercury | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >.MirthFastDirty) : < AgdaLearner | AgdaTheorem | AgdaSafe | Agda2HsLiquid | MirthFastDirty | MercuryPurity | Mercury | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >'
         run: |
           set -euo pipefail
-          nix develop .#default -c bash -e -c 'dhall text --file .ci/actions_ci.dhall | bash -e'
+          nix develop .#presentation -c bash -e -c 'dhall text --file .ci/actions_ci.dhall | bash -e'
 
       - name: Verify static Elm presentation build
         timeout-minutes: 15
@@ -198,7 +198,7 @@ jobs:
           CI_LANE: '(< AgdaLearner | AgdaTheorem | AgdaSafe | Agda2HsLiquid | MirthFastDirty | MercuryPurity | Mercury | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >.Pages) : < AgdaLearner | AgdaTheorem | AgdaSafe | Agda2HsLiquid | MirthFastDirty | MercuryPurity | Mercury | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >'
         run: |
           set -euo pipefail
-          nix develop .#default -c bash -e -c 'dhall text --file .ci/actions_ci.dhall | bash -e'
+          nix develop .#presentation -c bash -e -c 'dhall text --file .ci/actions_ci.dhall | bash -e'
 
   auto-merge:
     name: Enable auto-merge after full verification
