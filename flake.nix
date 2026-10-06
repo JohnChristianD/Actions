@@ -3,7 +3,6 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/0439f75413ace6c42e4c722cafd4d6e5401de648";
-    nixpkgs-ghc884.url = "github:NixOS/nixpkgs/5c79b3dda06744a55869cae2cba6873fbbd64394";
     typetopology = {
       url = "github:martinescardo/TypeTopology/8761920fdaec20c9dada7ff1d6628c09491245c5";
       flake = false;
@@ -20,7 +19,6 @@
   outputs = {
     self,
     nixpkgs,
-    nixpkgs-ghc884,
     typetopology,
     agda2hs,
     inversion-plugin-src
@@ -43,12 +41,9 @@
 
       canonicalHaskellPackages = system:
         let
-          pkgs = import nixpkgs-ghc884 {
-            inherit system;
-            config.allowBroken = true;
-          };
+          pkgs = pkgsFor system;
         in
-        pkgs.haskell.packages.ghc884.extend (final: prev: {
+        pkgs.haskell.packages.ghc924.extend (final: prev: {
           tree-monad =
             pkgs.haskell.lib.doJailbreak prev.tree-monad;
           parallel-tree-search =
@@ -397,7 +392,7 @@
                 liquid --smtsolver=z3 -i "$out" "$out/FullCoupled/Agda2HsSemanticSearch.hs"
                 liquid --smtsolver=z3 -i "$out" "$out/FullCoupled/Agda2HsTheoremGraphEGraph.hs"
                 printf '%s\n' \
-                  "compiler=canonicalHaskellPackages.ghc-8.8.4" \
+                  "compiler=canonicalHaskellPackages.ghc-9.2.4" \
                   "plugins=Plugin.InversionPlugin,LiquidHaskell" \
                   "inversionCheck=pass" \
                   "proofKernel=Agda" \
