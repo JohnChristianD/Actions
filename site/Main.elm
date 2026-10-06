@@ -35,6 +35,53 @@ type FileFilter
     | TheoremOnly
 
 
+type PaletteRole
+    = InkRole
+    | PaperRole
+    | AccentRole
+    | AccentTwoRole
+    | QuietRole
+    | InkOnAccentRole
+
+
+sitePaletteRoles : List PaletteRole
+sitePaletteRoles =
+    [ InkRole
+    , PaperRole
+    , AccentRole
+    , AccentTwoRole
+    , QuietRole
+    , InkOnAccentRole
+    ]
+
+
+paletteIndex : PaletteRole -> Int
+paletteIndex role =
+    case role of
+        InkRole ->
+            0
+
+        PaperRole ->
+            1
+
+        AccentRole ->
+            2
+
+        AccentTwoRole ->
+            3
+
+        QuietRole ->
+            4
+
+        InkOnAccentRole ->
+            5
+
+
+sitePaletteSize : Int
+sitePaletteSize =
+    List.length sitePaletteRoles
+
+
 type alias Model =
     { query : String
     , relationQuery : String
@@ -174,7 +221,7 @@ maximinStep remaining candidates chosen =
 
 maximinPalette : List Perceptual
 maximinPalette =
-    maximinStep 6 candidateColors []
+    maximinStep sitePaletteSize candidateColors []
 
 
 rgbCss : Rgb -> String
@@ -196,39 +243,44 @@ perceptualCss color =
 paletteAt : Int -> Perceptual
 paletteAt index =
     maximinPalette
-        |> List.drop (modBy (List.length maximinPalette) index)
+        |> List.drop (modBy sitePaletteSize index)
         |> List.head
         |> Maybe.withDefault (cat02LmsToOpponent (candidateRgb 0))
 
 
+paletteFor : PaletteRole -> Perceptual
+paletteFor role =
+    paletteAt (paletteIndex role)
+
+
 ink : Perceptual
 ink =
-    paletteAt 0
+    paletteFor InkRole
 
 
 paper : Perceptual
 paper =
-    paletteAt 1
+    paletteFor PaperRole
 
 
 accent : Perceptual
 accent =
-    paletteAt 2
+    paletteFor AccentRole
 
 
 accentTwo : Perceptual
 accentTwo =
-    paletteAt 3
+    paletteFor AccentTwoRole
 
 
 quiet : Perceptual
 quiet =
-    paletteAt 4
+    paletteFor QuietRole
 
 
 inkOnAccent : Perceptual
 inkOnAccent =
-    paletteAt 5
+    paletteFor InkOnAccentRole
 
 
 styleSheet : Html msg
@@ -309,10 +361,13 @@ styleSheet =
                 , perceptualCss ink
                 , " 18%,transparent);background:transparent;padding:1rem 0;overflow:auto;}"
                 , ".map svg{display:block;width:100%;min-width:38rem;height:22rem;}"
-                , ".relation{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:.75rem;align-items:center;padding:.7rem 0;border-bottom:1px solid color-mix(in srgb,"
+                , ".relation{display:grid;grid-template-columns:minmax(0,1fr) minmax(7rem,9rem) minmax(0,1fr);gap:.75rem;align-items:center;padding:.7rem 0;border-bottom:1px solid color-mix(in srgb,"
                 , perceptualCss ink
                 , " 12%,transparent);font-family:'Julia Mono';font-size:.75rem;}"
-                , ".arrow{color:"
+                , ".relation-end{min-width:0;overflow-wrap:anywhere;}"
+                , ".relation-middle{min-width:7rem;text-align:center;display:flex;flex-direction:column;align-items:center;gap:.25rem;overflow-wrap:anywhere;}"
+                , ".relation-kind{font-size:.62rem;line-height:1.2;letter-spacing:.04em;}"
+                , ".arrow{line-height:1;color:"
                 , perceptualCss accentTwo
                 , ";}"
                 , ".palette{display:flex;gap:.35rem;flex-wrap:wrap;max-width:70ch;}"
@@ -552,9 +607,16 @@ positionFor id positions =
 relationRecord : Graph.Edge -> Html Msg
 relationRecord edge =
     div [ HA.class "relation" ]
-        [ span [] [ text edge.source ]
-        , span [ HA.class "arrow" ] [ text ("--" ++ edge.relation ++ "-->") ]
-        , span [] [ text edge.target ]
+        [ span [ HA.class "relation-end" ] [ text edge.source ]
+        , div [ HA.class "relation-middle" ]
+            [ span [ HA.class "relation-kind" ] [ text edge.relation ]
+            , span
+                [ HA.class "arrow"
+                , HA.attribute "aria-hidden" "true"
+                ]
+                [ text "→" ]
+            ]
+        , span [ HA.class "relation-end" ] [ text edge.target ]
         ]
 
 
