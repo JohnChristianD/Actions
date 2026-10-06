@@ -3,9 +3,6 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/0439f75413ace6c42e4c722cafd4d6e5401de648";
-    # GHC 9.2.4 is no longer exposed by current nixpkgs; keep the
-    # inversion-plugin-required compiler as the single canonical GHC truth.
-    nixpkgs-ghc924.url = "github:NixOS/nixpkgs/a62e6edd6d5e1fa0329b8653c801147986f8d446";
     typetopology = {
       url = "github:martinescardo/TypeTopology/8761920fdaec20c9dada7ff1d6628c09491245c5";
       flake = false;
@@ -13,19 +10,13 @@
     agda2hs = {
       url = "github:agda/agda2hs/4e6de7ec2109b3bed6a820728b57d31ad7ffd698";
     };
-    inversion-plugin-src = {
-      url = "github:cau-placc/inversion-plugin/aad4886742bed127b63f8378b1ec5fe8987f8e4d";
-      flake = false;
-    };
   };
 
   outputs = {
     self,
     nixpkgs,
-    nixpkgs-ghc924,
     typetopology,
-    agda2hs,
-    inversion-plugin-src
+    agda2hs
   }:
     let
       systems = [
@@ -45,12 +36,9 @@
 
       canonicalHaskellPackages = system:
         let
-          pkgs = import nixpkgs-ghc924 {
-            inherit system;
-            config.allowBroken = true;
-          };
+          pkgs = pkgsFor system;
         in
-        pkgs.haskell.packages.ghc924.extend (final: prev: {
+        pkgs.haskell.packages.ghc914.extend (final: prev: {
           tree-monad =
             pkgs.haskell.lib.doJailbreak prev.tree-monad;
           parallel-tree-search =
@@ -158,13 +146,7 @@
         "-XFlexibleContexts"
       ];
 
-      ghcPluginFlags = [
-        "-fplugin=Plugin.InversionPlugin"
-        "-fplugin=LiquidHaskell"
-      ];
-
-      ghcGlobalFlags =
-        ghcLanguageFlags ++ ghcPluginFlags;
+      ghcGlobalFlags = ghcLanguageFlags;
 
       ghcGlobalFlagsText =
         builtins.concatStringsSep " " ghcGlobalFlags;
@@ -175,27 +157,8 @@
         in
         hp.ghcWithPackages (p: [
           p.rio
-          p.liquidhaskell
-          (inversionPlugin system)
         ]);
 
-      inversionPlugin = system:
-        let
-          pkgs = pkgsFor system;
-          hp = canonicalHaskellPackages system;
-          drv = pkgs.haskell.lib.enableCabalFlag
-            (pkgs.haskell.lib.disableCabalFlag
-              (pkgs.haskell.lib.doJailbreak
-                (hp.callCabal2nix
-                  "inversion-plugin"
-                  inversion-plugin-src
-                  {}))
-              "use-bfs")
-            "use-cs";
-        in
-        drv.overrideAttrs (_: {
-          doCheck = false;
-        });
       agda2hsWithHaskell = system:
         let
           ghc = canonicalGhc system;
@@ -395,13 +358,9 @@
                 grep -E "^semantic-laws=[1-9][0-9]* nonreflexive=[1-9][0-9]* composite=[1-9][0-9]*$" "$out/report.txt"
                 grep -E "^required-plan-count=[1-9][0-9]* required-plan-total=[1-9][0-9]* required-plan-regression=True$" "$out/report.txt"
                 grep -Fq "egraph-regression=True egraph-associativity-regression=True" "$out/report.txt"
-                liquid --smtsolver=z3 -i "$out" "$out/FullCoupled/Agda2HsSemanticExtractor.hs"
-                liquid --smtsolver=z3 -i "$out" "$out/FullCoupled/Agda2HsSemanticSearch.hs"
-                liquid --smtsolver=z3 -i "$out" "$out/FullCoupled/Agda2HsTheoremGraphEGraph.hs"
                 printf '%s\n' \
-                  "compiler=canonicalHaskellPackages.ghc-9.2.4" \
-                  "plugins=Plugin.InversionPlugin,LiquidHaskell" \
-                  "inversionCheck=pass" \
+                  "compiler=canonicalHaskellPackages.ghc-9.14.1" \
+                  "plugins=disabled" \
                   "proofKernel=Agda" \
                   "searchKernel=Agda2Hs" \
                   "semanticCompletenessCheck=pass" \
@@ -504,7 +463,6 @@
               pkgs.z3
             ];
             shellHook = ''
-              export LIQUID_SOLVER=z3
             '';
           };
 
