@@ -5178,8 +5178,8 @@ generalTsallis2Numerator xs =
   generalTsallis2Denominator xs ∸
   (actionWeightSum xs * actionWeightSum xs)
 
-generalTsallis2NearSparsity : ActionWeights → C.Dyadic
-generalTsallis2NearSparsity xs with actionWeightSquareSum xs
+generalTsallis2NearDyadicSparsity : ActionWeights → C.Dyadic
+generalTsallis2NearDyadicSparsity xs with actionWeightSquareSum xs
 ... | zero =
   C.fromNatDyadic 1 1
 ... | suc q =
@@ -5190,39 +5190,39 @@ generalTsallis2NearSparsity xs with actionWeightSquareSum xs
 natZeroNotSuc : ∀ {n} → suc n ≢ zero
 natZeroNotSuc ()
 
-generalTsallis2NearSparsity-zero :
+generalTsallis2NearDyadicSparsity-zero :
   ∀ (xs : ActionWeights) →
   actionWeightSquareSum xs ≡ zero →
-  generalTsallis2NearSparsity xs ≡
+  generalTsallis2NearDyadicSparsity xs ≡
   C.fromNatDyadic 1 1
-generalTsallis2NearSparsity-zero xs h
+generalTsallis2NearDyadicSparsity-zero xs h
   with actionWeightSquareSum xs
 ... | zero = refl
 ... | suc q = ⊥-elim (natZeroNotSuc h)
 
-generalTsallis2NearSparsity-definition :
+generalTsallis2NearDyadicSparsity-definition :
   ∀ (xs : ActionWeights) →
   actionWeightSquareSum xs ≢ zero →
-  generalTsallis2NearSparsity xs ≡
+  generalTsallis2NearDyadicSparsity xs ≡
     C.fromNatDyadic
       (generalTsallis2Numerator xs)
       (generalTsallis2Denominator xs)
-generalTsallis2NearSparsity-definition xs h
+generalTsallis2NearDyadicSparsity-definition xs h
   with actionWeightSquareSum xs
 ... | zero = ⊥-elim (h refl)
 ... | suc q = refl
 
-fractionEquivalent :
+dyadicEquivalent :
   C.Dyadic →
   C.Dyadic →
   Set
-fractionEquivalent x y = x ≡ y
+dyadicEquivalent x y = x ≡ y
 
-tsallis2Near-oneHot :
-  fractionEquivalent
-    (generalTsallis2NearSparsity (suc zero ∷ zero ∷ []))
+tsallis2NearDyadic-oneHot :
+  dyadicEquivalent
+    (generalTsallis2NearDyadicSparsity (suc zero ∷ zero ∷ []))
     (C.fromNatDyadic 1 2)
-tsallis2Near-oneHot = refl
+tsallis2NearDyadic-oneHot = refl
 
 generalSupportSparsityDyadic : ActionWeights → C.Dyadic
 generalSupportSparsityDyadic xs =
@@ -5523,12 +5523,12 @@ jaxJittedScanSum-law xs = refl
 jaxTsallis2NearSparsityDyadic :
   ActionWeights →
   C.Dyadic
-jaxTsallis2NearSparsityDyadic = generalTsallis2NearSparsity
+jaxTsallis2NearSparsityDyadic = generalTsallis2NearDyadicSparsity
 
 jaxTsallis2NearSparsityDyadic-law :
   ∀ xs →
   jaxTsallis2NearSparsityDyadic xs ≡
-  generalTsallis2NearSparsity xs
+  generalTsallis2NearDyadicSparsity xs
 jaxTsallis2NearSparsityDyadic-law xs = refl
 
 jaxSupportSparsityDyadic :
@@ -5618,7 +5618,7 @@ record JAXExecutionMirrorReproof : Set₁ where
     tsallis2NearSparsity :
       ∀ xs →
       jaxTsallis2NearSparsityDyadic xs ≡
-      generalTsallis2NearSparsity xs
+      generalTsallis2NearDyadicSparsity xs
     supportSparsity :
       ∀ xs →
       jaxSupportSparsityDyadic xs ≡
