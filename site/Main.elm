@@ -257,8 +257,8 @@ styleSheet =
                 , "button:focus-visible,input:focus-visible{outline:2px solid "
                 , perceptualCss accent
                 , ";outline-offset:3px;}"
-                , ".shell{min-height:100vh;display:grid;grid-template-columns:minmax(15rem,21rem) 1fr;}"
-                , ".rail{position:sticky;top:0;height:100vh;overflow:auto;padding:1.25rem;border-right:1px solid color-mix(in srgb,"
+                , ".shell{min-height:100vh;display:grid;grid-template-columns:minmax(13rem,18rem) minmax(0,1fr);max-width:92rem;margin:0 auto;}"
+                , ".rail{position:sticky;top:0;height:100vh;overflow:auto;padding:1.5rem 1.25rem;border-right:1px solid color-mix(in srgb,"
                 , perceptualCss ink
                 , " 18%,transparent);}"
                 , ".brand{font-family:'Julia Mono';font-weight:700;letter-spacing:-.04em;font-size:1.05rem;margin-bottom:1.5rem;}"
@@ -272,30 +272,30 @@ styleSheet =
                 , ";color:"
                 , perceptualCss inkOnAccent
                 , ";}"
-                , ".main{min-width:0;padding:clamp(1.25rem,3vw,3.5rem);}"
-                , ".mast{display:grid;grid-template-columns:minmax(0,1fr) minmax(15rem,24rem);gap:2rem;align-items:end;border-bottom:1px solid color-mix(in srgb,"
+                , ".main{min-width:0;padding:clamp(1.5rem,4vw,4rem);}"
+                , ".mast{display:block;max-width:70ch;border-bottom:1px solid color-mix(in srgb,"
                 , perceptualCss ink
-                , " 22%,transparent);padding-bottom:2rem;margin-bottom:2rem;}"
-                , "h1{font-family:'Julia Mono';font-size:clamp(2rem,6vw,5.2rem);line-height:.92;letter-spacing:-.08em;margin:.35rem 0 1rem;max-width:12ch;}"
-                , "h2{font-family:'Julia Mono';font-size:1rem;letter-spacing:-.03em;margin:0 0 1rem;}"
-                , ".lede{font-size:1.08rem;line-height:1.55;max-width:60ch;}"
-                , ".stats{display:grid;grid-template-columns:repeat(2,1fr);gap:.5rem;}"
-                , ".stat{padding:.8rem;border-top:2px solid "
+                , " 22%,transparent);padding-bottom:1.4rem;margin-bottom:2.5rem;}"
+                , "h1{font-family:'Julia Mono';font-size:clamp(2.1rem,5vw,4.2rem);line-height:1;letter-spacing:-.055em;margin:.35rem 0 1rem;max-width:18ch;}"
+                , "h2{font-family:'Julia Mono';font-size:1.1rem;line-height:1.3;letter-spacing:-.025em;margin:0 0 .8rem;}"
+                , ".lede{font-size:1.05rem;line-height:1.45;max-width:68ch;margin:0;}"
+                , ".stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(11rem,1fr));gap:.75rem;max-width:70ch;margin-top:1.5rem;}"
+                , ".stat{padding:.8rem 0;border-top:2px solid "
                 , perceptualCss accent
                 , ";background:color-mix(in srgb,"
                 , perceptualCss accent
                 , " 8%,transparent);}"
-                , ".stat strong{display:block;font-family:'Julia Mono';font-size:1.4rem;}"
+                , ".stat strong{display:block;font-family:'Julia Mono';font-size:1.25rem;line-height:1.2;}"
                 , ".tools{display:flex;gap:.5rem;flex-wrap:wrap;margin:1rem 0 1.5rem;}"
                 , ".tools input,.tools button{padding:.65rem .75rem;border-radius:.2rem;}"
                 , ".tools input{min-width:min(30rem,100%);flex:1;}"
-                , ".section{margin:2.5rem 0;}"
-                , ".records{display:grid;grid-template-columns:repeat(auto-fit,minmax(18rem,1fr));gap:.7rem;}"
-                , ".record{border:1px solid color-mix(in srgb,"
+                , ".section{max-width:70ch;margin:3.25rem 0;}"
+                , ".records{display:block;}"
+                , ".record{border-top:1px solid color-mix(in srgb,"
                 , perceptualCss ink
-                , " 18%,transparent);padding:1rem;background:color-mix(in srgb,"
+                , " 18%,transparent);padding:1rem 0;background:transparent;"
                 , perceptualCss accent
-                , " 4%,transparent);}"
+                , " 0%,transparent);}"
                 , ".record:hover{border-color:"
                 , perceptualCss accent
                 , ";}"
@@ -303,30 +303,30 @@ styleSheet =
                 , perceptualCss quiet
                 , ";}"
                 , ".record h3{font-family:'Julia Mono';font-size:.95rem;overflow-wrap:anywhere;margin:.45rem 0;}"
-                , ".record p{margin:.35rem 0;line-height:1.45;}"
-                , ".source{font-family:'Julia Mono';font-size:.73rem;color:"
+                , ".record p{margin:.45rem 0;line-height:1.45;max-width:70ch;}"
+                , ".source{font-family:'Julia Mono';font-size:.72rem;line-height:1.35;color:"
                 , perceptualCss quiet
                 , ";overflow-wrap:anywhere;}"
-                , ".map{border:1px solid color-mix(in srgb,"
+                , ".map{border-top:1px solid color-mix(in srgb,"
                 , perceptualCss ink
-                , " 18%,transparent);background:color-mix(in srgb,"
+                , " 18%,transparent);background:transparent;"
                 , perceptualCss accent
-                , " 3%,transparent);padding:1rem;overflow:auto;}"
+                , " 0%,transparent);padding:1rem 0;overflow:auto;}"
                 , ".map svg{display:block;width:100%;min-width:38rem;height:22rem;}"
-                , ".relation{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:.5rem;align-items:center;padding:.65rem 0;border-bottom:1px solid color-mix(in srgb,"
+                , ".relation{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:.75rem;align-items:center;padding:.7rem 0;border-bottom:1px solid color-mix(in srgb,"
                 , perceptualCss ink
                 , " 12%,transparent);font-family:'Julia Mono';font-size:.75rem;}"
                 , ".arrow{color:"
                 , perceptualCss accentTwo
                 , ";}"
-                , ".palette{display:flex;gap:.35rem;flex-wrap:wrap;}"
+                , ".palette{display:flex;gap:.35rem;flex-wrap:wrap;max-width:70ch;}"
                 , ".swatch{width:4rem;height:2rem;border:1px solid color-mix(in srgb,"
                 , perceptualCss ink
                 , " 20%,transparent);}"
-                , ".footer{font-family:'Julia Mono';font-size:.68rem;color:"
+                , ".footer{font-family:'Julia Mono';font-size:.68rem;line-height:1.4;color:"
                 , perceptualCss quiet
                 , ";margin-top:4rem;}"
-                , "@media(max-width:800px){.shell{display:block}.rail{position:relative;height:auto;border-right:0;border-bottom:1px solid color-mix(in srgb,"
+                , "body{font-size:16px;line-height:1.4;}p,li{max-width:70ch;}strong{font-weight:700;}em{font-style:italic;}code,pre{font-family:'Julia Mono';font-size:.86em;}a{color:inherit;text-underline-offset:.16em;}a:hover{text-decoration-thickness:2px;}@media(max-width:800px){.shell{display:block}.rail{position:relative;height:auto;border-right:0;border-bottom:1px solid color-mix(in srgb,"
                 , perceptualCss ink
                 , " 18%,transparent);}.module-list{grid-template-columns:repeat(auto-fit,minmax(12rem,1fr));}.mast{grid-template-columns:1fr}.main{padding:1rem}.map svg{min-width:30rem}}"
                 ]
