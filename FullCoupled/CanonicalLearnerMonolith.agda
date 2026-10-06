@@ -54,14 +54,11 @@ open import Agda.Builtin.Reflection as Builtin
 open import Agda.Builtin.Sigma hiding (_,_)
 open import Agda.Primitive as Level
 open import Cantor
-open import Dyadics.Addition
-open import Dyadics.Multiplication
-open import Dyadics.Negation
-open import Dyadics.Order
-open import Dyadics.Type
-open import DyadicsInductive.DyadicOrder
-open import DyadicsInductive.DyadicOrder-PropTrunc
-open import DyadicsInductive.Dyadics
+open import Rationals.Addition
+open import Rationals.Multiplication
+open import Rationals.Negation
+open import Rationals.Order
+open import Rationals.Type
 open import Equality
 open import Haskell.Prelude hiding (String; ⊥)
 open import Haskell.Prelude.Nat.Properties using (add-assoc; add-suc-r; ≤-antisym; ≤-trans; n<1+n)
@@ -510,29 +507,25 @@ updateLCBCount {A} a (lcbCountState counts total) =
   lcbCountState (incAt {A = A} counts a) (suc total)
 
 ------------------------------------------------------------------------
--- TypeTopology Dyadics supplies the exact finite dyadic carrier:
--- values whose reduced denominators are powers of two.  The learner
--- exposes the dyadic exponent and derives the corresponding denominator,
--- keeping the Haskell-facing boundary total and strongly typed.
+-- TypeTopology Rationals supplies the canonical exact rational carrier.
+-- The legacy Dyadic helper names remain stable for theorem/registry
+-- surfaces, but their carrier is now TypeTopology's rational type.
 ------------------------------------------------------------------------
 
 Dyadic : Set
-Dyadic = ℤ[1/2]
+Dyadic = ℚ
 
 fromNatDyadic : Nat → Nat → Dyadic
 fromNatDyadic n exponent =
-  normalise-pos ((+ n) , exponent)
+  toℚ (pos n , exponent)
 
 dyadicNumerator : Dyadic → Nat
-dyadicNumerator ((+ n , d) , _) = n
-dyadicNumerator ((-[1+ n ] , d) , _) = zero
-
-dyadicExponent : Dyadic → Nat
-dyadicExponent ((z , d) , _) = d
+dyadicNumerator ((pos n , d) , _) = n
+dyadicNumerator ((negsucc n , d) , _) = zero
 
 dyadicDenominator : Dyadic → Nat
-dyadicDenominator q =
-  2 ^ dyadicExponent q
+dyadicDenominator ((z , d) , _) =
+  succ d
 
 qLog8 : Int8 → Dyadic
 qLog8 x with int8Magnitude x
@@ -1629,6 +1622,24 @@ canonicalReLU8 x with hardSign x
 canonicalCReLU8 : Int8 → CanonicalHaarPair
 canonicalCReLU8 x =
   canonicalReLU8 x , canonicalReLU8 (int8Neg x)
+
+------------------------------------------------------------------------
+-- Rational CReLU': CReLU with the negative ReLU branch replaced by the
+-- exact rational softsign branch, matching the SignReLU shape while
+-- keeping the paired positive/negative CReLU representation.
+------------------------------------------------------------------------
+
+canonicalSignReLU' : ℚ → ℚ
+canonicalSignReLU' (((negsucc n , a) , _)) =
+  toℚ (negsucc n , a + succ n)
+canonicalSignReLU' q = q
+
+CanonicalCReLUPrimePair : Set
+CanonicalCReLUPrimePair = ℚ × ℚ
+
+canonicalCReLU' : ℚ → CanonicalCReLUPrimePair
+canonicalCReLU' x =
+  canonicalSignReLU' x , canonicalSignReLU' (- x)
 
 canonicalHaarFeature : Int8 → CanonicalHaarPair
 canonicalHaarFeature x =

@@ -33,14 +33,11 @@ open import Agda.Builtin.Reflection as Builtin
 open import Agda.Builtin.Sigma hiding (_,_)
 open import Agda.Primitive as Level
 open import Cantor
-open import Dyadics.Addition
-open import Dyadics.Multiplication
-open import Dyadics.Negation
-open import Dyadics.Order
-open import Dyadics.Type
-open import DyadicsInductive.DyadicOrder
-open import DyadicsInductive.DyadicOrder-PropTrunc
-open import DyadicsInductive.Dyadics
+open import Rationals.Addition
+open import Rationals.Multiplication
+open import Rationals.Negation
+open import Rationals.Order
+open import Rationals.Type
 open import Equality
 open import Haskell.Prelude hiding (String; ⊥)
 open import Haskell.Prelude.Nat.Properties using (add-assoc; add-suc-r; ≤-antisym; ≤-trans; n<1+n)
