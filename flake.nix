@@ -36,10 +36,22 @@
       pkgsFor = system:
         import nixpkgs {
           inherit system;
-          # inversion-plugin depends on tree-monad-0.3.2, which this pinned
-          # nixpkgs marks broken even though the jailbroken plugin can use it.
           config.allowBroken = true;
         };
+
+      canonicalHaskellPackages = system:
+        let
+          pkgs = pkgsFor system;
+        in
+        pkgs.haskellPackages.extend (final: prev: {
+          tree-monad =
+            pkgs.haskell.lib.doJailbreak prev.tree-monad;
+          parallel-tree-search =
+            pkgs.haskell.lib.doJailbreak
+              (prev.parallel-tree-search.override {
+                tree-monad = final.tree-monad;
+              });
+        });
 
       typeTopologyLib = system:
         let
@@ -152,9 +164,9 @@
 
       canonicalGhc = system:
         let
-          pkgs = pkgsFor system;
+          hp = canonicalHaskellPackages system;
         in
-        pkgs.haskellPackages.ghcWithPackages (p: [
+        hp.ghcWithPackages (p: [
           p.rio
           p.liquidhaskell
           (inversionPlugin system)
@@ -175,9 +187,10 @@
       inversionPlugin = system:
         let
           pkgs = pkgsFor system;
+          hp = canonicalHaskellPackages system;
         in
         (pkgs.haskell.lib.doJailbreak
-          (pkgs.haskellPackages.callCabal2nix
+          (hp.callCabal2nix
             "inversion-plugin"
             inversion-plugin-src
             {})).overrideAttrs (_: {
