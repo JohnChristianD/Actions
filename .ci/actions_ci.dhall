@@ -89,9 +89,9 @@ let script = merge {
     set -euo pipefail
     nix run .#mirth-agda-sync -- --check
     nix run .#mirth-agda-command-sync -- --check
-    grep -Fq '-- BEGIN MIRTH-SYNC CANONICAL COMMAND' FullCoupled/Agda2HsSemanticSearch.agda
-    grep -Fq '-- BEGIN THEOREM GRAPH COMMAND' FullCoupled/TheoremsMonolith.agda
-    grep -Fq '-- "$AGDA_COMMAND" --dependency-graph=.ci/discovery/theorems-monolith.dot -i . FullCoupled/TheoremsMonolith.agda' FullCoupled/TheoremsMonolith.agda
+    grep -Fq -- '-- BEGIN MIRTH-SYNC CANONICAL COMMAND' FullCoupled/Agda2HsSemanticSearch.agda
+    grep -Fq -- '-- BEGIN THEOREM GRAPH COMMAND' FullCoupled/TheoremsMonolith.agda
+    grep -Fq -- '-- "$AGDA_COMMAND" --dependency-graph=.ci/discovery/theorems-monolith.dot -i . FullCoupled/TheoremsMonolith.agda' FullCoupled/TheoremsMonolith.agda
     awk '
       /-- BEGIN MIRTH-SYNC THEOREM GRAPH COMMAND/ { in_mirth=1 }
       /-- END MIRTH-SYNC THEOREM GRAPH COMMAND/ { in_mirth=0 }
