@@ -1,5 +1,5 @@
 {
-  description = "Pinned Nix environment for the Agda kernel, Mercury e-graph, and typed Dhall CI scripting";
+  description = "Pinned Nix environment for the Agda kernel, typed semantic search, and Dhall CI scripting";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/0439f75413ace6c42e4c722cafd4d6e5401de648";
@@ -548,83 +548,6 @@
             program = "${script}/bin/agda-haskell-pipeline";
           };
 
-          mercury-theorem-e2e = let
-            script = pkgs.writeShellApplication {
-              name = "mercury-theorem-e2e";
-              runtimeInputs = [
-                (agdaWithTheoremGraphLibraries system)
-                (agda2hsWithHaskell system)
-                pkgs.mercury
-                (canonicalHaskellPackages system).dhall
-                pkgs.coreutils
-                pkgs.git
-              ];
-              text = ''
-                set -euo pipefail
-                test -f FullCoupled/TheoremsMonolith.agda
-                agda="${agdaWithTheoremGraphLibraries system}/bin/agda-with-theorem-graph"
-                agda2hs="${agda2hsWithHaskell system}/bin/agda2hs"
-                semantic_manifest="$PWD/.ci/discovery/.semantic-source-files"
-                interpolation_manifest="$PWD/.ci/discovery/.interpolation-imports"
-                agda2hs_out=$(mktemp -d)
-                dependency_graph="$agda2hs_out/theorem-imports.dot"
-                trap 'rm -rf "$agda2hs_out" "$semantic_manifest" "$interpolation_manifest"' EXIT
-                printf '%s\n' \
-                  "TypeTopology=${typeTopologyLib system}" \
-                  "agda2hs-base=${agda2hsBaseLib system}" \
-                  > "$interpolation_manifest"
-                "$agda" --dependency-graph="$dependency_graph" -i . FullCoupled/TheoremsMonolith.agda
-                bash .ci/discovery/agda_semantic_source_closure.sh \
-                  "$dependency_graph" \
-                  "$semantic_manifest" \
-                  "$PWD" \
-                  "${typeTopologyLib system}/source" \
-                  "${agda2hsBaseLib system}"
-                test -s "$semantic_manifest"
-                "$agda2hs" -i . FullCoupled/Agda2HsSurface.agda -o "$agda2hs_out"
-                test -s "$agda2hs_out/FullCoupled/Agda2HsSurface.hs"
-                cd .ci
-                mmc --make check_forbidden_theorems
-                ./check_forbidden_theorems
-                cd discovery
-                mmc --make theorem_registry_reconcile
-                ./theorem_registry_reconcile --check
-                mmc --make theorem_monolith_egraph_sync
-                ./theorem_monolith_egraph_sync
-                mmc --make novel_theorem_interpolator
-                ./novel_theorem_interpolator
-                test -s novel-theorem-interpolation.dhall
-                dhall text --file novel-theorem-interpolation.dhall >/dev/null
-                report=theorem-monolith-egraph-sync.dhall
-                test -s "$report"
-                dhall text --file "$report" >/dev/null
-                test -s novel-theorem-interpolation.dhall
-                dhall text --file novel-theorem-interpolation.dhall >/dev/null
-                echo "mercury-theorem-e2e=pass"
-              '';
-            };
-          in {
-            type = "app";
-            program = "${script}/bin/mercury-theorem-e2e";
-          };
-
-          prune-theorem-registries = let
-            script = pkgs.writeShellApplication {
-              name = "prune-theorem-registries";
-              runtimeInputs = [
-                pkgs.mercury
-              ];
-              text = ''
-                set -euo pipefail
-                cd .ci/discovery
-                mmc --make theorem_registry_reconcile
-                ./theorem_registry_reconcile --prune
-              '';
-            };
-          in {
-            type = "app";
-            program = "${script}/bin/prune-theorem-registries";
-          };
           default = {
             type = "app";
             program = "${(canonicalHaskellPackages system).dhall}/bin/dhall";
@@ -667,7 +590,6 @@
 
           default = pkgs.mkShell {
             packages = [
-              pkgs.mercury
               (canonicalHaskellPackages system).dhall
               (canonicalGhc system)
               (canonicalHaskellPackages system).liquidhaskell
@@ -684,7 +606,6 @@
               pkgs.elmPackages.elm
             ];
             shellHook = ''
-              export PATH="${pkgs.mercury}/bin:$PATH"
               export AGDA_COMMAND="${agdaWithLibraries system}/bin/agda-with-libraries"
               export LIQUID_SOLVER=z3
             '';
