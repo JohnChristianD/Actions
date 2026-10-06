@@ -1,4 +1,7 @@
-{-# OPTIONS --erasure --no-projection-like #-}
+{-# OPTIONS
+  --erasure
+  --no-projection-like
+#-}
 
 module FullCoupled.Agda2HsSemanticExtractor where
 
