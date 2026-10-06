@@ -38,7 +38,7 @@
         let
           pkgs = pkgsFor system;
         in
-        pkgs.haskell.packages.ghc914.extend (final: prev: {
+        pkgs.haskell.packages.ghc9124.extend (final: prev: {
           tree-monad =
             pkgs.haskell.lib.doJailbreak prev.tree-monad;
           parallel-tree-search =
@@ -359,7 +359,7 @@
                 grep -E "^required-plan-count=[1-9][0-9]* required-plan-total=[1-9][0-9]* required-plan-regression=True$" "$out/report.txt"
                 grep -Fq "egraph-regression=True egraph-associativity-regression=True" "$out/report.txt"
                 printf '%s\n' \
-                  "compiler=canonicalHaskellPackages.ghc-9.14.1" \
+                  "compiler=canonicalHaskellPackages.ghc-9.12.4" \
                   "plugins=disabled" \
                   "proofKernel=Agda" \
                   "searchKernel=Agda2Hs" \
@@ -482,7 +482,7 @@
             '';
           };
 
-          ci-versions = pkgs.mkShell {
+          default-versions = pkgs.mkShell {
             packages = [
               (canonicalGhc system)
               (canonicalHaskellPackages system).dhall
