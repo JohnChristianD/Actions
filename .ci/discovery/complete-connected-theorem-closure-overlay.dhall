@@ -3,6 +3,19 @@
   status = "PARTIALLY_ESTABLISHED",
   strict_graph_invariant = "Only real Agda dependencies create graph edges; conceptual similarity never creates a dependency.",
   connected_survivors = {
+    full_composition_hub = {
+      name = "CanonicalFullCompositionGraphTheorem",
+      status = "PROVED_ON_AGDA_SURFACE_PENDING_FRESH_CI",
+      dependencies = [
+        "CanonicalHaarRecurrentCompositionTheorem",
+        "CanonicalGRUF4WatkinsPrefixCompositionTheorem",
+        "CanonicalFullLearnerConnectedScanConjugacyTheorem",
+        "CanonicalLearnerPermutationCompositionImpossibilityTheorem",
+        "CanonicalPolymorphicSparsemaxCompositionTheorem"
+      ],
+      proof = "canonical-full-composition-graph-theorem",
+      note = "One proof-relevant hub exposes the actual Haar-feature -> recurrent scan -> Watkins/F4 -> full learner composition without forcing unrelated theorem statements to depend on one another."
+    },
     token_carrier = {
       name = "CanonicalToken",
       carrier = "ℤ",
