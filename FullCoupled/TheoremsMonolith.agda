@@ -2223,6 +2223,132 @@ prefixScanConjugacy R (x ∷ xs) s =
       (prefixScan (physicalStep R) xs)
       (stepConjugacy R s x))
 
+
+------------------------------------------------------------------------
+-- Canonical recurrent permutation-composition boundary.
+--
+-- The recurrent scan is associative through MonoidAffine composition,
+-- but associativity alone does not imply permutation invariance. The
+-- following relation is a small, list-generic permutation presentation;
+-- it uses no finite-cardinality encoding and therefore stays independent
+-- of a particular finite cardinality.
+------------------------------------------------------------------------
+
+data CanonicalListPermutation {A : Set} : List A -> List A -> Set where
+  canonical-perm-refl :
+    ∀ {xs} →
+    CanonicalListPermutation xs xs
+  canonical-perm-swap :
+    ∀ (x y : A) (xs : List A) →
+    CanonicalListPermutation
+      (x ∷ y ∷ xs)
+      (y ∷ x ∷ xs)
+  canonical-perm-cons :
+    ∀ {x xs ys} →
+    CanonicalListPermutation xs ys →
+    CanonicalListPermutation
+      (x ∷ xs)
+      (x ∷ ys)
+  canonical-perm-trans :
+    ∀ {xs ys zs} →
+    CanonicalListPermutation xs ys →
+    CanonicalListPermutation ys zs →
+    CanonicalListPermutation xs zs
+
+CanonicalLearnerPermutationInvariant : Set₁
+CanonicalLearnerPermutationInvariant =
+  ∀ (xs ys : List C.Int8) →
+  CanonicalListPermutation xs ys →
+  ∀ c →
+  C.runMonoidLSTMCell xs c ≡
+  C.runMonoidLSTMCell ys c
+
+canonicalNegativeOne8 : C.Int8
+canonicalNegativeOne8 = C.int8 (-[1+ 0 ])
+
+canonicalPermutation-swap :
+  CanonicalListPermutation
+    (C.one8 ∷ canonicalNegativeOne8 ∷ [])
+    (canonicalNegativeOne8 ∷ C.one8 ∷ [])
+canonicalPermutation-swap =
+  canonical-perm-swap C.one8 canonicalNegativeOne8 []
+
+canonicalPermutation-left :
+  C.runMonoidLSTMCell
+    (C.one8 ∷ canonicalNegativeOne8 ∷ [])
+    C.zero8
+  ≡
+  C.zero8
+canonicalPermutation-left = refl
+
+canonicalPermutation-right :
+  C.runMonoidLSTMCell
+    (canonicalNegativeOne8 ∷ C.one8 ∷ [])
+    C.zero8
+  ≡
+  C.one8
+canonicalPermutation-right = refl
+
+canonicalZeroInt-not-oneInt :
+  ¬ ((+ 0) ≡ (+ 1))
+canonicalZeroInt-not-oneInt ()
+
+canonicalZero8-not-one8 :
+  C.zero8 ≢ C.one8
+canonicalZero8-not-one8 eq =
+  canonicalZeroInt-not-oneInt
+    (C.int8-code-injective eq)
+
+canonicalPermutation-results-distinct :
+  C.runMonoidLSTMCell
+    (C.one8 ∷ canonicalNegativeOne8 ∷ [])
+    C.zero8
+  ≢
+  C.runMonoidLSTMCell
+    (canonicalNegativeOne8 ∷ C.one8 ∷ [])
+    C.zero8
+canonicalPermutation-results-distinct eq =
+  canonicalZero8-not-one8
+    (trans
+      (sym canonicalPermutation-left)
+      (trans eq canonicalPermutation-right))
+
+canonicalLearnerPermutationInvariant-impossible :
+  CanonicalLearnerPermutationInvariant → ⊥
+canonicalLearnerPermutationInvariant-impossible invariant =
+  canonicalPermutation-results-distinct
+    (invariant
+      (C.one8 ∷ canonicalNegativeOne8 ∷ [])
+      (canonicalNegativeOne8 ∷ C.one8 ∷ [])
+      canonicalPermutation-swap
+      C.zero8)
+
+record CanonicalLearnerPermutationCompositionImpossibilityTheorem : Set₁ where
+  constructor canonicalLearnerPermutationCompositionImpossibilityTheorem
+  field
+    permutationWitness :
+      CanonicalListPermutation
+        (C.one8 ∷ canonicalNegativeOne8 ∷ [])
+        (canonicalNegativeOne8 ∷ C.one8 ∷ [])
+    distinctResults :
+      C.runMonoidLSTMCell
+        (C.one8 ∷ canonicalNegativeOne8 ∷ [])
+        C.zero8
+      ≢
+      C.runMonoidLSTMCell
+        (canonicalNegativeOne8 ∷ C.one8 ∷ [])
+        C.zero8
+    noGlobalPermutationInvariant :
+      CanonicalLearnerPermutationInvariant → ⊥
+
+canonical-learner-permutation-composition-impossibility-theorem :
+  CanonicalLearnerPermutationCompositionImpossibilityTheorem
+canonical-learner-permutation-composition-impossibility-theorem =
+  canonicalLearnerPermutationCompositionImpossibilityTheorem
+    canonicalPermutation-swap
+    canonicalPermutation-results-distinct
+    canonicalLearnerPermutationInvariant-impossible
+
 ------------------------------------------------------------------------
 -- No inhabitant is supplied here. The admissibility and stationarity
 -- predicates are explicit semantic obligations; these contracts do not
