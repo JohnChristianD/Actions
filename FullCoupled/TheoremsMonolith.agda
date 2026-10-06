@@ -80,7 +80,7 @@ open import Naturals.Properties
 open import Notation.CanonicalMap
 open import Notation.Order
 open import Order
-open import Prelude
+open import Haskell.Prelude
 open import Prelude.Char as Char
 open import Prelude.Nat.Properties using (add-assoc; add-suc-r; ≤-antisym; ≤-trans; n<1+n)
 open import Two
@@ -6370,6 +6370,204 @@ record CanonicalHaarRecurrentCompositionTheorem : Set₁ where
         C.GRUState
         C.Int8
 
+------------------------------------------------------------------------
+-- Executable learner composition regression:
+-- the Haar-featured linear transformer must feed the canonical recurrent
+-- step through the same state transition, not remain theorem-only.
+------------------------------------------------------------------------
+
+canonicalFullStep-haar-rnn-composition :
+  ∀ {A} (K : C.FullLearnerKernel A) (s : C.FullLearnerState A) →
+  C.gru (C.canonicalFullStep K s) ≡
+  C.gruStep
+    (C.gru s)
+    (C.haarQueryRead
+      C.canonicalHaarFeaturedTransformer
+      (C.haarAccumulatorStep
+        C.canonicalHaarFeaturedTransformer
+        (C.haarAccumulator s)
+        (C.canonicalSignal K s))
+      (C.canonicalSignal K s))
+canonicalFullStep-haar-rnn-composition K s = refl
+
+------------------------------------------------------------------------
+-- KLA theorem/e-graph integration.
+--
+-- KLA's information-form Kalman layer has two algebraic scan branches:
+--   1. the information mean is an affine recurrence;
+--   2. the precision is a fractional-linear (Möbius) recurrence represented
+--      by a 2×2 transition matrix.
+--
+-- The first branch is definitionally the existing canonical MonoidAffine.
+-- The second is represented below at coefficient level; the actual Bayesian
+-- precision recurrence remains a frontier because the canonical learner has
+-- no precision field.
+------------------------------------------------------------------------
+
+data KLAAffineExpression : Set where
+  klaMean : C.MonoidAffine → KLAAffineExpression
+  canonicalMean : C.MonoidAffine → KLAAffineExpression
+
+klaAffineInterpret :
+  KLAAffineExpression → C.MonoidAffine
+klaAffineInterpret (klaMean a) = a
+klaAffineInterpret (canonicalMean a) = a
+
+klaAffineRelated :
+  KLAAffineExpression → KLAAffineExpression → Set
+klaAffineRelated e f =
+  klaAffineInterpret e ≡ klaAffineInterpret f
+
+klaAffineRelated-refl :
+  ∀ e → klaAffineRelated e e
+klaAffineRelated-refl e = refl
+
+klaAffineRelated-sym :
+  ∀ {e f} → klaAffineRelated e f → klaAffineRelated f e
+klaAffineRelated-sym = sym
+
+klaAffineRelated-trans :
+  ∀ {e f g} →
+  klaAffineRelated e f →
+  klaAffineRelated f g →
+  klaAffineRelated e g
+klaAffineRelated-trans = trans
+
+klaAffineEGraphCongruence :
+  EGraphCongruence KLAAffineExpression
+klaAffineEGraphCongruence =
+  eGraphCongruence
+    klaAffineRelated
+    klaAffineRelated-refl
+    klaAffineRelated-sym
+    klaAffineRelated-trans
+
+klaAffineEGraphSemantics :
+  EGraphSemanticInterpretation
+    KLAAffineExpression
+    C.MonoidAffine
+klaAffineEGraphSemantics =
+  eGraphSemanticInterpretation
+    klaAffineEGraphCongruence
+    klaAffineInterpret
+    (λ eq → eq)
+
+klaAffineAStarCostModel :
+  AStarCostModel KLAAffineExpression
+klaAffineAStarCostModel =
+  aStarCostModel
+    (λ _ _ → suc zero)
+    (λ _ → zero)
+
+klaAffineAStarClosure :
+  AStarSemanticClosure
+    KLAAffineExpression
+    C.MonoidAffine
+klaAffineAStarClosure =
+  aStarSemanticClosure
+    klaAffineEGraphSemantics
+    klaAffineAStarCostModel
+
+kla-affine-canonical-edge :
+  ∀ a →
+  CertifiedEGraphEdge
+    klaAffineEGraphSemantics
+    (klaMean a)
+    (canonicalMean a)
+kla-affine-canonical-edge a =
+  certifiedEGraphEdge
+    (semanticEdgeMetadata
+      "KLA-information-mean"
+      "canonical-MonoidAffine"
+      "kla-mean-canonical-affine"
+      []
+      semanticProved
+      kernelProof
+      true)
+    (path-step refl (path-refl (canonicalMean a)))
+
+kla-affine-composition :
+  ∀ f₁ b₁ f₂ b₂ →
+  C._∘ₘ_
+    (C.monoidAffine f₂ b₂)
+    (C.monoidAffine f₁ b₁)
+  ≡
+  C.monoidAffine
+    (C.int8Mul f₂ f₁)
+    (C.int8Add (C.int8Mul f₂ b₁) b₂)
+kla-affine-composition f₁ b₁ f₂ b₂ = refl
+
+------------------------------------------------------------------------
+-- Möbius coefficient shape.  KLA represents each precision update by a
+-- 2×2 transition matrix; the actual Bayesian recurrence remains a frontier
+-- because this canonical state has no precision variable or field.
+------------------------------------------------------------------------
+
+record KLAMobiusMatrix : Set where
+  constructor klaMobiusMatrix
+  field
+    m₁₁ m₁₂ m₂₁ m₂₂ : C.Int8
+open KLAMobiusMatrix public
+
+klaMobiusTransition :
+  C.Int8 → C.Int8 → C.Int8 → KLAMobiusMatrix
+klaMobiusTransition p aSquared phi =
+  klaMobiusMatrix
+    (C.int8Add C.one8 (C.int8Mul p phi))
+    (C.int8Mul aSquared phi)
+    p
+    aSquared
+
+------------------------------------------------------------------------
+-- Honest frontier theorem: affine information-mean equality does not carry
+-- enough information to reconstruct an arbitrary KLA precision state.
+------------------------------------------------------------------------
+
+record KLAFullBeliefState : Set where
+  constructor klaFullBeliefState
+  field
+    meanTransform : C.MonoidAffine
+    precision : C.Int8
+
+klaAffineProjection :
+  KLAFullBeliefState → C.MonoidAffine
+klaAffineProjection s = meanTransform s
+
+klaAffineProjection-not-injective :
+  ¬
+  (∀ {s t : KLAFullBeliefState} →
+    klaAffineProjection s ≡
+    klaAffineProjection t →
+    s ≡ t)
+klaAffineProjection-not-injective derive =
+  let
+    a = C.monoidAffine C.one8 C.zero8
+    s = klaFullBeliefState a C.zero8
+    t = klaFullBeliefState a C.one8
+  in
+  false-not-true
+    (cong precision
+      (derive {s = s} {t = t} refl))
+
+record KLAPrecisionBridgeWitness : Set₁ where
+  constructor klaPrecisionBridgeWitness
+  field
+    precisionState : Set
+    precisionProjection : precisionState → C.Int8
+    precisionStep : precisionState → precisionState
+    mobiusStep : KLAMobiusMatrix → precisionState → precisionState
+    correspondence :
+      ∀ M s →
+      precisionStep s ≡ mobiusStep M s
+
+------------------------------------------------------------------------
+-- No such precision witness is claimed for CanonicalFullLearnerState yet:
+-- the state now contains the executable Haar accumulator, but still has no
+-- Bayesian precision variable.  Therefore the affine KLA edge is proved,
+-- while the precision edge is explicitly a frontier rather than a false
+-- equivalence claim.
+------------------------------------------------------------------------
+
 record CanonicalFullCompositionGraphTheorem : Set₁ where
   constructor canonicalFullCompositionGraphTheorem
   field
@@ -6383,6 +6581,33 @@ record CanonicalFullCompositionGraphTheorem : Set₁ where
       CanonicalLearnerPermutationCompositionImpossibilityTheorem
     sparsemaxComposition :
       CanonicalPolymorphicSparsemaxCompositionTheorem
+    haarExecutable :
+      ∀ {A} (K : C.FullLearnerKernel A) (s : C.FullLearnerState A) →
+      C.gru (C.canonicalFullStep K s) ≡
+      C.gruStep
+        (C.gru s)
+        (C.canonicalHaarRecurrentInput K s)
+    klaAffineEdge :
+      ∀ a →
+      CertifiedEGraphEdge
+        klaAffineEGraphSemantics
+        (klaMean a)
+        (canonicalMean a)
+    klaAffineCompositionLaw :
+      ∀ f₁ b₁ f₂ b₂ →
+      C._∘ₘ_
+        (C.monoidAffine f₂ b₂)
+        (C.monoidAffine f₁ b₁)
+      ≡
+      C.monoidAffine
+        (C.int8Mul f₂ f₁)
+        (C.int8Add (C.int8Mul f₂ b₁) b₂)
+    klaPrecisionFrontier :
+      ¬
+      (∀ {s t : KLAFullBeliefState} →
+        klaAffineProjection s ≡
+        klaAffineProjection t →
+        s ≡ t)
 
 canonical-haar-recurrent-composition-theorem :
   CanonicalHaarRecurrentCompositionTheorem
@@ -6404,6 +6629,10 @@ canonical-full-composition-graph-theorem =
     canonical-full-learner-connected-scan-conjugacy-theorem
     canonical-learner-permutation-composition-impossibility-theorem
     canonical-polymorphic-sparsemax-egraph-theorem
+    canonicalFullStep-haar-rnn-composition
+    kla-affine-canonical-edge
+    kla-affine-composition
+    klaAffineProjection-not-injective
 
 canonicalAStarZeroCost :
   (zero + zero) ≡ zero
