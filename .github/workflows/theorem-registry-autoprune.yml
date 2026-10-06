@@ -32,6 +32,7 @@ jobs:
         uses: NixOS/nix-installer-action@62c1943b776c509394b550f3f983adc14e9212d6
         with:
           installer-version: '2.35.1'
+      - uses: DeterminateSystems/magic-nix-cache-action@v15
 
       - name: Verify canonical Agda synchronization
         run: |
@@ -42,7 +43,7 @@ jobs:
       - name: Kernel-check canonical Agda proof surfaces
         run: |
           set -euo pipefail
-          nix develop .#default -c bash -euo pipefail -c '
+          nix develop .#ci -c bash -euo pipefail -c '
             "$AGDA_COMMAND" --safe -i . FullCoupled/CanonicalLearnerMonolith.agda
             "$AGDA_COMMAND" --allow-exec -i . FullCoupled/TheoremsMonolith.agda
           '

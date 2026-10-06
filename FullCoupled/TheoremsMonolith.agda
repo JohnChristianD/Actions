@@ -18,11 +18,7 @@
 
 
 {-# OPTIONS
-  --guardedness
-  --rewriting
-  --no-termination-check
-  --type-in-type
-  --no-positivity-check
+  --safe
 #-}
 
 ------------------------------------------------------------------------
