@@ -73,7 +73,7 @@ open import Naturals.Properties
 open import Notation.CanonicalMap
 open import Notation.Order
 open import Order
-open import Prelude
+open import Haskell.Prelude
 open import Prelude.Char as Char
 open import Prelude.Nat.Properties using (add-assoc; add-suc-r; ≤-antisym; ≤-trans; n<1+n)
 open import Two
