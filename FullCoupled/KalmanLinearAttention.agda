@@ -146,10 +146,6 @@ open import W.Type
 -- "$AGDA_COMMAND" -i .
 -- END MIRTH-SYNC CANONICAL COMMAND
 
--- BEGIN MIRTH-SYNC CANONICAL COMMAND
--- "$AGDA_COMMAND" -i .
--- END MIRTH-SYNC CANONICAL COMMAND
-
 record KLAPair : Set where
   constructor klaPair
   field
