@@ -289,7 +289,7 @@ let script = merge {
     '',
   StrictExistenceImpossibility = ''
     set -euo pipefail
-    "$AGDA_COMMAND" --allow-exec -i . FullCoupled/TheoremsMonolith.agda
+    "$AGDA_COMMAND" -i . FullCoupled/TheoremsMonolith.agda
     grep -Fq 'megaNoEquilibriumGeneralizedWalrasian' FullCoupled/TheoremsMonolith.agda
     grep -Fq 'noUnconditionalMegaGeneralizedWalrasianExistence' FullCoupled/TheoremsMonolith.agda
     echo 'strict-existence-impossibility-graph=pass'
@@ -364,7 +364,7 @@ DHALL
     '',
   IsomorphismTransport = ''
     set -euo pipefail
-    "$AGDA_COMMAND" --allow-exec -i . FullCoupled/TheoremsMonolith.agda
+    "$AGDA_COMMAND" -i . FullCoupled/TheoremsMonolith.agda
     grep -Fq 'isomorphismEqualityTransport' FullCoupled/TheoremsMonolith.agda
     grep -Fq 'isomorphismDisequalityTransport' FullCoupled/TheoremsMonolith.agda
     grep -Fq 'isomorphismIterateConjugacy' FullCoupled/TheoremsMonolith.agda
@@ -531,7 +531,7 @@ DHALL
     while IFS= read -r file; do
       "$AGDA_COMMAND" -i . "$file"
     done < <(git ls-files '*.agda')
-    "$AGDA_COMMAND" --allow-exec -i . FullCoupled/TheoremsMonolith.agda
+    "$AGDA_COMMAND" -i . FullCoupled/TheoremsMonolith.agda
     nix run .#agda2hs-semantic-search
     echo 'agda-all=pass'
   ''} lane
