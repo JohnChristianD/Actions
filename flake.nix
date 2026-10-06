@@ -193,17 +193,17 @@
         let
           pkgs = pkgsFor system;
           hp = canonicalHaskellPackages system;
+          drv = pkgs.haskell.lib.enableCabalFlag
+            (pkgs.haskell.lib.disableCabalFlag
+              (pkgs.haskell.lib.doJailbreak
+                (hp.callCabal2nix
+                  "inversion-plugin"
+                  inversion-plugin-src
+                  {}))
+              "use-bfs")
+            "use-cs";
         in
-        pkgs.haskell.lib.enableCabalFlag
-          (pkgs.haskell.lib.disableCabalFlag
-            (pkgs.haskell.lib.doJailbreak
-              (hp.callCabal2nix
-                "inversion-plugin"
-                inversion-plugin-src
-                {}))
-            "use-bfs")
-          "use-cs"
-        |> drv: drv.overrideAttrs (_: {
+        drv.overrideAttrs (_: {
           doCheck = false;
         });
 
