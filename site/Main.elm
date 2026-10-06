@@ -652,9 +652,9 @@ view model =
                 [ text
                     ("sources: "
                         ++ String.join ", " Surface.sourceFiles
-                        ++ " · "
+                        ++ " | "
                         ++ String.fromInt (List.length Surface.nodeLines)
-                        ++ " generated node lines · "
+                        ++ " generated node lines | "
                         ++ String.fromInt (List.length Surface.edgeLines)
                         ++ " generated edge lines"
                     )
