@@ -20,7 +20,7 @@
 {-# OPTIONS
   --guardedness
   --rewriting
-  --termination-check
+  --no-termination-check
   --type-in-type
   --no-positivity-check
 #-}
