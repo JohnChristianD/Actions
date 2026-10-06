@@ -1023,14 +1023,15 @@ dominanceEdgeFor theorem field all =
 dominanceEdgesForFields :
   Extractor.SemanticLaw ->
   List Extractor.SemanticLaw ->
+  List Extractor.SemanticLaw ->
   List DominanceEdge
-dominanceEdgesForFields theorem [] = []
-dominanceEdgesForFields theorem (field ∷ fields) =
-  case dominanceEdgeFor theorem field (field ∷ fields) of λ where
+dominanceEdgesForFields theorem _ [] = []
+dominanceEdgesForFields theorem all (field ∷ fields) =
+  case dominanceEdgeFor theorem field all of λ where
     Nothing ->
-      dominanceEdgesForFields theorem fields
+      dominanceEdgesForFields theorem all fields
     Just edge ->
-      edge ∷ dominanceEdgesForFields theorem fields
+      edge ∷ dominanceEdgesForFields theorem all fields
 
 dominanceEdgesForTheorems :
   List Extractor.SemanticLaw ->
@@ -1038,7 +1039,7 @@ dominanceEdgesForTheorems :
   List DominanceEdge
 dominanceEdgesForTheorems _ [] = []
 dominanceEdgesForTheorems all (law ∷ laws) =
-  dominanceEdgesForFields law all
+  dominanceEdgesForFields law all all
   ++ dominanceEdgesForTheorems all laws
 
 dominanceEdgeEqual :
