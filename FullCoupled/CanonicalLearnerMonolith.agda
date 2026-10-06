@@ -4,7 +4,6 @@
   --lossy-unification
   --experimental-lazy-instances
   --confluence-check
-  --polarity
   --auto-inline
   --guarded
   --exact-split
