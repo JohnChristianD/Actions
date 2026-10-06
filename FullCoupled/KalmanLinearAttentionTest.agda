@@ -39,6 +39,8 @@ recordLaw = {!!}
 open import FullCoupled.KalmanLinearAttention using
   ( KLAConcept
   ; KLAPlan
+  ; KLAMobius
+  ; KLAAffine
   ; concepts
   ; klaMobiusPrefixPlan
   ; klaMeanPrefixPlan
@@ -54,14 +56,20 @@ test-mobius-plan = klaMobiusPrefixPlan
 test-mean-plan : KLAPlan
 test-mean-plan = klaMeanPrefixPlan
 
+test-mobius-cost : cost klaMobiusPrefixPlan ≡ suc (suc (suc zero))
+test-mobius-cost = refl
+
+test-mean-cost : cost klaMeanPrefixPlan ≡ suc (suc zero)
+test-mean-cost = refl
+
 test-mobius-path : List KLAConcept
 test-mobius-path = klaMobiusPath
 
 test-mean-path : List KLAConcept
 test-mean-path = klaMeanPath
 
-test-precision-matrix : _
+test-precision-matrix : KLAMobius
 test-precision-matrix = klaPrecisionMatrix (+ 2) (+ 3) (+ 5)
 
-test-mean-affine : _
+test-mean-affine : KLAAffine
 test-mean-affine = klaMeanAffine (+ 2) (+ 3) (+ 7)
