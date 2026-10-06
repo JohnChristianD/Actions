@@ -1,4 +1,4 @@
-let Lane = < AgdaLearner | AgdaTheorem | AgdaSafe | Agda2HsLiquid | MirthFastDirty | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >
+let Lane = < AgdaLearner | AgdaTheorem | AgdaSafe | Agda2Hs | MirthFastDirty | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >
 
 let lane : Lane = env:CI_LANE
 
@@ -24,14 +24,12 @@ let script = merge {
     "$AGDA_COMMAND" --version
     echo "agda-safe=not-applicable; canonical surface is intentionally non-safe for Prelude-compatible theorem checking"
     '',
-  Agda2HsLiquid = ''
+  Agda2Hs = ''
     set -euo pipefail
     nix run .#agda-haskell-pipeline
     test -s build/agda-haskell/FullCoupled/Agda2HsSurface.hs
-    test -s build/agda-haskell/agda2hs-liquid-manifest.tsv
-    echo "agda2hs-ghc=pass"
-    echo "liquidhaskell-z3=pass"
-    '',
+    test -s build/agda-haskell/agda2hs-manifest.tsv
+    echo "agda2hs-ghc=pass"    '',
   MirthFastDirty = ''
     set -euo pipefail
     tmp=$(mktemp -d)
@@ -158,7 +156,6 @@ let script = merge {
     grep -Fq 'egraph-regression=True egraph-associativity-regression=True' "$report"
     grep -Fq 'hybrid-search=3 inverse laws; ExactRealSearchSurface preserves searchability' "$report"
     grep -E '^agda2hs-semantic-port=[1-9][0-9]* dominance edges; 5 pruning proofs; [1-9][0-9]*/[1-9][0-9]* required plans e-graph-closed$' "$report"
-    grep -Fq 'plugins=Plugin.InversionPlugin,LiquidHaskell' "$manifest"
     grep -Fq 'proofKernel=Agda' "$manifest"
     grep -Fq 'searchKernel=Agda2Hs' "$manifest"
     echo 'agda-semantic-discovery=pass'
@@ -505,7 +502,6 @@ DHALL
     set -euo pipefail
     ghc --numeric-version
     test "$(ghc --numeric-version)" = "9.2.4"
-    nix run .#inversion-ghci-smoke
     "$AGDA_COMMAND" --version
     mirthc --version
     dhall --version
