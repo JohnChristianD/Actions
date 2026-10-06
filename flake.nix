@@ -56,6 +56,10 @@
               (prev.parallel-tree-search.override {
                 tree-monad = final.tree-monad;
               });
+          smtlib-backends-process =
+            pkgs.haskell.lib.overrideCabal prev.smtlib-backends-process (drv: {
+              testSystemDepends = (drv.testSystemDepends or [ ]) ++ [ pkgs.z3 ];
+            });
         });
 
       typeTopologyLib = system:

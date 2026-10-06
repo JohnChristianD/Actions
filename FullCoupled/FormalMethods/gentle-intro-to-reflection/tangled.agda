@@ -87,6 +87,9 @@ open import Dyadics.Negation
 open import Dyadics.Multiplication
 open import Dyadics.Order
 open import Dyadics.Type
+open import DyadicsInductive.Dyadics
+open import DyadicsInductive.DyadicOrder
+open import DyadicsInductive.DyadicOrder-PropTrunc
 open import Two
 open import UF.Base
 open import UF.ClassicalLogic
