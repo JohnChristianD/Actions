@@ -191,6 +191,14 @@
           (inversionPlugin system)
         ]);
 
+      semanticSearchGhc = system:
+        let
+          hp = canonicalHaskellPackages system;
+        in
+        hp.ghcWithPackages (p: [
+          p.rio
+        ]);
+
       agda2hsWithHaskell = system:
         let
           ghc = canonicalGhc system;
@@ -424,8 +432,12 @@
               name = "agda2hs-semantic-search";
               runtimeInputs = [
                 (agdaWithLibraries system)
-                (agda2hsWithHaskell system)
-                (canonicalGhc system)
+                (agda2hs.packages.${system}.agda2hs.withPackages {
+                  pkgs = [ agda2hs.packages.${system}.base-lib ];
+                  ghc = semanticSearchGhc system;
+                })
+                (semanticSearchGhc system)
+                (canonicalHaskellPackages system).liquidhaskell
                 pkgs.z3
                 pkgs.coreutils
                 pkgs.git
@@ -463,7 +475,7 @@
                 grep -Fq "inverse-preserves-csearchability" FullCoupled/TheoremsMonolith.agda
                 grep -Fq "SearchableEquivalence" FullCoupled/TheoremsMonolith.agda
                 ghc \
-                  ${ghcGlobalFlagsText} \
+                  ${builtins.concatStringsSep " " ghcLanguageFlags} \
                   -O0 \
                   -dcore-lint \
                   -i "$out" \
