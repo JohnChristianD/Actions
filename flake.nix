@@ -3,6 +3,7 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/0439f75413ace6c42e4c722cafd4d6e5401de648";
+    nixpkgs-ghc928.url = "github:NixOS/nixpkgs/a62e6edd6d5e1fa0329b8653c801147986f8d446";
     typetopology = {
       url = "github:martinescardo/TypeTopology/8761920fdaec20c9dada7ff1d6628c09491245c5";
       flake = false;
@@ -19,6 +20,7 @@
   outputs = {
     self,
     nixpkgs,
+    nixpkgs-ghc928,
     typetopology,
     agda2hs,
     inversion-plugin-src
@@ -41,9 +43,12 @@
 
       canonicalHaskellPackages = system:
         let
-          pkgs = pkgsFor system;
+          pkgs = import nixpkgs-ghc928 {
+            inherit system;
+            config.allowBroken = true;
+          };
         in
-        pkgs.haskellPackages.extend (final: prev: {
+        pkgs.haskell.packages.ghc928.extend (final: prev: {
           tree-monad =
             pkgs.haskell.lib.doJailbreak prev.tree-monad;
           parallel-tree-search =
@@ -204,7 +209,7 @@
         pkgs.mkShell {
           packages = [
             (canonicalGhc system)
-            pkgs.haskellPackages.liquidhaskell
+            (canonicalHaskellPackages system).liquidhaskell
             pkgs.z3
             pkgs.coreutils
             pkgs.findutils
@@ -225,9 +230,9 @@
           agda = agdaWithLibraries system;
           agda2hs = agda2hsWithHaskell system;
           typetopology = typeTopologyLib system;
-          ci = pkgs.haskellPackages.dhall;
+          ci = (canonicalHaskellPackages system).dhall;
           yamlscript = pkgs.yamlscript;
-          default = pkgs.haskellPackages.dhall;
+          default = (canonicalHaskellPackages system).dhall;
         } // pkgs.lib.optionalAttrs pkgs.stdenv.isLinux {
           inversion-plugin = inversionPlugin system;
         });
@@ -239,7 +244,7 @@
         {
           ci = {
             type = "app";
-            program = "${pkgs.haskellPackages.dhall}/bin/dhall";
+            program = "${(canonicalHaskellPackages system).dhall}/bin/dhall";
           };
           mirth-fast-dirty-source = let
             script = pkgs.writeShellApplication {
@@ -407,7 +412,7 @@
                 grep -E "^required-plan-count=[1-9][0-9]* required-plan-total=[1-9][0-9]* required-plan-regression=True$" "$out/report.txt"
                 grep -Fq "egraph-regression=True egraph-associativity-regression=True" "$out/report.txt"
                 printf '%s\n' \
-                  "compiler=canonical-pkgs.haskellPackages.ghc" \
+                  "compiler=canonicalHaskellPackages.ghc-9.2.8" \
                   "plugins=Plugin.InversionPlugin,LiquidHaskell" \
                   "proofKernel=Agda" \
                   "searchKernel=Agda2Hs" \
@@ -489,7 +494,7 @@
                 (agdaWithTheoremGraphLibraries system)
                 (agda2hsWithHaskell system)
                 pkgs.mercury
-                pkgs.haskellPackages.dhall
+                (canonicalHaskellPackages system).dhall
                 pkgs.coreutils
                 pkgs.git
               ];
@@ -561,7 +566,7 @@
           };
           default = {
             type = "app";
-            program = "${pkgs.haskellPackages.dhall}/bin/dhall";
+            program = "${(canonicalHaskellPackages system).dhall}/bin/dhall";
           };
         });
 
@@ -576,7 +581,7 @@
             packages = [
               (canonicalGhc system)
               pkgs.z3
-              pkgs.haskellPackages.rio
+              (canonicalHaskellPackages system).rio
             ];
             shellHook = ''
               export LIQUID_SOLVER=z3
@@ -586,12 +591,12 @@
           default = pkgs.mkShell {
             packages = [
               pkgs.mercury
-              pkgs.haskellPackages.dhall
+              (canonicalHaskellPackages system).dhall
               (canonicalGhc system)
-              pkgs.haskellPackages.liquidhaskell
-              pkgs.haskellPackages.cabal-install
+              (canonicalHaskellPackages system).liquidhaskell
+              (canonicalHaskellPackages system).cabal-install
               pkgs.z3
-              pkgs.haskellPackages.dhall-json
+              (canonicalHaskellPackages system).dhall-json
               pkgs.mirth
               pkgs.gh
               (agdaWithLibraries system)
