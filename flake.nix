@@ -466,6 +466,22 @@
             '';
           };
 
+          agda-ci = pkgs.mkShellNoCC {
+            packages = [
+              pkgs.dhall
+              (agdaWithLibraries system)
+              pkgs.coreutils
+              pkgs.findutils
+              pkgs.git
+              pkgs.gawk
+              pkgs.gnugrep
+              pkgs.gnused
+            ];
+            shellHook = ''
+              export AGDA_COMMAND="${agdaWithLibraries system}/bin/agda-with-libraries"
+            '';
+          };
+
           ci = pkgs.mkShell {
             packages = [
               (canonicalHaskellPackages system).dhall
@@ -494,7 +510,6 @@
             ];
             shellHook = ''
               export AGDA_COMMAND="${agdaWithLibraries system}/bin/agda-with-libraries"
-              export LIQUID_SOLVER=z3
             '';
           };
 
