@@ -521,8 +521,8 @@ updateLCBCount {A} a (lcbCountState counts total) =
   lcbCountState (incAt {A = A} counts a) (suc total)
 
 ------------------------------------------------------------------------
--- TypeTopology Dyadics supplies the exact finite rational carrier:
--- rationals whose reduced denominators are powers of two.  The learner
+-- TypeTopology Dyadics supplies the exact finite dyadic carrier:
+-- values whose reduced denominators are powers of two.  The learner
 -- exposes the dyadic exponent and derives the corresponding denominator,
 -- keeping the Haskell-facing boundary total and strongly typed.
 ------------------------------------------------------------------------
@@ -1229,7 +1229,7 @@ record FullLearnerState (A : Set) : Set₁ where
     optimizer : F4IntUState
     lcbCounts : LCBCountState A
     qLogControl : SignedQLogControl
-    qLogValue : ℚ
+    qLogValue : Dyadic
 open FullLearnerState public
 
 record FullLearnerKernel (A : Set) : Set₁ where
@@ -1449,7 +1449,7 @@ canonicalOptimizerStep-qMunchausen-L2 K s = refl
 canonicalCountStep : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) → LCBCountState A
 canonicalCountStep K s = updateLCBCount (canonicalPolicy K s) (lcbCounts s)
 
-canonicalQLogStep : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) → ℚ
+canonicalQLogStep : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) → Dyadic
 canonicalQLogStep K s = qLog8 (canonicalPolicyWeightCode K s)
 
 canonicalFullStep : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) → FullLearnerState A
