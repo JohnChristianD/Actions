@@ -68,12 +68,25 @@ jobs:
         with:
           installer-version: '2.35.1'
       - name: Mercury purity gate
-        timeout-minutes: 5
-        env:
-          CI_LANE: '(< AgdaLearner | AgdaTheorem | AgdaSafe | Agda2HsLiquid | MirthFastDirty | MercuryPurity | Mercury | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >.MercuryPurity) : < AgdaLearner | AgdaTheorem | AgdaSafe | Agda2HsLiquid | MirthFastDirty | MercuryPurity | Mercury | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >'
+        timeout-minutes: 2
         run: |
           set -euo pipefail
-          nix develop .#default -c bash -e -c 'dhall text --file .ci/actions_ci.dhall | bash -e'
+          files=$(git ls-files '*.m')
+          [ -n "$files" ] || { echo "no Mercury sources found"; exit 1; }
+          if grep -nHE '(^|[^A-Za-z])(impure|semipure)([^A-Za-z]|$)' $files; then
+            echo "Mercury purity violation: impure/semipure syntax is forbidden in repository .m sources"
+            exit 1
+          fi
+          if grep -nHE 'pragma[[:space:]]+promise_(impure|semipure)' $files; then
+            echo "Mercury purity violation: promise_impure/promise_semipure is forbidden"
+            exit 1
+          fi
+          if grep -nHE 'pragma[[:space:]]+foreign_proc' $files; then
+            echo "Mercury purity violation: foreign_proc is forbidden in repository .m sources"
+            exit 1
+          fi
+          echo "mercury-purity=pass"
+
 
       - name: Run theorem-only Mercury discovery and canonical semantic contract
         timeout-minutes: 15
