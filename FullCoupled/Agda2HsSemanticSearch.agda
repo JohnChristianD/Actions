@@ -1234,11 +1234,11 @@ hybridInverseExactRealSearchReport =
     ++ show (length hybridInverseExactRealPlan)
     ++ " inverse laws; ExactRealSearchSurface preserves searchability"
 
-mercuryUsefulPortReport :
+agdaSemanticPortReport :
   List Extractor.SemanticLaw ->
   String
-mercuryUsefulPortReport laws =
-  "agda2hs-mercury-useful-port="
+agdaSemanticPortReport laws =
+  "agda2hs-semantic-port="
     ++ show (length (graphDominanceEdges laws))
     ++ " dominance edges; "
     ++ show (length (prunedPublicTheoremsChecked laws))
@@ -1262,7 +1262,7 @@ main = do
   putStrLn (requiredPlanReport requiredNames semanticLaws)
   putStrLn (semanticSearchExecutableReport semanticLaws)
   putStrLn hybridInverseExactRealSearchReport
-  putStrLn (mercuryUsefulPortReport semanticLaws)
+  putStrLn (agdaSemanticPortReport semanticLaws)
 
 {-# COMPILE AGDA2HS main #-}
 
@@ -1314,4 +1314,4 @@ main = do
 {-# COMPILE AGDA2HS requiredPlanEGraphComplete #-}
 {-# COMPILE AGDA2HS hybridInverseExactRealPlan #-}
 {-# COMPILE AGDA2HS hybridInverseExactRealSearchReport #-}
-{-# COMPILE AGDA2HS mercuryUsefulPortReport #}
+{-# COMPILE AGDA2HS agdaSemanticPortReport #}
