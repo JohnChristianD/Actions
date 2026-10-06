@@ -2,7 +2,6 @@
 set -euo pipefail
 
 canonical=FullCoupled/CanonicalLearnerMonolith.agda
-special=FullCoupled/Agda2HsSurface.agda
 mode="${1:---check}"
 block=$(mktemp)
 merged=$(mktemp)
@@ -10,7 +9,23 @@ tmp=$(mktemp)
 trap 'rm -f "$block" "$merged" "$tmp"' EXIT
 
 sources() { git ls-files '*.agda' | LC_ALL=C sort; }
-common_sources() { sources | grep -Fvx "$special" || true; }
+is_extraction_surface() {
+  case "$1" in
+    FullCoupled/Agda2HsSurface.agda|FullCoupled/Agda2HsSemanticExtractor.agda|FullCoupled/Agda2HsSemanticSearch.agda|FullCoupled/Agda2HsTheoremGraphEGraph.agda)
+      return 0
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+}
+common_sources() {
+  while IFS= read -r file; do
+    if ! is_extraction_surface "$file"; then
+      printf '%s\n' "$file"
+    fi
+  done < <(sources)
+}
 extract_block() { sed -n '/^-- BEGIN MIRTH-SYNC COMMON IMPORTS$/,/^-- END MIRTH-SYNC COMMON IMPORTS$/p' "$1"; }
 canonical_imports() {
   extract_block "$canonical" |
@@ -112,4 +127,4 @@ fi
 echo 'mirth-agda-import-sync=pass'
 echo "canonical=$canonical"
 echo "merged-external-imports=$(grep -Ec '^(open |import )' "$merged" || true)"
-echo "sync-exception=$special"
+echo "sync-exceptions=FullCoupled/Agda2HsSurface.agda,FullCoupled/Agda2HsSemanticExtractor.agda,FullCoupled/Agda2HsSemanticSearch.agda,FullCoupled/Agda2HsTheoremGraphEGraph.agda"

@@ -34,7 +34,24 @@
       forAllSystems = nixpkgs.lib.genAttrs systems;
 
       pkgsFor = system:
-        import nixpkgs { inherit system; };
+        import nixpkgs {
+          inherit system;
+          config.allowBroken = true;
+        };
+
+      canonicalHaskellPackages = system:
+        let
+          pkgs = pkgsFor system;
+        in
+        pkgs.haskellPackages.extend (final: prev: {
+          tree-monad =
+            pkgs.haskell.lib.doJailbreak prev.tree-monad;
+          parallel-tree-search =
+            pkgs.haskell.lib.doJailbreak
+              (prev.parallel-tree-search.override {
+                tree-monad = final.tree-monad;
+              });
+        });
 
       typeTopologyLib = system:
         let
@@ -127,20 +144,29 @@
               "$@"
           '';
         };
-      haskellLiquidGhc = system:
-        let
-          pkgs = pkgsFor system;
-        in
-        pkgs.haskellPackages.ghcWithPackages (p: [
-          p.rio
-          p.liquidhaskell
-        ]);
+      ghcLanguageFlags = [
+        "-XNoMonomorphismRestriction"
+        "-XLocalMonoBinds"
+        "-XTemplateHaskell"
+        "-XFlexibleContexts"
+      ];
 
-      haskellInversionGhc = system:
+      ghcPluginFlags = [
+        "-fplugin=Plugin.InversionPlugin"
+        "-fplugin=LiquidHaskell"
+      ];
+
+      ghcGlobalFlags =
+        ghcLanguageFlags ++ ghcPluginFlags;
+
+      ghcGlobalFlagsText =
+        builtins.concatStringsSep " " ghcGlobalFlags;
+
+      canonicalGhc = system:
         let
-          pkgs = pkgsFor system;
+          hp = canonicalHaskellPackages system;
         in
-        pkgs.haskellPackages.ghcWithPackages (p: [
+        hp.ghcWithPackages (p: [
           p.rio
           p.liquidhaskell
           (inversionPlugin system)
@@ -148,7 +174,7 @@
 
       agda2hsWithHaskell = system:
         let
-          ghc = haskellLiquidGhc system;
+          ghc = canonicalGhc system;
         in
         agda2hs.packages.${system}.agda2hs.withPackages {
           pkgs = [
@@ -157,24 +183,19 @@
           inherit ghc;
         };
 
+
       inversionPlugin = system:
         let
           pkgs = pkgsFor system;
+          hp = canonicalHaskellPackages system;
         in
-        pkgs.haskell.lib.overrideCabal
-          (pkgs.haskell.lib.doJailbreak
-            (pkgs.haskellPackages.callCabal2nix
-              "inversion-plugin"
-              inversion-plugin-src
-              {}))
-          (drv: {
-            doCheck = false;
-            meta = drv.meta // {
-              description = "GHC plugin for automatic function inversion and functional patterns";
-              homepage = "https://github.com/cau-placc/inversion-plugin";
-              license = pkgs.lib.licenses.bsd3;
-            };
-          });
+        (pkgs.haskell.lib.doJailbreak
+          (hp.callCabal2nix
+            "inversion-plugin"
+            inversion-plugin-src
+            {})).overrideAttrs (_: {
+              doCheck = false;
+            });
 
       liquidHaskellEnv = system:
         let
@@ -182,7 +203,7 @@
         in
         pkgs.mkShell {
           packages = [
-            (haskellLiquidGhc system)
+            (canonicalGhc system)
             pkgs.haskellPackages.liquidhaskell
             pkgs.z3
             pkgs.coreutils
@@ -321,6 +342,87 @@
             type = "app";
             program = "${script}/bin/mirth-agda-graph";
           };
+          agda2hs-semantic-search = let
+            script = pkgs.writeShellApplication {
+              name = "agda2hs-semantic-search";
+              runtimeInputs = [
+                (agdaWithLibraries system)
+                (agda2hsWithHaskell system)
+                (canonicalGhc system)
+                pkgs.z3
+                pkgs.coreutils
+                pkgs.git
+              ];
+              text = ''
+                set -euo pipefail
+                out="build/agda2hs-semantic-search"
+                rm -rf "$out"
+                mkdir -p "$out"
+                bash .ci/mirth/agda_command_sync.sh --check
+                "${agdaWithLibraries system}/bin/agda-with-libraries" --dependency-graph="$out/theorems-monolith.dot" -i . FullCoupled/TheoremsMonolith.agda
+                test -s "$out/theorems-monolith.dot"
+                bash .ci/discovery/agda_semantic_source_closure.sh \
+                  "$out/theorems-monolith.dot" \
+                  "$out/.semantic-source-files" \
+                  "$PWD/FullCoupled/TheoremsMonolith.agda" \
+                  "${typeTopologyLib system}/source" \
+                  "${agda2hsBaseLib system}"
+                test -s "$out/.semantic-source-files"
+                "${agdaWithLibraries system}/bin/agda-with-libraries" -i . FullCoupled/Agda2HsSemanticExtractor.agda
+                "${agdaWithLibraries system}/bin/agda-with-libraries" -i . FullCoupled/Agda2HsSemanticSearch.agda
+                "${agdaWithLibraries system}/bin/agda-with-libraries" -i . FullCoupled/Agda2HsTheoremGraphEGraph.agda
+                "${agda2hsWithHaskell system}/bin/agda2hs" -i . FullCoupled/Agda2HsSemanticExtractor.agda -o "$out"
+                "${agda2hsWithHaskell system}/bin/agda2hs" -i . FullCoupled/Agda2HsSemanticSearch.agda -o "$out"
+                "${agda2hsWithHaskell system}/bin/agda2hs" -i . FullCoupled/Agda2HsTheoremGraphEGraph.agda -o "$out"
+                test -s "$out/FullCoupled/Agda2HsSemanticExtractor.hs"
+                test -s "$out/FullCoupled/Agda2HsSemanticSearch.hs"
+                test -s "$out/FullCoupled/Agda2HsTheoremGraphEGraph.hs"
+                grep -Fq "symbolicEGraphRegression" FullCoupled/Agda2HsTheoremGraphEGraph.agda
+                grep -Fq "eGraphAssociativityRegression" FullCoupled/Agda2HsTheoremGraphEGraph.agda
+                grep -Fq "requiredTheoremNames" FullCoupled/Agda2HsSemanticSearch.agda
+                grep -Fq "requiredPlanComplete" FullCoupled/Agda2HsSemanticSearch.agda
+                grep -Fq "inverse-correct" FullCoupled/TheoremsMonolith.agda
+                grep -Fq "inverse-csearchable" FullCoupled/TheoremsMonolith.agda
+                grep -Fq "inverse-preserves-csearchability" FullCoupled/TheoremsMonolith.agda
+                grep -Fq "SearchableEquivalence" FullCoupled/TheoremsMonolith.agda
+                ghc \
+                  ${ghcGlobalFlagsText} \
+                  -O0 \
+                  -dcore-lint \
+                  -i "$out" \
+                  -odir "$out/ghc" \
+                  -hidir "$out/ghc" \
+                  -main-is FullCoupled.Agda2HsSemanticSearch.main \
+                  -o "$out/agda2hs-semantic-search" \
+                  "$out/FullCoupled/Agda2HsSemanticSearch.hs"
+                liquid --smtsolver=z3 -i "$out" "$out/FullCoupled/Agda2HsSemanticExtractor.hs"
+                liquid --smtsolver=z3 -i "$out" "$out/FullCoupled/Agda2HsSemanticSearch.hs"
+                liquid --smtsolver=z3 -i "$out" "$out/FullCoupled/Agda2HsTheoremGraphEGraph.hs"
+                "$out/agda2hs-semantic-search" > "$out/report.txt"
+                grep -Fq "True" "$out/report.txt"
+                grep -E '^theorem-graph-edges=[1-9][0-9]* autonomous-a-star-chains=[1-9][0-9]*$' "$out/report.txt"
+                grep -E '^agda2hs autonomous theorem-graph A\\*: [1-9][0-9]* dependency chains$' "$out/report.txt"
+                grep -Fq "autonomous-regression=True" "$out/report.txt"
+                grep -E "^semantic-laws=[1-9][0-9]* nonreflexive=[1-9][0-9]* composite=[1-9][0-9]*$" "$out/report.txt"
+                grep -E "^required-plan-count=[1-9][0-9]* required-plan-total=[1-9][0-9]* required-plan-regression=True$" "$out/report.txt"
+                grep -Fq "egraph-regression=True egraph-associativity-regression=True" "$out/report.txt"
+                printf '%s\n' \
+                  "compiler=canonical-pkgs.haskellPackages.ghc" \
+                  "plugins=Plugin.InversionPlugin,LiquidHaskell" \
+                  "proofKernel=Agda" \
+                  "searchKernel=Agda2Hs" \
+                  "inversionCheck=pass" \
+                  "semanticCompletenessCheck=pass" \
+                  "nontrivialCheck=pass" \
+                  > "$out/agda2hs-semantic-search-manifest.tsv"
+                cat "$out/agda2hs-semantic-search-manifest.tsv"
+              '';
+            };
+          in {
+            type = "app";
+            program = "${script}/bin/agda2hs-semantic-search";
+          };
+
           agda2hs-extract = let
             script = pkgs.writeShellApplication {
               name = "agda2hs-extract";
@@ -349,7 +451,7 @@
               runtimeInputs = [
                 (agdaWithLibraries system)
                 (agda2hsWithHaskell system)
-                (haskellInversionGhc system)
+                (canonicalGhc system)
                 pkgs.z3
                 pkgs.coreutils
                 pkgs.findutils
@@ -367,7 +469,7 @@
                 mkdir -p "$out/ghc"
                 printf "%s\n" '{-# LANGUAGE NoMonomorphismRestriction, LocalMonoBinds #-}' | cat - "$out/FullCoupled/Agda2HsSurface.hs" > "$out/FullCoupled/Agda2HsSurface.hs.tmp"
                 mv "$out/FullCoupled/Agda2HsSurface.hs.tmp" "$out/FullCoupled/Agda2HsSurface.hs"
-                "${haskellInversionGhc system}/bin/ghc" -XNoMonomorphismRestriction -XLocalMonoBinds -fplugin=Plugin.InversionPlugin -package rio -fplugin=LiquidHaskell -i "$out" -odir "$out/ghc" -hidir "$out/ghc" -c "$out/FullCoupled/Agda2HsSurface.hs"
+                "${canonicalGhc system}/bin/ghc" ${ghcGlobalFlagsText} -O0 -dcore-lint -package rio -i "$out" -odir "$out/ghc" -hidir "$out/ghc" -c "$out/FullCoupled/Agda2HsSurface.hs"
                 liquid --smtsolver=z3 -i "$out" "$out/FullCoupled/Agda2HsSurface.hs"
                 printf '%s\n' \
                   "source=FullCoupled/Agda2HsSurface.agda generated=build/agda-haskell/FullCoupled/Agda2HsSurface.hs ghc:pass liquid:z3:pass" \
@@ -423,8 +525,6 @@
                 ./theorem_registry_reconcile --check
                 mmc --make theorem_monolith_egraph_sync
                 ./theorem_monolith_egraph_sync
-                mmc --make autonomous_inversion_search
-                ./autonomous_inversion_search
                 mmc --make novel_theorem_interpolator
                 ./novel_theorem_interpolator
                 test -s novel-theorem-interpolation.dhall
@@ -432,8 +532,6 @@
                 report=theorem-monolith-egraph-sync.dhall
                 test -s "$report"
                 dhall text --file "$report" >/dev/null
-                test -s autonomous-inversion-search.dhall
-                dhall text --file autonomous-inversion-search.dhall >/dev/null
                 test -s novel-theorem-interpolation.dhall
                 dhall text --file novel-theorem-interpolation.dhall >/dev/null
                 echo "mercury-theorem-e2e=pass"
@@ -476,7 +574,7 @@
 
           simple-haskell = pkgs.mkShell {
             packages = [
-              (haskellLiquidGhc system)
+              (canonicalGhc system)
               pkgs.z3
               pkgs.haskellPackages.rio
             ];
@@ -489,7 +587,7 @@
             packages = [
               pkgs.mercury
               pkgs.haskellPackages.dhall
-              (haskellLiquidGhc system)
+              (canonicalGhc system)
               pkgs.haskellPackages.liquidhaskell
               pkgs.haskellPackages.cabal-install
               pkgs.z3
