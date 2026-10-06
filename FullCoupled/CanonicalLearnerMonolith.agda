@@ -1372,7 +1372,7 @@ canonicalQLogControlFeedback : ∀ {A} → FullLearnerState A → Int8
 canonicalQLogControlFeedback s = coefficient (qLogControl s)
 
 canonicalQLogValueFeedback : ∀ {A} → FullLearnerState A → Int8
-canonicalQLogValueFeedback s = rationalCode (qLogValue s)
+canonicalQLogValueFeedback s = dyadicCode (qLogValue s)
 
 canonicalEndogenousFeedback : ∀ {A} → FullLearnerKernel A → FullLearnerState A → Int8
 canonicalEndogenousFeedback K s =
