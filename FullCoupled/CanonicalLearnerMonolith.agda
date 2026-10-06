@@ -94,7 +94,7 @@ open import Naturals.Properties
 open import Notation.CanonicalMap
 open import Notation.Order
 open import Order
-open import Prelude
+open import Haskell.Prelude
 open import Prelude.Char as Char
 open import Prelude.Nat.Properties using (add-assoc; add-suc-r; ≤-antisym; ≤-trans; n<1+n)
 open import Two
@@ -1212,6 +1212,7 @@ record FullLearnerState (A : Set) : Set₁ where
     lcbCounts : LCBCountState A
     qLogControl : SignedQLogControl
     qLogValue : Dyadic
+    haarAccumulator : HaarAccumulator
 open FullLearnerState public
 
 record FullLearnerKernel (A : Set) : Set₁ where
@@ -1316,7 +1317,7 @@ softSparse-zero-to-hardSparse K s h {a} distinct =
 
 replaceOptimizer : ∀ {A} → FullLearnerState A → F4IntUState → FullLearnerState A
 replaceOptimizer s o = fullLearnerState (watkins s) (gru s) o
-  (lcbCounts s) (qLogControl s) (qLogValue s)
+  (lcbCounts s) (qLogControl s) (qLogValue s) (haarAccumulator s)
 
 canonicalPolicy-optimizer-invariant :
   ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) (o : F4IntUState) →
@@ -1399,11 +1400,33 @@ canonicalWatkinsStep K s =
   watkinsStep (watkinsKernel K)
   (watkinsState (critic (watkins s)) (canonicalSignal K s) (trace (watkins s)))
 
+canonicalHaarAccumulatorStep :
+  ∀ {A} →
+  FullLearnerKernel A →
+  FullLearnerState A →
+  HaarAccumulator
+canonicalHaarAccumulatorStep K s =
+  haarAccumulatorStep
+    canonicalHaarFeaturedTransformer
+    (haarAccumulator s)
+    (canonicalSignal K s)
+
+canonicalHaarRecurrentInput :
+  ∀ {A} →
+  FullLearnerKernel A →
+  FullLearnerState A →
+  Int8
+canonicalHaarRecurrentInput K s =
+  haarQueryRead
+    canonicalHaarFeaturedTransformer
+    (canonicalHaarAccumulatorStep K s)
+    (canonicalSignal K s)
+
 canonicalGRUStep : ∀ {A} → FullLearnerKernel A → FullLearnerState A → GRUState
 canonicalGRUStep K s =
   gruStep
     (gru s)
-    (canonicalSignal K s)
+    (canonicalHaarRecurrentInput K s)
 
 canonicalPersistentGRUPreservation : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) →
   persistentGRU (canonicalGRUStep K s) ≡ persistentGRU (gru s)
@@ -1442,6 +1465,7 @@ canonicalFullStep K s =
   (canonicalCountStep K s)
   (canonicalQLogControlStep K s)
   (canonicalQLogStep K s)
+  (canonicalHaarAccumulatorStep K s)
 
 canonicalFullStep-watkins : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) → watkins (canonicalFullStep K s) ≡ canonicalWatkinsStep K s
 canonicalFullStep-watkins K s = refl
