@@ -8,7 +8,6 @@
   --guarded
   --exact-split
   --no-infer-absurd-clauses
-  --keep-covering-clauses
   --no-projection-like
   --erased-matches
   --erase-record-parameters
