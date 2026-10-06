@@ -81,10 +81,11 @@ open import Order
 open import Prelude
 open import Prelude.Char as Char
 open import Prelude.Nat.Properties using (add-assoc; add-suc-r; ≤-antisym; ≤-trans; n<1+n)
-open import Rationals.Addition
-open import Rationals.Negation
-open import Rationals.Order
-open import Rationals.Type
+open import Dyadics.Addition
+open import Dyadics.Negation
+open import Dyadics.Multiplication
+open import Dyadics.Order
+open import Dyadics.Type
 open import Two
 open import UF.Base
 open import UF.ClassicalLogic
