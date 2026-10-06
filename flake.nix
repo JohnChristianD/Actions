@@ -191,23 +191,6 @@
         };
 
 
-      liquidHaskellEnv = system:
-        let
-          pkgs = pkgsFor system;
-        in
-        pkgs.mkShell {
-          packages = [
-            (canonicalGhc system)
-            (canonicalHaskellPackages system).liquidhaskell
-            pkgs.z3
-            pkgs.coreutils
-            pkgs.findutils
-            pkgs.git
-          ];
-          shellHook = ''
-            export LIQUID_SOLVER=z3
-          '';
-        };
 
     in
     {
