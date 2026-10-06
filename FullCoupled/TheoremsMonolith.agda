@@ -2,10 +2,8 @@
 {-# OPTIONS
   --no-fast-reduce
   --lossy-unification
-  --backtracking-instance-search
   --experimental-lazy-instances
   --confluence-check
-  --syntactic-equality
   --polarity
   --auto-inline
   --guarded
@@ -13,7 +11,9 @@
   --no-infer-absurd-clauses
   --keep-covering-clauses
   --no-projection-like
-  --erasure
+  --erased-matches
+  --erase-record-parameters
+  --without-K
 #-}
 -- END MIRTH-SYNC GLOBAL OPTIONS
 
@@ -101,6 +101,9 @@ open import Dyadics.Negation
 open import Dyadics.Multiplication
 open import Dyadics.Order
 open import Dyadics.Type
+open import DyadicsInductive.Dyadics
+open import DyadicsInductive.DyadicOrder
+open import DyadicsInductive.DyadicOrder-PropTrunc
 open import Two
 open import UF.Base
 open import UF.ClassicalLogic
