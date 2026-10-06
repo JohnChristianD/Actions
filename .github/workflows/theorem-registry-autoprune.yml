@@ -54,7 +54,7 @@ jobs:
           manifest=build/agda2hs-semantic-search/agda2hs-semantic-search-manifest.tsv
           test -s "$manifest"
           grep -Fq 'compiler=canonicalHaskellPackages.ghc-9.2.4' "$manifest"
-          grep -Fq 'plugins=Plugin.InversionPlugin,LiquidHaskell' "$manifest"
+          grep -Fq 'plugins=none' "$manifest"
           grep -Fq 'proofKernel=Agda' "$manifest"
           grep -Fq 'searchKernel=Agda2Hs' "$manifest"
           grep -Fq 'semanticCompletenessCheck=pass' "$manifest"
