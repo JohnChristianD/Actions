@@ -6568,6 +6568,48 @@ record KLAPrecisionBridgeWitness : Set₁ where
 -- equivalence claim.
 ------------------------------------------------------------------------
 
+kla-affine-canonical-path-sound :
+  ∀ a →
+  interpret klaAffineEGraphSemantics (klaMean a)
+  ≡
+  interpret klaAffineEGraphSemantics (canonicalMean a)
+kla-affine-canonical-path-sound a =
+  eGraph-certified-edge-sound (kla-affine-canonical-edge a)
+
+record CanonicalHaarKLAAffineCompositionTheorem : Set₁ where
+  constructor canonicalHaarKLAAffineCompositionTheorem
+  field
+    haarRNN :
+      ∀ {A} (K : C.FullLearnerKernel A) (s : C.FullLearnerState A) →
+      C.gru (C.canonicalFullStep K s) ≡
+      C.gruStep
+        (C.gru s)
+        (C.canonicalHaarRecurrentInput K s)
+    klaAffineScan :
+      ∀ f₁ b₁ f₂ b₂ →
+      C._∘ₘ_
+        (C.monoidAffine f₂ b₂)
+        (C.monoidAffine f₁ b₁)
+      ≡
+      C.monoidAffine
+        (C.int8Mul f₂ f₁)
+        (C.int8Add (C.int8Mul f₂ b₁) b₂)
+    klaCanonicalEdge :
+      ∀ a →
+      interpret klaAffineEGraphSemantics (klaMean a)
+      ≡
+      interpret klaAffineEGraphSemantics (canonicalMean a)
+
+open CanonicalHaarKLAAffineCompositionTheorem public
+
+canonical-haar-kla-affine-composition-theorem :
+  CanonicalHaarKLAAffineCompositionTheorem
+canonical-haar-kla-affine-composition-theorem =
+  canonicalHaarKLAAffineCompositionTheorem
+    canonicalFullStep-haar-rnn-composition
+    kla-affine-composition
+    kla-affine-canonical-path-sound
+
 record CanonicalFullCompositionGraphTheorem : Set₁ where
   constructor canonicalFullCompositionGraphTheorem
   field
