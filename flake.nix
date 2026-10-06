@@ -531,7 +531,6 @@
             ];
             shellHook = ''
               export AGDA_COMMAND="${agdaWithLibraries system}/bin/agda-with-libraries"
-              export LIQUID_SOLVER=z3
             '';
           };
         });
