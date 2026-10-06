@@ -13,11 +13,13 @@
   --erased-matches
   --erase-record-parameters
   --without-K
+  --level-universe
 #-}
 -- END MIRTH-SYNC GLOBAL OPTIONS
 
 {-# OPTIONS
   --safe
+  --erased-cubical
 #-}
 
 ------------------------------------------------------------------------
