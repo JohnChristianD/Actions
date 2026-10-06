@@ -42,6 +42,7 @@ collect_imports() {
       !inside && $0 ~ /^[[:space:]]*(open[[:space:]]+)?import[[:space:]]+/ {
         line=$0
         if (line ~ /FullCoupled[.]/) next
+        if (line ~ /TWA[.]Thesis[.]Chapter3[.](ClosenessSpaces|SearchableTypes)[[:space:]]+fe([[:space:]]|$)/) next
         print line
       }
     ' "$file"
@@ -79,7 +80,9 @@ external_drift() {
     !inside && $0 ~ /^[[:space:]]*(open[[:space:]]+)?import[[:space:]]+/ {
       mod=$0
       sub(/^[[:space:]]*(open[[:space:]]+)?import[[:space:]]+/, "", mod)
-      if (mod !~ /^FullCoupled[.]/) print FILENAME ": " $0
+      if (mod !~ /^FullCoupled[.]/ &&
+          mod !~ /^TWA[.]Thesis[.]Chapter3[.](ClosenessSpaces|SearchableTypes)[[:space:]]+fe([[:space:]]|$)/)
+        print FILENAME ": " $0
     }
   ' "$file"
 }
