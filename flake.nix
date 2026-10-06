@@ -3,7 +3,7 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/0439f75413ace6c42e4c722cafd4d6e5401de648";
-    nixpkgs-ghc924.url = "github:NixOS/nixpkgs/a62e6edd6d5e1fa0329b8653c801147986f8d446";
+    nixpkgs-ghc884.url = "github:NixOS/nixpkgs/5c79b3dda06744a55869cae2cba6873fbbd64394";
     typetopology = {
       url = "github:martinescardo/TypeTopology/8761920fdaec20c9dada7ff1d6628c09491245c5";
       flake = false;
@@ -11,14 +11,19 @@
     agda2hs = {
       url = "github:agda/agda2hs/4e6de7ec2109b3bed6a820728b57d31ad7ffd698";
     };
+    inversion-plugin-src = {
+      url = "github:cau-placc/inversion-plugin/aad4886742bed127b63f8378b1ec5fe8987f8e4d";
+      flake = false;
+    };
   };
 
   outputs = {
     self,
     nixpkgs,
-    nixpkgs-ghc924,
+    nixpkgs-ghc884,
     typetopology,
-    agda2hs
+    agda2hs,
+    inversion-plugin-src
   }:
     let
       systems = [
@@ -38,35 +43,19 @@
 
       canonicalHaskellPackages = system:
         let
-          pkgs = import nixpkgs-ghc924 {
+          pkgs = import nixpkgs-ghc884 {
             inherit system;
             config.allowBroken = true;
           };
         in
-        pkgs.haskell.packages.ghc924.extend (final: prev: {
+        pkgs.haskell.packages.ghc884.extend (final: prev: {
           tree-monad =
-            pkgs.haskell.lib.overrideCabal
-              (final.callHackage "tree-monad" "0.3.2" {})
-              (_: {
-                postPatch = ''
-                  substituteInPlace tree-monad.cabal \
-                    --replace-fail '<4.16.3' '<4.17'
-                '';
-              });
+            pkgs.haskell.lib.doJailbreak prev.tree-monad;
           parallel-tree-search =
-            pkgs.haskell.lib.overrideCabal
-              (final.callHackage "parallel-tree-search" "0.4.2" {})
-              (_: {
-                postPatch = ''
-                  substituteInPlace parallel-tree-search.cabal \
-                    --replace-warn '< 4.15' '< 4.17' \
-                    --replace-warn '< 4.16' '< 4.17'
-                '';
+            pkgs.haskell.lib.doJailbreak
+              (prev.parallel-tree-search.override {
+                tree-monad = final.tree-monad;
               });
-          smtlib-backends-process =
-            pkgs.haskell.lib.overrideCabal prev.smtlib-backends-process (drv: {
-              testSystemDepends = (drv.testSystemDepends or [ ]) ++ [ pkgs.z3 ];
-            });
         });
 
       typeTopologyLib = system:
@@ -163,10 +152,17 @@
       ghcLanguageFlags = [
         "-XNoMonomorphismRestriction"
         "-XLocalMonoBinds"
+        "-XTemplateHaskell"
+        "-XFlexibleContexts"
+      ];
+
+      ghcPluginFlags = [
+        "-fplugin=Plugin.InversionPlugin"
+        "-fplugin=LiquidHaskell"
       ];
 
       ghcGlobalFlags =
-        ghcLanguageFlags;
+        ghcLanguageFlags ++ ghcPluginFlags;
 
       ghcGlobalFlagsText =
         builtins.concatStringsSep " " ghcGlobalFlags;
@@ -177,8 +173,27 @@
         in
         hp.ghcWithPackages (p: [
           p.rio
+          p.liquidhaskell
+          (inversionPlugin system)
         ]);
 
+      inversionPlugin = system:
+        let
+          pkgs = pkgsFor system;
+          hp = canonicalHaskellPackages system;
+          drv = pkgs.haskell.lib.enableCabalFlag
+            (pkgs.haskell.lib.disableCabalFlag
+              (pkgs.haskell.lib.doJailbreak
+                (hp.callCabal2nix
+                  "inversion-plugin"
+                  inversion-plugin-src
+                  {}))
+              "use-bfs")
+            "use-cs";
+        in
+        drv.overrideAttrs (_: {
+          doCheck = false;
+        });
       agda2hsWithHaskell = system:
         let
           ghc = canonicalGhc system;
@@ -361,7 +376,7 @@
                 grep -Fq "inverse-preserves-csearchability" FullCoupled/TheoremsMonolith.agda
                 grep -Fq "SearchableEquivalence" FullCoupled/TheoremsMonolith.agda
                 ghc \
-                  ${builtins.concatStringsSep " " ghcLanguageFlags} \
+                  ${ghcGlobalFlagsText} \
                   -O0 \
                   -dcore-lint \
                   -i "$out" \
@@ -378,9 +393,13 @@
                 grep -E "^semantic-laws=[1-9][0-9]* nonreflexive=[1-9][0-9]* composite=[1-9][0-9]*$" "$out/report.txt"
                 grep -E "^required-plan-count=[1-9][0-9]* required-plan-total=[1-9][0-9]* required-plan-regression=True$" "$out/report.txt"
                 grep -Fq "egraph-regression=True egraph-associativity-regression=True" "$out/report.txt"
+                liquid --smtsolver=z3 -i "$out" "$out/FullCoupled/Agda2HsSemanticExtractor.hs"
+                liquid --smtsolver=z3 -i "$out" "$out/FullCoupled/Agda2HsSemanticSearch.hs"
+                liquid --smtsolver=z3 -i "$out" "$out/FullCoupled/Agda2HsTheoremGraphEGraph.hs"
                 printf '%s\n' \
-                  "compiler=canonicalHaskellPackages.ghc-9.2.4" \
-                  "plugins=none" \
+                  "compiler=canonicalHaskellPackages.ghc-8.8.4" \
+                  "plugins=Plugin.InversionPlugin,LiquidHaskell" \
+                  "inversionCheck=pass" \
                   "proofKernel=Agda" \
                   "searchKernel=Agda2Hs" \
                   "semanticCompletenessCheck=pass" \
