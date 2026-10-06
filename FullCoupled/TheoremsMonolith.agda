@@ -6156,6 +6156,261 @@ canonical-integer-haar-scaled-orthogonality-theorem =
     canonicalIntegerHaarCross
     canonicalIntegerHaarEnergy
 
+
+------------------------------------------------------------------------
+-- Full-composition theorem hub.
+--
+-- The graph connects the actual representation stack rather than
+-- treating Haar features, recurrent composition, Watkins/F4 coupling,
+-- and permutation obstruction as unrelated theorem islands.
+------------------------------------------------------------------------
+
+canonicalHaarAttentionRecurrent :
+  C.HaarAccumulator →
+  List C.Int8 →
+  C.GRUState →
+  C.GRUState
+canonicalHaarAttentionRecurrent accumulator xs s =
+  C.recurrentListState
+    C.canonicalGRURecurrentNetwork
+    (C.canonicalHaarFeaturedLinearScan accumulator xs)
+    s
+
+recurrentListState-append :
+  ∀ {State Input : Set}
+  (R : C.RecurrentNetwork State Input)
+  (xs ys : List Input)
+  (s : State) →
+  C.recurrentListState R (xs ++ ys) s
+  ≡
+  C.recurrentListState R ys
+    (C.recurrentListState R xs s)
+recurrentListState-append R [] ys s = refl
+recurrentListState-append R (x ∷ xs) ys s =
+  recurrentListState-append
+    R
+    xs
+    ys
+    (C.runNetwork R s x)
+
+haarAccumulatorScan :
+  C.HaarFeaturedLinearTransformer →
+  C.HaarAccumulator →
+  List C.Int8 →
+  C.HaarAccumulator
+haarAccumulatorScan T accumulator [] = accumulator
+haarAccumulatorScan T accumulator (x ∷ xs) =
+  haarAccumulatorScan
+    T
+    (C.haarAccumulatorStep T accumulator x)
+    xs
+
+haarLinearTransform-append :
+  ∀ (T : C.HaarFeaturedLinearTransformer)
+  (accumulator : C.HaarAccumulator)
+  (xs ys : List C.Int8) →
+  C.haarLinearTransform T accumulator (xs ++ ys)
+  ≡
+  C.haarLinearTransform T accumulator xs ++
+  C.haarLinearTransform
+    T
+    (haarAccumulatorScan T accumulator xs)
+    ys
+haarLinearTransform-append T accumulator [] ys =
+  refl
+haarLinearTransform-append T accumulator (x ∷ xs) ys =
+  cong
+    (λ tail →
+      let
+        nextAccumulator =
+          C.haarAccumulatorStep T accumulator x
+        output =
+          C.haarQueryRead T nextAccumulator x
+      in output ∷ tail)
+    (haarLinearTransform-append
+      T
+      (C.haarAccumulatorStep T accumulator x)
+      xs
+      ys)
+
+canonicalHaarAttentionRecurrent-append :
+  ∀ (accumulator : C.HaarAccumulator)
+  (xs ys : List C.Int8)
+  (s : C.GRUState) →
+  canonicalHaarAttentionRecurrent
+    accumulator
+    (xs ++ ys)
+    s
+  ≡
+  canonicalHaarAttentionRecurrent
+    (haarAccumulatorScan
+      C.canonicalHaarFeaturedTransformer
+      accumulator
+      xs)
+    ys
+    (canonicalHaarAttentionRecurrent accumulator xs s)
+canonicalHaarAttentionRecurrent-append accumulator xs ys s =
+  trans
+    (cong
+      (λ outputs →
+        C.recurrentListState
+          C.canonicalGRURecurrentNetwork
+          outputs
+          s)
+      (haarLinearTransform-append
+        C.canonicalHaarFeaturedTransformer
+        accumulator
+        xs
+        ys))
+    (recurrentListState-append
+      C.canonicalGRURecurrentNetwork
+      (C.canonicalHaarFeaturedLinearScan accumulator xs)
+      (C.canonicalHaarFeaturedLinearScan
+        (haarAccumulatorScan
+          C.canonicalHaarFeaturedTransformer
+          accumulator
+          xs)
+        ys)
+      s)
+
+canonicalHaarFeature-recurrent-step :
+  ∀ (s : C.GRUState) (x : C.Int8) →
+  C.gruStep
+    s
+    (int8Sub
+      (proj₁ (C.canonicalCReLU8 x))
+      (proj₂ (C.canonicalCReLU8 x)))
+  ≡
+  C.gruStep s x
+canonicalHaarFeature-recurrent-step s x =
+  cong
+    (C.gruStep s)
+    (C.canonicalHaarFeatureReconstruct x)
+
+canonicalHaarFeature-recurrent-prefix :
+  ∀ (xs : List C.Int8) (s : C.GRUState) →
+  C.recurrentListState
+    C.canonicalGRURecurrentNetwork
+    (map
+      (λ x →
+        int8Sub
+          (proj₁ (C.canonicalCReLU8 x))
+          (proj₂ (C.canonicalCReLU8 x)))
+      xs)
+    s
+  ≡
+  C.recurrentListState
+    C.canonicalGRURecurrentNetwork
+    xs
+    s
+canonicalHaarFeature-recurrent-prefix [] s =
+  refl
+canonicalHaarFeature-recurrent-prefix (x ∷ xs) s =
+  trans
+    (canonicalHaarFeature-recurrent-prefix
+      xs
+      (C.gruStep
+        s
+        (int8Sub
+          (proj₁ (C.canonicalCReLU8 x))
+          (proj₂ (C.canonicalCReLU8 x)))))
+    (cong
+      (C.recurrentListState
+        C.canonicalGRURecurrentNetwork
+        xs)
+      (canonicalHaarFeature-recurrent-step s x))
+
+record CanonicalHaarRecurrentCompositionTheorem : Set₁ where
+  constructor canonicalHaarRecurrentCompositionTheorem
+  field
+    haarOrthogonality :
+      CanonicalIntegerHaarScaledOrthogonalityTheorem
+    cReLUInjective :
+      ∀ {x y : C.Int8} →
+      C.canonicalCReLU8 x ≡
+      C.canonicalCReLU8 y →
+      x ≡ y
+    attentionAppend :
+      ∀ (accumulator : C.HaarAccumulator)
+      (xs ys : List C.Int8)
+      (s : C.GRUState) →
+      canonicalHaarAttentionRecurrent
+        accumulator
+        (xs ++ ys)
+        s
+      ≡
+      canonicalHaarAttentionRecurrent
+        (haarAccumulatorScan
+          C.canonicalHaarFeaturedTransformer
+          accumulator
+          xs)
+        ys
+        (canonicalHaarAttentionRecurrent accumulator xs s)
+    reconstructedStep :
+      ∀ (s : C.GRUState) (x : C.Int8) →
+      C.gruStep
+        s
+        (int8Sub
+          (proj₁ (C.canonicalCReLU8 x))
+          (proj₂ (C.canonicalCReLU8 x)))
+      ≡
+      C.gruStep s x
+    reconstructedPrefix :
+      ∀ (xs : List C.Int8) (s : C.GRUState) →
+      C.recurrentListState
+        C.canonicalGRURecurrentNetwork
+        (map
+          (λ x →
+            int8Sub
+              (proj₁ (C.canonicalCReLU8 x))
+              (proj₂ (C.canonicalCReLU8 x)))
+          xs)
+        s
+      ≡
+      C.recurrentListState
+        C.canonicalGRURecurrentNetwork
+        xs
+        s
+    recurrentComposition :
+      RecurrentPrefixMonoidHomomorphism
+        C.GRUState
+        C.Int8
+
+record CanonicalFullCompositionGraphTheorem : Set₁ where
+  constructor canonicalFullCompositionGraphTheorem
+  field
+    haarRecurrent :
+      CanonicalHaarRecurrentCompositionTheorem
+    gruf4Watkins :
+      CanonicalGRUF4WatkinsPrefixCompositionTheorem
+    connectedLearner :
+      CanonicalFullLearnerConnectedScanConjugacyTheorem
+    permutationBoundary :
+      CanonicalLearnerPermutationCompositionImpossibilityTheorem
+    sparsemaxComposition :
+      CanonicalPolymorphicSparsemaxCompositionTheorem
+
+canonical-haar-recurrent-composition-theorem :
+  CanonicalHaarRecurrentCompositionTheorem
+canonical-haar-recurrent-composition-theorem =
+  canonicalHaarRecurrentCompositionTheorem
+    canonical-integer-haar-scaled-orthogonality-theorem
+    C.canonicalHaarFeatureInjective
+    canonicalHaarAttentionRecurrent-append
+    canonicalHaarFeature-recurrent-step
+    canonicalHaarFeature-recurrent-prefix
+    canonical-recurrent-prefix-monoid-homomorphism
+
+canonical-full-composition-graph-theorem :
+  CanonicalFullCompositionGraphTheorem
+canonical-full-composition-graph-theorem =
+  canonicalFullCompositionGraphTheorem
+    canonical-haar-recurrent-composition-theorem
+    canonical-gruf4-watkins-prefix-composition-theorem
+    canonical-full-learner-connected-scan-conjugacy-theorem
+    canonical-learner-permutation-composition-impossibility-theorem
+    canonical-polymorphic-sparsemax-egraph-theorem
+
 canonicalAStarZeroCost :
   (zero + zero) ≡ zero
 canonicalAStarZeroCost = refl
