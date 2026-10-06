@@ -185,11 +185,6 @@
               {}))
           (drv: {
             doCheck = false;
-            meta = drv.meta // {
-              description = "GHC plugin for automatic function inversion and functional patterns";
-              homepage = "https://github.com/cau-placc/inversion-plugin";
-              license = pkgs.lib.licenses.bsd3;
-            };
           });
 
       agda2hsWithHaskell = system:
