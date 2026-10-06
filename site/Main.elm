@@ -293,9 +293,7 @@ styleSheet =
                 , ".records{display:block;}"
                 , ".record{border-top:1px solid color-mix(in srgb,"
                 , perceptualCss ink
-                , " 18%,transparent);padding:1rem 0;background:transparent;"
-                , perceptualCss accent
-                , " 0%,transparent);}"
+                , " 18%,transparent);padding:1rem 0;background:transparent;}"
                 , ".record:hover{border-color:"
                 , perceptualCss accent
                 , ";}"
@@ -309,9 +307,7 @@ styleSheet =
                 , ";overflow-wrap:anywhere;}"
                 , ".map{border-top:1px solid color-mix(in srgb,"
                 , perceptualCss ink
-                , " 18%,transparent);background:transparent;"
-                , perceptualCss accent
-                , " 0%,transparent);padding:1rem 0;overflow:auto;}"
+                , " 18%,transparent);background:transparent;padding:1rem 0;overflow:auto;}"
                 , ".map svg{display:block;width:100%;min-width:38rem;height:22rem;}"
                 , ".relation{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:.75rem;align-items:center;padding:.7rem 0;border-bottom:1px solid color-mix(in srgb,"
                 , perceptualCss ink
