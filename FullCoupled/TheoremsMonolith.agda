@@ -1723,7 +1723,7 @@ canonical-integer-layernorm-egraph-astar-infinite-horizon-stability-theorem =
 ------------------------------------------------------------------------
 -- Interpolated execution bridge.
 --
--- Mercury supplies the dependency graph; Agda supplies the proof term.
+-- Agda owns the dependency graph, proof term, semantic search, and extraction.
 -- The semantic result is stronger than mere eventual convergence: every
 -- element of the infinite stable tail is semantically equal to the exact
 -- radicand target. The monadic/Haskell surface and plan monoid remain typed
