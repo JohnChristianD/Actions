@@ -195,16 +195,17 @@
           hp = canonicalHaskellPackages system;
         in
         pkgs.haskell.lib.enableCabalFlag
-          "use-cs"
           (pkgs.haskell.lib.disableCabalFlag
-            "use-bfs"
             (pkgs.haskell.lib.doJailbreak
               (hp.callCabal2nix
                 "inversion-plugin"
                 inversion-plugin-src
-                {}))).overrideAttrs (_: {
-                  doCheck = false;
-                });
+                {}))
+            "use-bfs")
+          "use-cs"
+        |> drv: drv.overrideAttrs (_: {
+          doCheck = false;
+        });
 
       liquidHaskellEnv = system:
         let
