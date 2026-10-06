@@ -64,7 +64,8 @@
               (_: {
                 postPatch = ''
                   substituteInPlace parallel-tree-search.cabal \
-                    --replace-fail '< 4.15' '< 4.17'
+                    --replace-warn '< 4.15' '< 4.17' \
+                    --replace-warn '< 4.16' '< 4.17'
                 '';
               });
           smtlib-backends-process =
