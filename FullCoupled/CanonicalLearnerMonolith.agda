@@ -24,8 +24,8 @@
 -- Canonical learner semantics.
 --
 -- This module is the executable/type-level source of the coupled learner:
--- recurrent monoid-LSTM state, Watkins state, F4/L2 optimizer state, LCB counts,
--- sparse policy readout, q-log state, the persistent learner channels, and the
+-- recurrent monoid-LSTM state, Watkins state, custom q-projected sign-IDBD w/ coupled L2 optimizer state,
+-- LCB counts, sparse policy readout, q-log state, the persistent learner channels, and the
 -- endogenous feedback signal. The definitions below determine what the
 -- learner actually does; theorem modules consume these definitions.
 --
