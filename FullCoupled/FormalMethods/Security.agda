@@ -80,6 +80,7 @@ open import MonadOnTypes.J
 open import MonadOnTypes.JK R
 open import MonadOnTypes.K
 open import Naturals
+open import Naturals.Exponentiation
 open import Naturals.Properties
 open import Notation.CanonicalMap
 open import Notation.Order
