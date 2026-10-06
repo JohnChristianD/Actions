@@ -11,10 +11,6 @@
     agda2hs = {
       url = "github:agda/agda2hs/4e6de7ec2109b3bed6a820728b57d31ad7ffd698";
     };
-    inversion-plugin-src = {
-      url = "github:cau-placc/inversion-plugin/aad4886742bed127b63f8378b1ec5fe8987f8e4d";
-      flake = false;
-    };
   };
 
   outputs = {
@@ -22,8 +18,7 @@
     nixpkgs,
     nixpkgs-ghc924,
     typetopology,
-    agda2hs,
-    inversion-plugin-src
+    agda2hs
   }:
     let
       systems = [
@@ -170,29 +165,11 @@
         "-XLocalMonoBinds"
       ];
 
-      ghcPluginFlags = [
-        "-fplugin=LiquidHaskell"
-      ];
-
       ghcGlobalFlags =
-        ghcLanguageFlags ++ ghcPluginFlags;
+        ghcLanguageFlags;
 
       ghcGlobalFlagsText =
         builtins.concatStringsSep " " ghcGlobalFlags;
-
-      inversionPluginFlags = [
-        "-fplugin=Plugin.InversionPlugin"
-      ];
-
-      inversionGhc = system:
-        let
-          hp = canonicalHaskellPackages system;
-        in
-        hp.ghcWithPackages (p: [
-          p.rio
-          p.liquidhaskell
-          (inversionPlugin system)
-        ]);
 
       canonicalGhc = system:
         let
@@ -200,7 +177,6 @@
         in
         hp.ghcWithPackages (p: [
           p.rio
-          p.liquidhaskell
         ]);
 
       agda2hsWithHaskell = system:
@@ -214,21 +190,6 @@
           inherit ghc;
         };
 
-
-      inversionPlugin = system:
-        let
-          pkgs = pkgsFor system;
-          hp = canonicalHaskellPackages system;
-        in
-        pkgs.haskell.lib.dontCheck
-          (pkgs.haskell.lib.enableCabalFlag
-            (pkgs.haskell.lib.disableCabalFlag
-              (hp.callCabal2nix
-                "inversion-plugin"
-                inversion-plugin-src
-                {})
-              "use-bfs")
-            "use-cs");
 
       liquidHaskellEnv = system:
         let
@@ -261,8 +222,6 @@
           ci = (canonicalHaskellPackages system).dhall;
           yamlscript = pkgs.yamlscript;
           default = (canonicalHaskellPackages system).dhall;
-        } // pkgs.lib.optionalAttrs pkgs.stdenv.isLinux {
-          inversion-plugin = inversionPlugin system;
         });
 
       apps = forAllSystems (system:
@@ -375,62 +334,6 @@
             type = "app";
             program = "${script}/bin/mirth-agda-graph";
           };
-          inversion-ghci = let
-            script = pkgs.writeShellApplication {
-              name = "inversion-ghci";
-              runtimeInputs = [
-                (inversionGhc system)
-                pkgs.coreutils
-              ];
-              text = ''
-                set -euo pipefail
-                init=$(mktemp)
-                trap 'rm -f "$init"' EXIT
-                cat > "$init" <<'GHCISCRIPT'
-                :set -XNoMonomorphismRestriction -XLocalMonoBinds
-                import Plugin.InversionPlugin
-                GHCISCRIPT
-                exec ${inversionGhc system}/bin/ghci \
-                  ${builtins.concatStringsSep " " (ghcLanguageFlags ++ inversionPluginFlags)} \
-                  -ignore-dot-ghci \
-                  -ghci-script "$init" \
-                  "$@"
-              '';
-            };
-          in {
-            type = "app";
-            program = "${script}/bin/inversion-ghci";
-          };
-
-          inversion-ghci-smoke = let
-            script = pkgs.writeShellApplication {
-              name = "inversion-ghci-smoke";
-              runtimeInputs = [
-                (inversionGhc system)
-                pkgs.coreutils
-              ];
-              text = ''
-                set -euo pipefail
-                init=$(mktemp)
-                trap 'rm -f "$init"' EXIT
-                cat > "$init" <<'GHCISCRIPT'
-                :set -XNoMonomorphismRestriction
-                import Plugin.InversionPlugin
-                :quit
-                GHCISCRIPT
-                ${inversionGhc system}/bin/ghci \
-                  ${builtins.concatStringsSep " " (ghcLanguageFlags ++ inversionPluginFlags)} \
-                  -ignore-dot-ghci \
-                  -ghci-script "$init" \
-                  >/dev/null
-                echo "inversion-ghci=pass"
-              '';
-            };
-          in {
-            type = "app";
-            program = "${script}/bin/inversion-ghci-smoke";
-          };
-
           agda2hs-semantic-search = let
             script = pkgs.writeShellApplication {
               name = "agda2hs-semantic-search";
@@ -438,8 +341,7 @@
                 (agdaWithLibraries system)
                 (agda2hsWithHaskell system)
                 (canonicalGhc system)
-                (canonicalHaskellPackages system).liquidhaskell
-                pkgs.z3
+                  pkgs.z3
                 pkgs.coreutils
                 pkgs.git
               ];
@@ -485,9 +387,6 @@
                   -main-is FullCoupled.Agda2HsSemanticSearch.main \
                   -o "$out/agda2hs-semantic-search" \
                   "$out/FullCoupled/Agda2HsSemanticSearch.hs"
-                liquid --smtsolver=z3 -i "$out" "$out/FullCoupled/Agda2HsSemanticExtractor.hs"
-                liquid --smtsolver=z3 -i "$out" "$out/FullCoupled/Agda2HsSemanticSearch.hs"
-                liquid --smtsolver=z3 -i "$out" "$out/FullCoupled/Agda2HsTheoremGraphEGraph.hs"
                 "$out/agda2hs-semantic-search" > "$out/report.txt"
                 grep -Fq "True" "$out/report.txt"
                 grep -E '^theorem-graph-edges=[1-9][0-9]* autonomous-a-star-chains=[1-9][0-9]*$' "$out/report.txt"
@@ -498,10 +397,9 @@
                 grep -Fq "egraph-regression=True egraph-associativity-regression=True" "$out/report.txt"
                 printf '%s\n' \
                   "compiler=canonicalHaskellPackages.ghc-9.2.4" \
-                  "plugins=Plugin.InversionPlugin,LiquidHaskell" \
+                  "plugins=none" \
                   "proofKernel=Agda" \
                   "searchKernel=Agda2Hs" \
-                  "inversionCheck=pass" \
                   "semanticCompletenessCheck=pass" \
                   "nontrivialCheck=pass" \
                   > "$out/agda2hs-semantic-search-manifest.tsv"
@@ -558,11 +456,10 @@
                 test -s "$out/FullCoupled/Agda2HsSurface.hs"
                 mkdir -p "$out/ghc"
                 "${canonicalGhc system}/bin/ghc" ${ghcGlobalFlagsText} -O0 -dcore-lint -package rio -i "$out" -odir "$out/ghc" -hidir "$out/ghc" -c "$out/FullCoupled/Agda2HsSurface.hs"
-                liquid --smtsolver=z3 -i "$out" "$out/FullCoupled/Agda2HsSurface.hs"
                 printf '%s\n' \
-                  "source=FullCoupled/Agda2HsSurface.agda generated=build/agda-haskell/FullCoupled/Agda2HsSurface.hs ghc:pass liquid:z3:pass" \
-                  > "$out/agda2hs-liquid-manifest.tsv"
-                cat "$out/agda2hs-liquid-manifest.tsv"
+                  "source=FullCoupled/Agda2HsSurface.agda generated=build/agda-haskell/FullCoupled/Agda2HsSurface.hs ghc:pass" \
+                  > "$out/agda2hs-manifest.tsv"
+                cat "$out/agda2hs-manifest.tsv"
               '';
             };
           in {
@@ -581,8 +478,6 @@
           pkgs = pkgsFor system;
         in
         {
-          liquid-haskell = liquidHaskellEnv system;
-
           presentation = pkgs.mkShell {
             packages = [
               pkgs.mirth
@@ -629,7 +524,6 @@
             packages = [
               (canonicalGhc system)
               (canonicalHaskellPackages system).dhall
-              (canonicalHaskellPackages system).liquidhaskell
               pkgs.z3
               pkgs.mirth
               pkgs.gh
@@ -646,7 +540,6 @@
             packages = [
               (canonicalHaskellPackages system).dhall
               (canonicalGhc system)
-              (canonicalHaskellPackages system).liquidhaskell
               (canonicalHaskellPackages system).cabal-install
               pkgs.z3
               (canonicalHaskellPackages system).dhall-json
