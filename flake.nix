@@ -36,12 +36,6 @@
       pkgsFor = system:
         import nixpkgs { inherit system; };
 
-      pluginPkgsFor = system:
-        import nixpkgs {
-          inherit system;
-          config.allowBroken = true;
-        };
-
       typeTopologyLib = system:
         let
           pkgs = pkgsFor system;
@@ -154,27 +148,12 @@
       canonicalGhc = system:
         let
           pkgs = pkgsFor system;
-          hp = pkgs.haskell.packages.ghc9124;
-          baseGhc =
-            hp.ghcWithPackages (p: [
-              p.rio
-              p.liquidhaskell
-              (inversionPlugin system)
-            ]);
         in
-        pkgs.symlinkJoin {
-          name = "canonical-ghc-ghc9124-with-global-flags";
-          paths = [ baseGhc ];
-          nativeBuildInputs = [ pkgs.makeWrapper ];
-          postBuild = ''
-            wrapProgram "$out/bin/ghc" --add-flags "${ghcGlobalFlagsText}"
-            wrapProgram "$out/bin/ghci" --add-flags "${ghcGlobalFlagsText}"
-          '';
-          passthru = {
-            inherit baseGhc;
-            compilerVersion = "9.12.4";
-          };
-        };
+        pkgs.haskellPackages.ghcWithPackages (p: [
+          p.rio
+          p.liquidhaskell
+          (inversionPlugin system)
+        ]);
 
       agda2hsWithHaskell = system:
         let
@@ -190,37 +169,22 @@
 
       inversionPlugin = system:
         let
-          pkgs = pluginPkgsFor system;
-          hp = pkgs.haskell.packages.ghc9124;
-          pluginPackages =
-            hp.override {
-              overrides = self: super: {
-                tree-monad =
-                  pkgs.haskell.lib.doJailbreak super.tree-monad;
-                parallel-tree-search =
-                  pkgs.haskell.lib.doJailbreak super.parallel-tree-search;
-              };
-            };
-          plugin =
-            pkgs.haskell.lib.doJailbreak
-              (pluginPackages.callCabal2nix
-                "inversion-plugin"
-                inversion-plugin-src
-                {});
-          pluginWithoutChecks =
-            pkgs.haskell.lib.overrideCabal
-              plugin
-              (_: {
-                doCheck = false;
-              });
+          pkgs = pkgsFor system;
         in
-        pluginWithoutChecks.overrideAttrs (drv: {
-          meta = drv.meta // {
-            description = "GHC plugin for automatic function inversion and functional patterns";
-            homepage = "https://github.com/cau-placc/inversion-plugin";
-            license = pkgs.lib.licenses.bsd3;
-          };
-        });
+        pkgs.haskell.lib.overrideCabal
+          (pkgs.haskell.lib.doJailbreak
+            (pkgs.haskellPackages.callCabal2nix
+              "inversion-plugin"
+              inversion-plugin-src
+              {}))
+          (drv: {
+            doCheck = false;
+            meta = drv.meta // {
+              description = "GHC plugin for automatic function inversion and functional patterns";
+              homepage = "https://github.com/cau-placc/inversion-plugin";
+              license = pkgs.lib.licenses.bsd3;
+            };
+          });
 
       liquidHaskellEnv = system:
         let
@@ -411,6 +375,7 @@
                 grep -Fq "inverse-preserves-csearchability" FullCoupled/TheoremsMonolith.agda
                 grep -Fq "SearchableEquivalence" FullCoupled/TheoremsMonolith.agda
                 ghc \
+                  ${ghcGlobalFlagsText} \
                   -O0 \
                   -dcore-lint \
                   -i "$out" \
@@ -431,8 +396,7 @@
                 grep -E "^required-plan-count=[1-9][0-9]* required-plan-total=[1-9][0-9]* required-plan-regression=True$" "$out/report.txt"
                 grep -Fq "egraph-regression=True egraph-associativity-regression=True" "$out/report.txt"
                 printf '%s\n' \
-                  "compiler=canonical-pkgs.haskell.packages.ghc9124.ghc" \
-                  "ghcVersion=9.12.4" \
+                  "compiler=canonical-pkgs.haskellPackages.ghc" \
                   "plugins=Plugin.InversionPlugin,LiquidHaskell" \
                   "proofKernel=Agda" \
                   "searchKernel=Agda2Hs" \
@@ -494,7 +458,7 @@
                 mkdir -p "$out/ghc"
                 printf "%s\n" '{-# LANGUAGE NoMonomorphismRestriction, LocalMonoBinds #-}' | cat - "$out/FullCoupled/Agda2HsSurface.hs" > "$out/FullCoupled/Agda2HsSurface.hs.tmp"
                 mv "$out/FullCoupled/Agda2HsSurface.hs.tmp" "$out/FullCoupled/Agda2HsSurface.hs"
-                "${canonicalGhc system}/bin/ghc" -O0 -dcore-lint -package rio -i "$out" -odir "$out/ghc" -hidir "$out/ghc" -c "$out/FullCoupled/Agda2HsSurface.hs"
+                "${canonicalGhc system}/bin/ghc" ${ghcGlobalFlagsText} -O0 -dcore-lint -package rio -i "$out" -odir "$out/ghc" -hidir "$out/ghc" -c "$out/FullCoupled/Agda2HsSurface.hs"
                 liquid --smtsolver=z3 -i "$out" "$out/FullCoupled/Agda2HsSurface.hs"
                 printf '%s\n' \
                   "source=FullCoupled/Agda2HsSurface.agda generated=build/agda-haskell/FullCoupled/Agda2HsSurface.hs ghc:pass liquid:z3:pass" \
