@@ -369,7 +369,6 @@
                 GHCISCRIPT
                 exec ${canonicalGhc system}/bin/ghci \
                   ${builtins.concatStringsSep " " ghcLanguageFlags} \
-                  -fplugin=Plugin.InversionPlugin \
                   -ignore-dot-ghci \
                   -ghci-script "$init" \
                   "$@"
@@ -398,7 +397,6 @@
                 GHCISCRIPT
                 ${canonicalGhc system}/bin/ghci \
                   ${builtins.concatStringsSep " " ghcLanguageFlags} \
-                  -fplugin=Plugin.InversionPlugin \
                   -ignore-dot-ghci \
                   -ghci-script "$init" \
                   >/dev/null
