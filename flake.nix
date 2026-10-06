@@ -3,6 +3,9 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/0439f75413ace6c42e4c722cafd4d6e5401de648";
+    # GHC 9.2.4 is no longer exposed by current nixpkgs; keep the
+    # inversion-plugin-required compiler as the single canonical GHC truth.
+    nixpkgs-ghc924.url = "github:NixOS/nixpkgs/a62e6edd6d5e1fa0329b8653c801147986f8d446";
     typetopology = {
       url = "github:martinescardo/TypeTopology/8761920fdaec20c9dada7ff1d6628c09491245c5";
       flake = false;
@@ -19,6 +22,7 @@
   outputs = {
     self,
     nixpkgs,
+    nixpkgs-ghc924,
     typetopology,
     agda2hs,
     inversion-plugin-src
@@ -41,7 +45,10 @@
 
       canonicalHaskellPackages = system:
         let
-          pkgs = pkgsFor system;
+          pkgs = import nixpkgs-ghc924 {
+            inherit system;
+            config.allowBroken = true;
+          };
         in
         pkgs.haskell.packages.ghc924.extend (final: prev: {
           tree-monad =
