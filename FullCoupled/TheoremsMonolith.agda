@@ -130,13 +130,6 @@ open import W.Type
 -- Theorem-specific imports: vendored Formal Methods in Agda.
 -- Imported qualified; theorem names remain isolated from this monolith.
 ------------------------------------------------------------------------
-import FullCoupled.FormalMethods.IMP as FormalMethodsIMP
-import FullCoupled.FormalMethods.OperationalSemantics as FormalMethodsOperationalSemantics
-import FullCoupled.FormalMethods.Security as FormalMethodsSecurity
-import FullCoupled.FormalMethods.Types as FormalMethodsTypes
-import FullCoupled.FormalMethods.HoareLogic as FormalMethodsHoareLogic
-import FullCoupled.FormalMethods.SeparationLogic as FormalMethodsSeparationLogic
-import FullCoupled.FormalMethods.VerificationConditions as FormalMethodsVerificationConditions
 
 open import FullCoupled.CanonicalLearnerMonolith as C
 -- END THEOREM-SPECIFIC IMPORTS
