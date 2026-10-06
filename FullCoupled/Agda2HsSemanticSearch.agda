@@ -811,6 +811,7 @@ requiredTheoremNames =
   "CanonicalEndogenousEGraphAStarTransportClosureTheorem" ∷
   "CanonicalFiniteCycleExclusionIsomorphismTheorem" ∷
   "CanonicalOperatorCompositionTheorem" ∷
+  "CanonicalLearnerPermutationCompositionImpossibilityTheorem" ∷
   "CanonicalF4GlobalOptimizerStabilityTheorem" ∷
   "CanonicalPureNonOrangeBypassCompletionTheorem" ∷
   "ExactContractComputabilityBoundaryTheorem" ∷
