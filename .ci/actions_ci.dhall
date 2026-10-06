@@ -660,6 +660,8 @@ DHALL
     '',
   Versions = ''
     set -euo pipefail
+    ghc --numeric-version
+    test "$(ghc --numeric-version)" = "9.2.4"
     "$AGDA_COMMAND" --version
     mmc --version
     dhall --version
