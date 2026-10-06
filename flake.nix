@@ -651,8 +651,8 @@
               pkgs.gnugrep
               pkgs.gnused
               pkgs.elmPackages.elm
-              pkgs.haskellPackages.dhall
-              pkgs.haskellPackages.dhall-json
+              pkgs.dhall
+              pkgs.dhall-json
             ];
           };
 
