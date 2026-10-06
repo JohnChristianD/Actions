@@ -42,8 +42,10 @@ jobs:
       - name: Kernel-check canonical Agda proof surfaces
         run: |
           set -euo pipefail
-          "$AGDA_COMMAND" --safe -i . FullCoupled/CanonicalLearnerMonolith.agda
-          "$AGDA_COMMAND" --allow-exec -i . FullCoupled/TheoremsMonolith.agda
+          nix develop .#default -c bash -euo pipefail -c '
+            "$AGDA_COMMAND" --safe -i . FullCoupled/CanonicalLearnerMonolith.agda
+            "$AGDA_COMMAND" --allow-exec -i . FullCoupled/TheoremsMonolith.agda
+          '
 
       - name: Verify semantic manifest
         run: |
