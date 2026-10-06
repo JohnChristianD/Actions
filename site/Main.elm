@@ -614,7 +614,7 @@ relationRecord edge =
                 [ HA.class "arrow"
                 , HA.attribute "aria-hidden" "true"
                 ]
-                [ text "→" ]
+                [ text "\u{2192}" ]
             ]
         , span [ HA.class "relation-end" ] [ text edge.target ]
         ]
