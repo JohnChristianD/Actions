@@ -836,13 +836,13 @@ requiredTheoremNames =
   "actionWeightSquareSum" ∷
   "generalTsallis2Denominator" ∷
   "generalTsallis2Numerator" ∷
-  "generalTsallis2NearSparsity" ∷
-  "generalTsallis2NearSparsity-zero" ∷
-  "generalTsallis2NearSparsity-definition" ∷
-  "fractionEquivalent" ∷
-  "tsallis2Near-oneHot" ∷
-  "generalSupportSparsity" ∷
-  "generalSupportSparsity-definition" ∷
+  "generalTsallis2NearDyadicSparsity" ∷
+  "generalTsallis2NearDyadicSparsity-zero" ∷
+  "generalTsallis2NearDyadicSparsity-definition" ∷
+  "dyadicEquivalent" ∷
+  "tsallis2NearDyadic-oneHot" ∷
+  "generalSupportSparsityDyadic" ∷
+  "generalSupportSparsityDyadicDyadic-definition" ∷
   []
 
 requiredSubcompositionNames : List String
