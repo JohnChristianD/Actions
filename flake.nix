@@ -156,8 +156,6 @@
       ghcLanguageFlags = [
         "-XNoMonomorphismRestriction"
         "-XLocalMonoBinds"
-        "-XTemplateHaskell"
-        "-XFlexibleContexts"
       ];
 
       ghcPluginFlags = [
@@ -368,7 +366,7 @@
                 init=$(mktemp)
                 trap 'rm -f "$init"' EXIT
                 cat > "$init" <<'GHCISCRIPT'
-                :set -XNoMonomorphismRestriction -XLocalMonoBinds -XTemplateHaskell -XFlexibleContexts
+                :set -XNoMonomorphismRestriction -XLocalMonoBinds
                 import Plugin.InversionPlugin
                 GHCISCRIPT
                 exec ${canonicalGhc system}/bin/ghci \
@@ -395,7 +393,7 @@
                 init=$(mktemp)
                 trap 'rm -f "$init"' EXIT
                 cat > "$init" <<'GHCISCRIPT'
-                :set -XNoMonomorphismRestriction -XLocalMonoBinds -XTemplateHaskell -XFlexibleContexts
+                :set -XNoMonomorphismRestriction -XLocalMonoBinds
                 import Plugin.InversionPlugin
                 :quit
                 GHCISCRIPT
