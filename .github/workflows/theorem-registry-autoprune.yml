@@ -44,8 +44,8 @@ jobs:
         run: |
           set -euo pipefail
           nix develop .#default -c bash -euo pipefail -c '
-            "$AGDA_COMMAND" --safe -i . FullCoupled/CanonicalLearnerMonolith.agda
-            "$AGDA_COMMAND" --allow-exec -i . FullCoupled/TheoremsMonolith.agda
+            "$AGDA_COMMAND" -i . FullCoupled/CanonicalLearnerMonolith.agda
+            "$AGDA_COMMAND" -i . FullCoupled/TheoremsMonolith.agda
           '
 
       - name: Verify semantic manifest
