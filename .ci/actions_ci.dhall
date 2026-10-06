@@ -407,6 +407,12 @@ DHALL
     canonical-exact-rnn-lm-theorem
     CanonicalIntegerHaarScaledOrthogonalityTheorem
     canonical-integer-haar-scaled-orthogonality-theorem
+    CanonicalHaarRecurrentCompositionTheorem
+    canonical-haar-recurrent-composition-theorem
+    CanonicalLearnerPermutationCompositionImpossibilityTheorem
+    canonical-learner-permutation-composition-impossibility-theorem
+    CanonicalFullCompositionGraphTheorem
+    canonical-full-composition-graph-theorem
     CanonicalAStarCostGuidanceTheorem
     CanonicalEndogenousEGraphAStarTransportClosureTheorem
     eGraphAStarConvergenceSemanticClosure
