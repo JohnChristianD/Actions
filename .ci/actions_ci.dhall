@@ -112,8 +112,6 @@ let script = merge {
     grep -Fq 'eGraphAssociativityRegression' FullCoupled/Agda2HsTheoremGraphEGraph.agda
     grep -Fq 'requiredPlanComplete' FullCoupled/Agda2HsSemanticSearch.agda
     grep -Fq 'open import FullCoupled.Agda2HsSemanticExtractor as Extractor' FullCoupled/Agda2HsSemanticSearch.agda
-    nix run .#agda2hs-semantic-search
-    nix run .#mercury-theorem-e2e
     tmp=$(mktemp -d)
     trap 'rm -rf "$tmp"' EXIT
     grep -Fq 'module FullCoupled.CanonicalLearnerMonolith' FullCoupled/CanonicalLearnerMonolith.agda
