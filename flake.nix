@@ -155,10 +155,10 @@
         };
       ghcLanguageFlags = [
         "-XNoMonomorphismRestriction"
+        "-XLocalMonoBinds"
       ];
 
       ghcPluginFlags = [
-        "-fplugin=Plugin.InversionPlugin"
         "-fplugin=LiquidHaskell"
       ];
 
@@ -173,6 +173,7 @@
           hp = canonicalHaskellPackages system;
         in
         hp.ghcWithPackages (p: [
+          p.rio
           p.liquidhaskell
           (inversionPlugin system)
         ]);
@@ -364,7 +365,7 @@
                 init=$(mktemp)
                 trap 'rm -f "$init"' EXIT
                 cat > "$init" <<'GHCISCRIPT'
-                :set -XNoMonomorphismRestriction
+                :set -XNoMonomorphismRestriction -XLocalMonoBinds
                 import Plugin.InversionPlugin
                 GHCISCRIPT
                 exec ${canonicalGhc system}/bin/ghci \
@@ -474,7 +475,7 @@
                 grep -Fq "egraph-regression=True egraph-associativity-regression=True" "$out/report.txt"
                 printf '%s\n' \
                   "compiler=canonicalHaskellPackages.ghc-9.2.4" \
-                  "plugins=Plugin.InversionPlugin,LiquidHaskell" \
+                  "plugins=LiquidHaskell" \
                   "proofKernel=Agda" \
                   "searchKernel=Agda2Hs" \
                   "inversionCheck=pass" \
@@ -533,7 +534,7 @@
                 "${agda2hsWithHaskell system}/bin/agda2hs" -i . FullCoupled/Agda2HsSurface.agda -o "$out"
                 test -s "$out/FullCoupled/Agda2HsSurface.hs"
                 mkdir -p "$out/ghc"
-                "${canonicalGhc system}/bin/ghc" ${ghcGlobalFlagsText} -O0 -dcore-lint -i "$out" -odir "$out/ghc" -hidir "$out/ghc" -c "$out/FullCoupled/Agda2HsSurface.hs"
+                "${canonicalGhc system}/bin/ghc" ${ghcGlobalFlagsText} -O0 -dcore-lint -package rio -i "$out" -odir "$out/ghc" -hidir "$out/ghc" -c "$out/FullCoupled/Agda2HsSurface.hs"
                 liquid --smtsolver=z3 -i "$out" "$out/FullCoupled/Agda2HsSurface.hs"
                 printf '%s\n' \
                   "source=FullCoupled/Agda2HsSurface.agda generated=build/agda-haskell/FullCoupled/Agda2HsSurface.hs ghc:pass liquid:z3:pass" \
