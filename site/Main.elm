@@ -533,8 +533,8 @@ graphView model =
     div [ HA.class "map" ]
         [ S.svg
             [ SA.viewBox "0 0 820 330"
-            , SA.role "img"
-            , SA.attribute "aria-label" "Agda module dependency map"
+            , HA.attribute "role" "img"
+            , HA.attribute "aria-label" "Agda module dependency map"
             ]
             (edgeLines ++ List.map nodeCircle positions)
         ]
