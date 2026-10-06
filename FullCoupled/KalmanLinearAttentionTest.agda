@@ -89,7 +89,7 @@ test-mobius-plan = klaMobiusPrefixPlan
 test-mean-plan : KLAPlan
 test-mean-plan = klaMeanPrefixPlan
 
-test-mobius-cost : cost klaMobiusPrefixPlan ≡ suc (suc (suc zero))
+test-mobius-cost : cost klaMobiusPrefixPlan ≡ suc (suc zero)
 test-mobius-cost = refl
 
 test-mean-cost : cost klaMeanPrefixPlan ≡ suc (suc zero)
