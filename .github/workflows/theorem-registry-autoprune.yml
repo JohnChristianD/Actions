@@ -1,4 +1,4 @@
-name: Auto-prune theorem registry metadata
+name: Verify Agda semantic registry
 
 on:
   push:
@@ -10,15 +10,15 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: agda-sync-main
   cancel-in-progress: false
 
 jobs:
-  prune-and-verify:
-    name: Reconcile theorem registries against Agda
+  verify:
+    name: Verify Agda semantic registry
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
@@ -33,33 +33,26 @@ jobs:
         with:
           installer-version: '2.35.1'
 
-      - name: Resynchronize canonical Agda command and imports
-        run: nix run .#mirth-agda-sync -- --write
-
-      - name: Prune stale theorem registries
-        run: nix run .#prune-theorem-registries
+      - name: Verify canonical Agda synchronization
+        run: |
+          set -euo pipefail
+          nix run .#mirth-agda-sync -- --check
+          nix run .#agda2hs-semantic-search
 
       - name: Kernel-check canonical Agda proof surfaces
         run: |
           set -euo pipefail
-          nix develop .#default -c bash -euo pipefail -c '
-            "$AGDA_COMMAND" --safe -i . FullCoupled/CanonicalLearnerMonolith.agda
-            "$AGDA_COMMAND" --allow-exec -i . \
-              FullCoupled/TheoremsMonolith.agda
-          '
+          "$AGDA_COMMAND" --safe -i . FullCoupled/CanonicalLearnerMonolith.agda
+          "$AGDA_COMMAND" --allow-exec -i . FullCoupled/TheoremsMonolith.agda
 
-      - name: Re-check registry freshness and graph extraction
-        run: nix run .#mercury-theorem-e2e
-
-      - name: Commit registry reconciliation
+      - name: Verify semantic manifest
         run: |
           set -euo pipefail
-          if git diff --quiet -- .ci/actions_ci.dhall .ci/discovery/theorem_graph_search.m FullCoupled/CanonicalLearnerMonolith.agda FullCoupled/TheoremsMonolith.agda FullCoupled/FormalMethods; then
-            echo "Theorem registries are already synchronized with the Agda proof surface."
-            exit 0
-          fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add .ci/actions_ci.dhall .ci/discovery/theorem_graph_search.m FullCoupled/CanonicalLearnerMonolith.agda FullCoupled/TheoremsMonolith.agda FullCoupled/FormalMethods
-          git commit -m "ci: resync Agda contracts and theorem registries"
-          git push origin HEAD:main
+          manifest=build/agda2hs-semantic-search/agda2hs-semantic-search-manifest.tsv
+          test -s "$manifest"
+          grep -Fq 'compiler=canonicalHaskellPackages.ghc-9.2.4' "$manifest"
+          grep -Fq 'plugins=Plugin.InversionPlugin,LiquidHaskell' "$manifest"
+          grep -Fq 'proofKernel=Agda' "$manifest"
+          grep -Fq 'searchKernel=Agda2Hs' "$manifest"
+          grep -Fq 'semanticCompletenessCheck=pass' "$manifest"
+          echo 'agda-semantic-registry=pass'
