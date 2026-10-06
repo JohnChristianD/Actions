@@ -6576,6 +6576,7 @@ kla-affine-canonical-path-sound :
 kla-affine-canonical-path-sound a =
   eGraph-certified-edge-sound (kla-affine-canonical-edge a)
 
+-- Compose the executable Haar→GRU transition with the certified KLA affine e-graph edge; precision remains an explicit frontier.
 record CanonicalHaarKLAAffineCompositionTheorem : Set₁ where
   constructor canonicalHaarKLAAffineCompositionTheorem
   field
