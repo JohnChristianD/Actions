@@ -418,8 +418,8 @@
                 import Plugin.InversionPlugin
                 :quit
                 GHCISCRIPT
-                ${canonicalGhc system}/bin/ghci \
-                  ${builtins.concatStringsSep " " ghcLanguageFlags} \
+                ${inversionGhc system}/bin/ghci \
+                  ${builtins.concatStringsSep " " (ghcLanguageFlags ++ inversionPluginFlags)} \
                   -ignore-dot-ghci \
                   -ghci-script "$init" \
                   >/dev/null
