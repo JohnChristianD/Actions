@@ -171,7 +171,6 @@
       ];
 
       ghcPluginFlags = [
-        "-fplugin=Plugin.InversionPlugin"
         "-fplugin=LiquidHaskell"
       ];
 
@@ -181,7 +180,11 @@
       ghcGlobalFlagsText =
         builtins.concatStringsSep " " ghcGlobalFlags;
 
-      canonicalGhc = system:
+      inversionPluginFlags = [
+        "-fplugin=Plugin.InversionPlugin"
+      ];
+
+      inversionGhc = system:
         let
           hp = canonicalHaskellPackages system;
         in
@@ -191,12 +194,13 @@
           (inversionPlugin system)
         ]);
 
-      semanticSearchGhc = system:
+      canonicalGhc = system:
         let
           hp = canonicalHaskellPackages system;
         in
         hp.ghcWithPackages (p: [
           p.rio
+          p.liquidhaskell
         ]);
 
       agda2hsWithHaskell = system:
@@ -375,7 +379,7 @@
             script = pkgs.writeShellApplication {
               name = "inversion-ghci";
               runtimeInputs = [
-                (canonicalGhc system)
+                (inversionGhc system)
                 pkgs.coreutils
               ];
               text = ''
@@ -386,8 +390,8 @@
                 :set -XNoMonomorphismRestriction -XLocalMonoBinds
                 import Plugin.InversionPlugin
                 GHCISCRIPT
-                exec ${canonicalGhc system}/bin/ghci \
-                  ${builtins.concatStringsSep " " ghcLanguageFlags} \
+                exec ${inversionGhc system}/bin/ghci \
+                  ${builtins.concatStringsSep " " (ghcLanguageFlags ++ inversionPluginFlags)} \
                   -ignore-dot-ghci \
                   -ghci-script "$init" \
                   "$@"
@@ -402,7 +406,7 @@
             script = pkgs.writeShellApplication {
               name = "inversion-ghci-smoke";
               runtimeInputs = [
-                (canonicalGhc system)
+                (inversionGhc system)
                 pkgs.coreutils
               ];
               text = ''
@@ -432,11 +436,8 @@
               name = "agda2hs-semantic-search";
               runtimeInputs = [
                 (agdaWithLibraries system)
-                (agda2hs.packages.${system}.agda2hs.withPackages {
-                  pkgs = [ agda2hs.packages.${system}.base-lib ];
-                  ghc = semanticSearchGhc system;
-                })
-                (semanticSearchGhc system)
+                (agda2hsWithHaskell system)
+                (canonicalGhc system)
                 (canonicalHaskellPackages system).liquidhaskell
                 pkgs.z3
                 pkgs.coreutils
