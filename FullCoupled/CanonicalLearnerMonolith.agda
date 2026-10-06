@@ -98,6 +98,7 @@ open import MonadOnTypes.J
 open import MonadOnTypes.JK R
 open import MonadOnTypes.K
 open import Naturals
+open import Naturals.Exponentiation
 open import Naturals.Properties
 open import Notation.CanonicalMap
 open import Notation.Order
@@ -520,45 +521,50 @@ updateLCBCount {A} a (lcbCountState counts total) =
   lcbCountState (incAt {A = A} counts a) (suc total)
 
 ------------------------------------------------------------------------
--- TypeTopology supplies the actual rational carrier.  The learner keeps
--- its finite Nat-facing boundary total: a zero denominator request is
--- interpreted as 0ℚ rather than manufacturing a non-rational value.
+-- TypeTopology Dyadics supplies the exact finite rational carrier:
+-- rationals whose reduced denominators are powers of two.  The learner
+-- exposes the dyadic exponent and derives the corresponding denominator,
+-- keeping the Haskell-facing boundary total and strongly typed.
 ------------------------------------------------------------------------
 
-fromNatFraction : Nat → Nat → ℚ
-fromNatFraction n zero = 0ℚ
-fromNatFraction n (suc d) = toℚ ((+ n) , d)
+Dyadic : Set
+Dyadic = ℤ[1/2]
 
-natNumerator : ℚ → Nat
-natNumerator q with to𝔽 q
-... | (+ n) , d = n
-... | (-[1+ n ]) , d = zero
+fromNatDyadic : Nat → Nat → Dyadic
+fromNatDyadic n exponent =
+  normalise-pos ((+ n) , exponent)
 
-natDenominator : ℚ → Nat
-natDenominator q with to𝔽 q
-... | (+ n) , d = suc d
-... | (-[1+ n ]) , d = suc d
+dyadicNumerator : Dyadic → Nat
+dyadicNumerator ((+ n , d) , _) = n
+dyadicNumerator ((-[1+ n ] , d) , _) = zero
 
-qLog8 : Int8 → ℚ
+dyadicExponent : Dyadic → Nat
+dyadicExponent ((z , d) , _) = d
+
+dyadicDenominator : Dyadic → Nat
+dyadicDenominator q =
+  2 ^ dyadicExponent q
+
+qLog8 : Int8 → Dyadic
 qLog8 x with int8Magnitude x
-... | zero = fromNatFraction 1 1
-... | suc n = fromNatFraction (128 ∸ suc n) (suc n)
+... | zero = fromNatDyadic 1 zero
+... | suc n = fromNatDyadic (128 ∸ suc n) (suc n)
 
 munchausenScale8 : Nat
 munchausenScale8 = 16
 
-signedRationalBias8 : ℚ → Int8
-signedRationalBias8 q with natNumerator q
+signedDyadicBias8 : Dyadic → Int8
+signedDyadicBias8 q with dyadicNumerator q
 ... | zero = zero8
 ... | suc n = int8Neg
   (int8OfNat
     (Data.Nat._/_
       (munchausenScale8 * suc n)
-      (natDenominator q)))
+      (dyadicDenominator q)))
 
 qLog2Bias8 : Int8 → Int8
 qLog2Bias8 x =
-  signedRationalBias8 (qLog8 x)
+  signedDyadicBias8 (qLog8 x)
 
 negativeAlpha8 : Int8
 negativeAlpha8 = int8OfNat 255
@@ -842,7 +848,7 @@ zeroGlobalControl : GlobalControl
 zeroGlobalControl = zeroMonoidLSTMControl
 
 rationalCode : ℚ → Int8
-rationalCode q = int8OfNat (natNumerator q)
+rationalCode q = int8OfNat (dyadicNumerator q)
 
 identityActivation8 : Int8 → Int8
 identityActivation8 x = x
