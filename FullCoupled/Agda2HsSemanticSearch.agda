@@ -812,6 +812,8 @@ requiredTheoremNames =
   "CanonicalFiniteCycleExclusionIsomorphismTheorem" ∷
   "CanonicalOperatorCompositionTheorem" ∷
   "CanonicalLearnerPermutationCompositionImpossibilityTheorem" ∷
+  "CanonicalHaarRecurrentCompositionTheorem" ∷
+  "CanonicalFullCompositionGraphTheorem" ∷
   "CanonicalF4GlobalOptimizerStabilityTheorem" ∷
   "CanonicalPureNonOrangeBypassCompletionTheorem" ∷
   "ExactContractComputabilityBoundaryTheorem" ∷
