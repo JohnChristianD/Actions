@@ -3,7 +3,7 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/0439f75413ace6c42e4c722cafd4d6e5401de648";
-    nixpkgs-ghc928.url = "github:NixOS/nixpkgs/a62e6edd6d5e1fa0329b8653c801147986f8d446";
+    nixpkgs-ghc924.url = "github:NixOS/nixpkgs/a62e6edd6d5e1fa0329b8653c801147986f8d446";
     typetopology = {
       url = "github:martinescardo/TypeTopology/8761920fdaec20c9dada7ff1d6628c09491245c5";
       flake = false;
@@ -20,7 +20,7 @@
   outputs = {
     self,
     nixpkgs,
-    nixpkgs-ghc928,
+    nixpkgs-ghc924,
     typetopology,
     agda2hs,
     inversion-plugin-src
@@ -43,12 +43,12 @@
 
       canonicalHaskellPackages = system:
         let
-          pkgs = import nixpkgs-ghc928 {
+          pkgs = import nixpkgs-ghc924 {
             inherit system;
             config.allowBroken = true;
           };
         in
-        pkgs.haskell.packages.ghc928.extend (final: prev: {
+        pkgs.haskell.packages.ghc924.extend (final: prev: {
           tree-monad =
             pkgs.haskell.lib.doJailbreak prev.tree-monad;
           parallel-tree-search =
@@ -194,13 +194,17 @@
           pkgs = pkgsFor system;
           hp = canonicalHaskellPackages system;
         in
-        (pkgs.haskell.lib.doJailbreak
-          (hp.callCabal2nix
-            "inversion-plugin"
-            inversion-plugin-src
-            {})).overrideAttrs (_: {
-              doCheck = false;
-            });
+        pkgs.haskell.lib.enableCabalFlag
+          "use-cs"
+          (pkgs.haskell.lib.disableCabalFlag
+            "use-bfs"
+            (pkgs.haskell.lib.doJailbreak
+              (hp.callCabal2nix
+                "inversion-plugin"
+                inversion-plugin-src
+                {}))).overrideAttrs (_: {
+                  doCheck = false;
+                });
 
       liquidHaskellEnv = system:
         let
@@ -412,7 +416,7 @@
                 grep -E "^required-plan-count=[1-9][0-9]* required-plan-total=[1-9][0-9]* required-plan-regression=True$" "$out/report.txt"
                 grep -Fq "egraph-regression=True egraph-associativity-regression=True" "$out/report.txt"
                 printf '%s\n' \
-                  "compiler=canonicalHaskellPackages.ghc-9.2.8" \
+                  "compiler=canonicalHaskellPackages.ghc-9.2.4" \
                   "plugins=Plugin.InversionPlugin,LiquidHaskell" \
                   "proofKernel=Agda" \
                   "searchKernel=Agda2Hs" \
