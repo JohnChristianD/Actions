@@ -847,8 +847,8 @@ zeroGRUNoise = zeroMonoidLSTMNoise
 zeroGlobalControl : GlobalControl
 zeroGlobalControl = zeroMonoidLSTMControl
 
-rationalCode : ℚ → Int8
-rationalCode q = int8OfNat (dyadicNumerator q)
+dyadicCode : Dyadic → Int8
+dyadicCode q = int8OfNat (dyadicNumerator q)
 
 identityActivation8 : Int8 → Int8
 identityActivation8 x = x
