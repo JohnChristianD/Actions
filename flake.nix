@@ -50,22 +50,11 @@
         in
         pkgs.haskell.packages.ghc924.extend (final: prev: {
           tree-monad =
-            pkgs.haskell.lib.overrideCabal
-              (final.callHackage "tree-monad" "0.3.2" {})
-              (_: {
-                postPatch = ''
-                  substituteInPlace tree-monad.cabal \
-                    --replace-fail '<4.16.3' '<4.17'
-                '';
-              });
+            pkgs.haskell.lib.doJailbreak prev.tree-monad;
           parallel-tree-search =
-            pkgs.haskell.lib.overrideCabal
-              (final.callHackage "parallel-tree-search" "0.4.2" {})
-              (_: {
-                postPatch = ''
-                  substituteInPlace parallel-tree-search.cabal \
-                    --replace-fail '< 4.15' '< 4.17'
-                '';
+            pkgs.haskell.lib.doJailbreak
+              (prev.parallel-tree-search.override {
+                tree-monad = final.tree-monad;
               });
           smtlib-backends-process =
             pkgs.haskell.lib.overrideCabal prev.smtlib-backends-process (drv: {
@@ -170,7 +159,6 @@
       ];
 
       ghcPluginFlags = [
-        "-fplugin=Plugin.InversionPlugin"
         "-fplugin=LiquidHaskell"
       ];
 
@@ -206,16 +194,19 @@
         let
           pkgs = pkgsFor system;
           hp = canonicalHaskellPackages system;
-        in
-        pkgs.haskell.lib.dontCheck
-          (pkgs.haskell.lib.enableCabalFlag
+          drv = pkgs.haskell.lib.enableCabalFlag
             (pkgs.haskell.lib.disableCabalFlag
-              (hp.callCabal2nix
-                "inversion-plugin"
-                inversion-plugin-src
-                {})
+              (pkgs.haskell.lib.doJailbreak
+                (hp.callCabal2nix
+                  "inversion-plugin"
+                  inversion-plugin-src
+                  {}))
               "use-bfs")
-            "use-cs");
+            "use-cs";
+        in
+        drv.overrideAttrs (_: {
+          doCheck = false;
+        });
 
       liquidHaskellEnv = system:
         let
@@ -484,7 +475,7 @@
                 grep -Fq "egraph-regression=True egraph-associativity-regression=True" "$out/report.txt"
                 printf '%s\n' \
                   "compiler=canonicalHaskellPackages.ghc-9.2.4" \
-                  "plugins=Plugin.InversionPlugin,LiquidHaskell" \
+                  "plugins=LiquidHaskell" \
                   "proofKernel=Agda" \
                   "searchKernel=Agda2Hs" \
                   "inversionCheck=pass" \
@@ -591,39 +582,6 @@
               pkgs.z3
             ];
             shellHook = ''
-              export LIQUID_SOLVER=z3
-            '';
-          };
-
-          ci = pkgs.mkShell {
-            packages = [
-              (canonicalHaskellPackages system).dhall
-              (agdaWithLibraries system)
-              pkgs.coreutils
-              pkgs.findutils
-              pkgs.git
-              pkgs.gh
-              pkgs.gnugrep
-              pkgs.gnused
-            ];
-            shellHook = ''
-              export AGDA_COMMAND="${agdaWithLibraries system}/bin/agda-with-libraries"
-            '';
-          };
-
-          ci-versions = pkgs.mkShell {
-            packages = [
-              (canonicalGhc system)
-              (canonicalHaskellPackages system).dhall
-              (canonicalHaskellPackages system).liquidhaskell
-              pkgs.z3
-              pkgs.mirth
-              pkgs.gh
-              (agdaWithLibraries system)
-              (agdaEmacs system)
-            ];
-            shellHook = ''
-              export AGDA_COMMAND="${agdaWithLibraries system}/bin/agda-with-libraries"
               export LIQUID_SOLVER=z3
             '';
           };

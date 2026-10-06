@@ -27,7 +27,6 @@ jobs:
       - uses: NixOS/nix-installer-action@62c1943b776c509394b550f3f983adc14e9212d6
         with:
           installer-version: '2.35.1'
-      - uses: DeterminateSystems/magic-nix-cache-action@v15
       - name: Provision swap
         run: |
           if ! swapon --show=NAME | grep -qx '/swapfile'; then
@@ -42,7 +41,7 @@ jobs:
           CI_LANE: '(< AgdaLearner | AgdaTheorem | AgdaSafe | Agda2HsLiquid | MirthFastDirty | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >.AgdaLearner) : < AgdaLearner | AgdaTheorem | AgdaSafe | Agda2HsLiquid | MirthFastDirty | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >'
         run: |
           set -euo pipefail
-          nix develop .#ci -c bash -e -c 'dhall text --file .ci/actions_ci.dhall | bash -e'
+          nix develop .#default -c bash -e -c 'dhall text --file .ci/actions_ci.dhall | bash -e'
       - name: Check theorem monolith
         if: always()
         timeout-minutes: 15
@@ -50,14 +49,14 @@ jobs:
           CI_LANE: '(< AgdaLearner | AgdaTheorem | AgdaSafe | Agda2HsLiquid | MirthFastDirty | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >.AgdaTheorem) : < AgdaLearner | AgdaTheorem | AgdaSafe | Agda2HsLiquid | MirthFastDirty | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >'
         run: |
           set -euo pipefail
-          nix develop .#ci -c bash -e -c 'dhall text --file .ci/actions_ci.dhall | bash -e'
+          nix develop .#default -c bash -e -c 'dhall text --file .ci/actions_ci.dhall | bash -e'
       - name: Check Agda/Dhall/GHC tool versions
         if: always()
         env:
           CI_LANE: '(< AgdaLearner | AgdaTheorem | AgdaSafe | Agda2HsLiquid | MirthFastDirty | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >.Versions) : < AgdaLearner | AgdaTheorem | AgdaSafe | Agda2HsLiquid | MirthFastDirty | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >'
         run: |
           set -euo pipefail
-          nix develop .#ci-versions -c bash -e -c 'dhall text --file .ci/actions_ci.dhall | bash -e'
+          nix develop .#default -c bash -e -c 'dhall text --file .ci/actions_ci.dhall | bash -e'
 
   semantic:
     name: Agda semantic/e-graph verification
@@ -68,21 +67,20 @@ jobs:
       - uses: NixOS/nix-installer-action@62c1943b776c509394b550f3f983adc14e9212d6
         with:
           installer-version: '2.35.1'
-      - uses: DeterminateSystems/magic-nix-cache-action@v15
       - name: Run Agda semantic search and canonical semantic contract
         timeout-minutes: 15
         env:
           CI_LANE: '(< AgdaLearner | AgdaTheorem | AgdaSafe | Agda2HsLiquid | MirthFastDirty | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >.Discovery) : < AgdaLearner | AgdaTheorem | AgdaSafe | Agda2HsLiquid | MirthFastDirty | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >'
         run: |
           set -euo pipefail
-          nix develop .#ci -c bash -e -c 'dhall text --file .ci/actions_ci.dhall | bash -e'
+          nix develop .#default -c bash -e -c 'dhall text --file .ci/actions_ci.dhall | bash -e'
       - name: agda2hs + LiquidHaskell bridge
         timeout-minutes: 20
         env:
           CI_LANE: '(< AgdaLearner | AgdaTheorem | AgdaSafe | Agda2HsLiquid | MirthFastDirty | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >.Agda2HsLiquid) : < AgdaLearner | AgdaTheorem | AgdaSafe | Agda2HsLiquid | MirthFastDirty | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >'
         run: |
           set -euo pipefail
-          nix develop .#ci -c bash -e -c 'dhall text --file .ci/actions_ci.dhall | bash -e'
+          nix develop .#default -c bash -e -c 'dhall text --file .ci/actions_ci.dhall | bash -e'
 
       - name: Discovery
         timeout-minutes: 15
@@ -90,7 +88,7 @@ jobs:
           CI_LANE: '(< AgdaLearner | AgdaTheorem | AgdaSafe | Agda2HsLiquid | MirthFastDirty | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >.Discovery) : < AgdaLearner | AgdaTheorem | AgdaSafe | Agda2HsLiquid | MirthFastDirty | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >'
         run: |
           set -euo pipefail
-          nix develop .#ci -c bash -e -c 'dhall text --file .ci/actions_ci.dhall | bash -e'
+          nix develop .#default -c bash -e -c 'dhall text --file .ci/actions_ci.dhall | bash -e'
       - name: Publish live theorem/economic graph artifacts
         if: always()
         uses: actions/upload-artifact@v4
@@ -109,21 +107,21 @@ jobs:
           CI_LANE: '(< AgdaLearner | AgdaTheorem | AgdaSafe | Agda2HsLiquid | MirthFastDirty | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >.EconlibCrossrepo) : < AgdaLearner | AgdaTheorem | AgdaSafe | Agda2HsLiquid | MirthFastDirty | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >'
         run: |
           set -euo pipefail
-          nix develop .#ci -c bash -e -c 'dhall text --file .ci/actions_ci.dhall | bash -e'
+          nix develop .#default -c bash -e -c 'dhall text --file .ci/actions_ci.dhall | bash -e'
       - name: Econlib equilibrium graph search
         timeout-minutes: 15
         env:
           CI_LANE: '(< AgdaLearner | AgdaTheorem | AgdaSafe | Agda2HsLiquid | MirthFastDirty | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >.EconlibEquilibriumSearch) : < AgdaLearner | AgdaTheorem | AgdaSafe | Agda2HsLiquid | MirthFastDirty | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >'
         run: |
           set -euo pipefail
-          nix develop .#ci -c bash -e -c 'dhall text --file .ci/actions_ci.dhall | bash -e'
+          nix develop .#default -c bash -e -c 'dhall text --file .ci/actions_ci.dhall | bash -e'
       - name: Strict existence or impossibility graph
         timeout-minutes: 15
         env:
           CI_LANE: '(< AgdaLearner | AgdaTheorem | AgdaSafe | Agda2HsLiquid | MirthFastDirty | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >.StrictExistenceImpossibility) : < AgdaLearner | AgdaTheorem | AgdaSafe | Agda2HsLiquid | MirthFastDirty | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >'
         run: |
           set -euo pipefail
-          nix develop .#ci -c bash -e -c 'dhall text --file .ci/actions_ci.dhall | bash -e'
+          nix develop .#default -c bash -e -c 'dhall text --file .ci/actions_ci.dhall | bash -e'
 
       - name: Stationary distribution finite-cycle impossibility graph
         timeout-minutes: 15
@@ -131,7 +129,7 @@ jobs:
           CI_LANE: '(< AgdaLearner | AgdaTheorem | AgdaSafe | Agda2HsLiquid | MirthFastDirty | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >.StationaryCycleImpossibility) : < AgdaLearner | AgdaTheorem | AgdaSafe | Agda2HsLiquid | MirthFastDirty | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >'
         run: |
           set -euo pipefail
-          nix develop .#ci -c bash -e -c 'dhall text --file .ci/actions_ci.dhall | bash -e'
+          nix develop .#default -c bash -e -c 'dhall text --file .ci/actions_ci.dhall | bash -e'
 
 
       - name: Isomorphism transport closure
@@ -140,21 +138,21 @@ jobs:
           CI_LANE: '(< AgdaLearner | AgdaTheorem | AgdaSafe | Agda2HsLiquid | MirthFastDirty | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >.IsomorphismTransport) : < AgdaLearner | AgdaTheorem | AgdaSafe | Agda2HsLiquid | MirthFastDirty | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >'
         run: |
           set -euo pipefail
-          nix develop .#ci -c bash -e -c 'dhall text --file .ci/actions_ci.dhall | bash -e'
+          nix develop .#default -c bash -e -c 'dhall text --file .ci/actions_ci.dhall | bash -e'
       - name: Semantic contract
         timeout-minutes: 15
         env:
           CI_LANE: '(< AgdaLearner | AgdaTheorem | AgdaSafe | Agda2HsLiquid | MirthFastDirty | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >.SemanticContract) : < AgdaLearner | AgdaTheorem | AgdaSafe | Agda2HsLiquid | MirthFastDirty | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >'
         run: |
           set -euo pipefail
-          nix develop .#ci -c bash -e -c 'dhall text --file .ci/actions_ci.dhall | bash -e'
+          nix develop .#default -c bash -e -c 'dhall text --file .ci/actions_ci.dhall | bash -e'
       - name: Surface contract
         timeout-minutes: 15
         env:
           CI_LANE: '(< AgdaLearner | AgdaTheorem | AgdaSafe | Agda2HsLiquid | MirthFastDirty | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >.Surface) : < AgdaLearner | AgdaTheorem | AgdaSafe | Agda2HsLiquid | MirthFastDirty | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >'
         run: |
           set -euo pipefail
-          nix develop .#ci -c bash -e -c 'dhall text --file .ci/actions_ci.dhall | bash -e'
+          nix develop .#default -c bash -e -c 'dhall text --file .ci/actions_ci.dhall | bash -e'
 
   pages:
     name: Pages build verification
@@ -165,7 +163,6 @@ jobs:
       - uses: NixOS/nix-installer-action@62c1943b776c509394b550f3f983adc14e9212d6
         with:
           installer-version: '2.35.1'
-      - uses: DeterminateSystems/magic-nix-cache-action@v15
       - name: Verify Mirth C99 fast-dirty synchronization
         timeout-minutes: 5
         env:
@@ -195,7 +192,6 @@ jobs:
       - uses: NixOS/nix-installer-action@62c1943b776c509394b550f3f983adc14e9212d6
         with:
           installer-version: '2.35.1'
-      - uses: DeterminateSystems/magic-nix-cache-action@v15
       - name: Enable GitHub auto-merge
         env:
           GH_TOKEN: ${{ github.token }}
@@ -205,6 +201,6 @@ jobs:
           CI_LANE: '(< AgdaLearner | AgdaTheorem | AgdaSafe | Agda2HsLiquid | MirthFastDirty | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >.AutoMerge) : < AgdaLearner | AgdaTheorem | AgdaSafe | Agda2HsLiquid | MirthFastDirty | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >'
         run: |
           set -euo pipefail
-          nix develop .#ci -c bash -e -c 'dhall text --file .ci/actions_ci.dhall | bash -e'
+          nix develop .#default -c bash -e -c 'dhall text --file .ci/actions_ci.dhall | bash -e'
 
 # Verification is driven by the Agda2Hs semantic/e-graph kernel.
