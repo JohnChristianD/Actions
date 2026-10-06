@@ -18,6 +18,8 @@ open import FullCoupled.Agda2HsTheoremGraphEGraph using
   ; eGraphAssociativityRegression
   )
 
+open import FullCoupled.Agda2HsTheoremGraphEGraph as EGraph
+
 module ExactRealSearchSurface (fe : FunExt) where
 
   open import TWA.Thesis.Chapter3.ClosenessSpaces fe
@@ -931,6 +933,317 @@ semanticSearchExecutableReport laws =
     ++ " egraph-associativity-regression="
     ++ show eGraphAssociativityRegression
 
+stringListEqual : List String -> List String -> Bool
+stringListEqual [] [] = True
+stringListEqual [] (_ ∷ _) = False
+stringListEqual (_ ∷ _) [] = False
+stringListEqual (x ∷ xs) (y ∷ ys) =
+  if x == y then
+    stringListEqual xs ys
+  else
+    False
+
+normalizedSignatureEqual : String -> String -> Bool
+normalizedSignatureEqual left right =
+  stringListEqual (words left) (words right)
+
+semanticLawIsRecordField :
+  Extractor.SemanticLaw ->
+  Bool
+semanticLawIsRecordField law with Extractor.semanticLawKind law
+... | Extractor.semantic-record-field = True
+... | Extractor.semantic-top-level = False
+
+semanticLawIsReflexive :
+  Extractor.SemanticLaw ->
+  Bool
+semanticLawIsReflexive law =
+  Extractor.lawReflexive law
+
+semanticLawNamePresent :
+  String ->
+  List Extractor.SemanticLaw ->
+  Bool
+semanticLawNamePresent name [] = False
+semanticLawNamePresent name (law ∷ laws) =
+  if Extractor.semanticLawName law == name then
+    True
+  else
+    semanticLawNamePresent name laws
+
+record DominanceEdge : Type where
+  constructor dominanceEdge
+  field
+    dominanceContainer : String
+    dominanceTheorem : String
+    dominanceField : String
+
+open DominanceEdge public
+
+recordFieldDominates :
+  Extractor.SemanticLaw ->
+  Extractor.SemanticLaw ->
+  List Extractor.SemanticLaw ->
+  Bool
+recordFieldDominates theorem field all =
+  if semanticLawIsRecordField theorem then
+    False
+  else if semanticLawIsRecordField field then
+    if semanticLawIsReflexive theorem then
+      False
+    else if normalizedSignatureEqual
+      (Extractor.semanticLawSignature theorem)
+      (Extractor.semanticLawSignature field) then
+      if Extractor.semanticLawContainer field == "" then
+        False
+      else
+        semanticLawNamePresent
+          (Extractor.semanticLawContainer field)
+          all
+    else
+      False
+  else
+    False
+
+dominanceEdgeFor :
+  Extractor.SemanticLaw ->
+  Extractor.SemanticLaw ->
+  List Extractor.SemanticLaw ->
+  Maybe DominanceEdge
+dominanceEdgeFor theorem field all =
+  if recordFieldDominates theorem field all then
+    Just
+      (dominanceEdge
+        (Extractor.semanticLawContainer field)
+        (Extractor.semanticLawName theorem)
+        (Extractor.semanticLawName field))
+  else
+    Nothing
+
+dominanceEdgesForFields :
+  Extractor.SemanticLaw ->
+  List Extractor.SemanticLaw ->
+  List DominanceEdge
+dominanceEdgesForFields theorem [] = []
+dominanceEdgesForFields theorem (field ∷ fields) =
+  case dominanceEdgeFor theorem field (field ∷ fields) of λ where
+    Nothing ->
+      dominanceEdgesForFields theorem fields
+    Just edge ->
+      edge ∷ dominanceEdgesForFields theorem fields
+
+dominanceEdgesForTheorems :
+  List Extractor.SemanticLaw ->
+  List Extractor.SemanticLaw ->
+  List DominanceEdge
+dominanceEdgesForTheorems _ [] = []
+dominanceEdgesForTheorems all (law ∷ laws) =
+  dominanceEdgesForFields law all
+  ++ dominanceEdgesForTheorems all laws
+
+dominanceEdgeEqual :
+  DominanceEdge ->
+  DominanceEdge ->
+  Bool
+dominanceEdgeEqual left right =
+  dominanceContainer left == dominanceContainer right
+  &&
+  dominanceTheorem left == dominanceTheorem right
+  &&
+  dominanceField left == dominanceField right
+
+dedupeDominanceEdges :
+  List DominanceEdge ->
+  List DominanceEdge ->
+  List DominanceEdge
+dedupeDominanceEdges [] seen = reverse seen
+dedupeDominanceEdges (edge ∷ edges) seen =
+  if dominanceEdgeMember edge seen then
+    dedupeDominanceEdges edges seen
+  else
+    dedupeDominanceEdges edges (edge ∷ seen)
+
+dominanceEdgeMember :
+  DominanceEdge ->
+  List DominanceEdge ->
+  Bool
+dominanceEdgeMember _ [] = False
+dominanceEdgeMember edge (candidate ∷ rest) =
+  if dominanceEdgeEqual edge candidate then
+    True
+  else
+    dominanceEdgeMember edge rest
+
+graphDominanceEdges :
+  List Extractor.SemanticLaw ->
+  List DominanceEdge
+graphDominanceEdges laws =
+  dedupeDominanceEdges
+    (dominanceEdgesForTheorems laws laws)
+    []
+
+graphDominatedPublicTheorems :
+  List Extractor.SemanticLaw ->
+  List String
+graphDominatedPublicTheorems laws =
+  dedupeStrings
+    (map dominanceTheorem (graphDominanceEdges laws))
+
+dedupeStrings :
+  List String ->
+  List String
+dedupeStrings values = dedupeStringsWithSeen values []
+
+dedupeStringsWithSeen :
+  List String ->
+  List String ->
+  List String
+dedupeStringsWithSeen [] seen = reverse seen
+dedupeStringsWithSeen (value ∷ values) seen =
+  if planContains value seen then
+    dedupeStringsWithSeen values seen
+  else
+    dedupeStringsWithSeen values (value ∷ seen)
+
+prunedPublicTheoremNames : List String
+prunedPublicTheoremNames =
+  "integerLayerNorm-egraph-astar-eventual-semantic-closure" ∷
+  "integerLayerNorm-egraph-astar-infinite-stable-tail" ∷
+  "eGraphEconomicFixedPoint" ∷
+  "eGraphEconomicWalrasianEquilibrium" ∷
+  "eGraphEconomicComposition-injective" ∷
+  []
+
+allNamesPresent :
+  List String ->
+  List String ->
+  Bool
+allNamesPresent [] _ = True
+allNamesPresent (name ∷ names) candidates =
+  if planContains name candidates then
+    allNamesPresent names candidates
+  else
+    False
+
+prunedPublicTheoremsChecked :
+  List Extractor.SemanticLaw ->
+  List String
+prunedPublicTheoremsChecked laws =
+  let dominated = graphDominatedPublicTheorems laws
+  in
+  if allNamesPresent prunedPublicTheoremNames dominated then
+    prunedPublicTheoremNames
+  else
+    []
+
+semanticPlanEGraphReport :
+  List String ->
+  EGraph.SaturationReport
+semanticPlanEGraphReport plan =
+  let
+    (_ , graph0) =
+      EGraph.addExpr
+        (EGraph.leftAssocExpr plan)
+        EGraph.emptyGraph
+  in
+  pr₂
+    (EGraph.saturateUntilStable
+      EGraph.semanticRewriteRules
+      graph0)
+
+semanticPlanEGraphComplete :
+  List String ->
+  Bool
+semanticPlanEGraphComplete plan =
+  EGraph.saturationComplete
+    (semanticPlanEGraphReport plan)
+
+semanticPlanEGraphExtractable :
+  List String ->
+  Bool
+semanticPlanEGraphExtractable plan =
+  let
+    (rootId , graph0) =
+      EGraph.addExpr
+        (EGraph.leftAssocExpr plan)
+        EGraph.emptyGraph
+    (graph , _) =
+      EGraph.saturateUntilStable
+        EGraph.semanticRewriteRules
+        graph0
+  in
+  case
+    EGraph.extractBest
+      rootId
+      graph
+      (suc (EGraph.enodeCount graph))
+  of λ where
+    Nothing -> False
+    Just extraction ->
+      EGraph.extractedCost extraction > zero
+
+plansEGraphClosed :
+  List (List String) ->
+  Bool
+plansEGraphClosed [] = True
+plansEGraphClosed (plan ∷ plans) =
+  if semanticPlanEGraphComplete plan &&
+     semanticPlanEGraphExtractable plan then
+    plansEGraphClosed plans
+  else
+    False
+
+requiredPlanEGraphCount :
+  List String ->
+  List Extractor.SemanticLaw ->
+  Nat
+requiredPlanEGraphCount [] _ = zero
+requiredPlanEGraphCount (name ∷ names) laws =
+  case requiredPlanForName name laws of λ where
+    Nothing ->
+      requiredPlanEGraphCount names laws
+    Just plan ->
+      let tail = requiredPlanEGraphCount names laws in
+      if semanticPlanEGraphComplete plan &&
+         semanticPlanEGraphExtractable plan then
+        suc tail
+      else
+        tail
+
+requiredPlanEGraphComplete :
+  List String ->
+  List Extractor.SemanticLaw ->
+  Bool
+requiredPlanEGraphComplete names laws =
+  requiredPlanEGraphCount names laws == length names
+
+hybridInverseExactRealPlan : List String
+hybridInverseExactRealPlan =
+  "inverse-correct" ∷
+  "inverse-csearchable" ∷
+  "inverse-preserves-csearchability" ∷
+  []
+
+hybridInverseExactRealSearchReport : String
+hybridInverseExactRealSearchReport =
+  "hybrid-search="
+    ++ show (length hybridInverseExactRealPlan)
+    ++ " inverse laws; ExactRealSearchSurface preserves searchability"
+
+mercuryUsefulPortReport :
+  List Extractor.SemanticLaw ->
+  String
+mercuryUsefulPortReport laws =
+  "agda2hs-mercury-useful-port="
+    ++ show (length (graphDominanceEdges laws))
+    ++ " dominance edges; "
+    ++ show (length (prunedPublicTheoremsChecked laws))
+    ++ " pruning proofs; "
+    ++ show (requiredPlanEGraphCount requiredNames laws)
+    ++ "/"
+    ++ show (length requiredNames)
+    ++ " required plans e-graph-closed"
+
 main : IO ⊤
 main = do
   source <- readFile "build/agda2hs-semantic-search/theorems-monolith.dot"
@@ -944,6 +1257,8 @@ main = do
   putStrLn (semanticLawExtractionReport semanticLaws)
   putStrLn (requiredPlanReport requiredNames semanticLaws)
   putStrLn (semanticSearchExecutableReport semanticLaws)
+  putStrLn hybridInverseExactRealSearchReport
+  putStrLn (mercuryUsefulPortReport semanticLaws)
 
 {-# COMPILE AGDA2HS main #-}
 
@@ -984,3 +1299,15 @@ main = do
 {-# COMPILE AGDA2HS requiredPlanReport #-}
 {-# COMPILE AGDA2HS semanticLawExtractionReport #-}
 {-# COMPILE AGDA2HS semanticSearchExecutableReport #-}
+{-# COMPILE AGDA2HS DominanceEdge #-}
+{-# COMPILE AGDA2HS graphDominanceEdges #-}
+{-# COMPILE AGDA2HS graphDominatedPublicTheorems #-}
+{-# COMPILE AGDA2HS prunedPublicTheoremNames #-}
+{-# COMPILE AGDA2HS prunedPublicTheoremsChecked #-}
+{-# COMPILE AGDA2HS semanticPlanEGraphComplete #-}
+{-# COMPILE AGDA2HS semanticPlanEGraphExtractable #-}
+{-# COMPILE AGDA2HS requiredPlanEGraphCount #-}
+{-# COMPILE AGDA2HS requiredPlanEGraphComplete #-}
+{-# COMPILE AGDA2HS hybridInverseExactRealPlan #-}
+{-# COMPILE AGDA2HS hybridInverseExactRealSearchReport #-}
+{-# COMPILE AGDA2HS mercuryUsefulPortReport #}
