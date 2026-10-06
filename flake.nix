@@ -352,6 +352,64 @@
             type = "app";
             program = "${script}/bin/mirth-agda-graph";
           };
+          inversion-ghci = let
+            script = pkgs.writeShellApplication {
+              name = "inversion-ghci";
+              runtimeInputs = [
+                (canonicalGhc system)
+                pkgs.coreutils
+              ];
+              text = ''
+                set -euo pipefail
+                init=$(mktemp)
+                trap 'rm -f "$init"' EXIT
+                cat > "$init" <<'GHCISCRIPT'
+                :set -XNoMonomorphismRestriction -XLocalMonoBinds -XTemplateHaskell -XFlexibleContexts
+                import Plugin.InversionPlugin
+                GHCISCRIPT
+                exec ${canonicalGhc system}/bin/ghci \
+                  ${builtins.concatStringsSep " " ghcLanguageFlags} \
+                  -fplugin=Plugin.InversionPlugin \
+                  -ignore-dot-ghci \
+                  -ghci-script "$init" \
+                  "$@"
+              '';
+            };
+          in {
+            type = "app";
+            program = "${script}/bin/inversion-ghci";
+          };
+
+          inversion-ghci-smoke = let
+            script = pkgs.writeShellApplication {
+              name = "inversion-ghci-smoke";
+              runtimeInputs = [
+                (canonicalGhc system)
+                pkgs.coreutils
+              ];
+              text = ''
+                set -euo pipefail
+                init=$(mktemp)
+                trap 'rm -f "$init"' EXIT
+                cat > "$init" <<'GHCISCRIPT'
+                :set -XNoMonomorphismRestriction -XLocalMonoBinds -XTemplateHaskell -XFlexibleContexts
+                import Plugin.InversionPlugin
+                :quit
+                GHCISCRIPT
+                ${canonicalGhc system}/bin/ghci \
+                  ${builtins.concatStringsSep " " ghcLanguageFlags} \
+                  -fplugin=Plugin.InversionPlugin \
+                  -ignore-dot-ghci \
+                  -ghci-script "$init" \
+                  >/dev/null
+                echo "inversion-ghci=pass"
+              '';
+            };
+          in {
+            type = "app";
+            program = "${script}/bin/inversion-ghci-smoke";
+          };
+
           agda2hs-semantic-search = let
             script = pkgs.writeShellApplication {
               name = "agda2hs-semantic-search";
@@ -581,6 +639,22 @@
         in
         {
           liquid-haskell = liquidHaskellEnv system;
+
+          presentation = pkgs.mkShell {
+            packages = [
+              pkgs.mirth
+              pkgs.stdenv.cc
+              pkgs.coreutils
+              pkgs.findutils
+              pkgs.gawk
+              pkgs.git
+              pkgs.gnugrep
+              pkgs.gnused
+              pkgs.elmPackages.elm
+              pkgs.haskellPackages.dhall
+              pkgs.haskellPackages.dhall-json
+            ];
+          };
 
           simple-haskell = pkgs.mkShell {
             packages = [
