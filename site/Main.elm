@@ -480,7 +480,7 @@ graphView model =
         nodeCircle ( node, x, y ) =
             let
                 color =
-                    nodeColor (List.length node.id)
+                    nodeColor (String.length node.id)
             in
             S.g []
                 [ S.circle
@@ -500,7 +500,7 @@ graphView model =
                     , SA.fontSize "7"
                     , SA.fill (perceptualCss paper)
                     ]
-                    [ S.text (String.fromInt (modBy 100 indexForNode node.id)) ]
+                    [ S.text (String.fromInt (modBy 100 (indexForNode node.id))) ]
                 ]
 
         edgeLines =
