@@ -70,7 +70,7 @@ jobs:
       - name: Run Agda semantic search and canonical semantic contract
         timeout-minutes: 15
         env:
-          CI_LANE: '(< AgdaLearner | AgdaTheorem | AgdaSafe | Agda2HsLiquid | MirthFastDirty | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All  >.Discovery) : < AgdaLearner | AgdaTheorem | AgdaSafe | Agda2HsLiquid | MirthFastDirty | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >'
+          CI_LANE: '(< AgdaLearner | AgdaTheorem | AgdaSafe | Agda2HsLiquid | MirthFastDirty | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >.Discovery) : < AgdaLearner | AgdaTheorem | AgdaSafe | Agda2HsLiquid | MirthFastDirty | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >'
         run: |
           set -euo pipefail
           nix develop .#default -c bash -e -c 'dhall text --file .ci/actions_ci.dhall | bash -e'
