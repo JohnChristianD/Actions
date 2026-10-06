@@ -1,9 +1,30 @@
 -- BEGIN MIRTH-SYNC GLOBAL OPTIONS
-{-# OPTIONS --no-fast-reduce --lossy-unification --backtracking-instance-search --experimental-lazy-instances --confluence-check --syntactic-equality --polarity --auto-inline --guarded --exact-split --no-infer-absurd-clauses --keep-covering-clauses --no-projection-like --erasure #-}
+{-# OPTIONS
+  --no-fast-reduce
+  --lossy-unification
+  --backtracking-instance-search
+  --experimental-lazy-instances
+  --confluence-check
+  --syntactic-equality
+  --polarity
+  --auto-inline
+  --guarded
+  --exact-split
+  --no-infer-absurd-clauses
+  --keep-covering-clauses
+  --no-projection-like
+  --erasure
+#-}
 -- END MIRTH-SYNC GLOBAL OPTIONS
 
 
-{-# OPTIONS --guardedness --rewriting --no-termination-check --type-in-type --no-positivity-check #-}
+{-# OPTIONS
+  --guardedness
+  --rewriting
+  --no-termination-check
+  --type-in-type
+  --no-positivity-check
+#-}
 
 ------------------------------------------------------------------------
 -- Canonical theorem semantics and emergence layer.
