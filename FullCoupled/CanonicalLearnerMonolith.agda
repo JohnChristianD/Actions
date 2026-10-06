@@ -16,7 +16,9 @@
 #-}
 -- END MIRTH-SYNC GLOBAL OPTIONS
 
-
+{-# OPTIONS
+  --safe
+#-}
 
 ------------------------------------------------------------------------
 -- Canonical learner semantics.
