@@ -4,6 +4,7 @@
   --lossy-unification
   --experimental-lazy-instances
   --confluence-check
+  --auto-inline
   --guarded
   --exact-split
   --no-infer-absurd-clauses
@@ -15,8 +16,13 @@
 #-}
 -- END MIRTH-SYNC GLOBAL OPTIONS
 
+
 {-# OPTIONS
-  --safe
+  --guardedness
+  --rewriting
+  --no-termination-check
+  --type-in-type
+  --no-positivity-check
 #-}
 
 ------------------------------------------------------------------------
