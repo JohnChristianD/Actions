@@ -6649,7 +6649,9 @@ record CanonicalFullCompositionGraphTheorem : Set₁ where
       (∀ {s t : KLAFullBeliefState} →
         klaAffineProjection s ≡
         klaAffineProjection t →
-        s ≡ t)
+        s ≡ t)    haarKlaAffineComposition :
+      CanonicalHaarKLAAffineCompositionTheorem
+
 
 canonical-haar-recurrent-composition-theorem :
   CanonicalHaarRecurrentCompositionTheorem
@@ -6675,6 +6677,7 @@ canonical-full-composition-graph-theorem =
     kla-affine-canonical-edge
     kla-affine-composition
     klaAffineProjection-not-injective
+     canonical-haar-kla-affine-composition-theorem
 
 canonicalAStarZeroCost :
   (zero + zero) ≡ zero
