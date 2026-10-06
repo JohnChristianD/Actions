@@ -6277,7 +6277,7 @@ canonicalHaarFeature-recurrent-step :
   ∀ (s : C.GRUState) (x : C.Int8) →
   C.gruStep
     s
-    (int8Sub
+    (C.int8Sub
       (proj₁ (C.canonicalCReLU8 x))
       (proj₂ (C.canonicalCReLU8 x)))
   ≡
@@ -6293,7 +6293,7 @@ canonicalHaarFeature-recurrent-prefix :
     C.canonicalGRURecurrentNetwork
     (map
       (λ x →
-        int8Sub
+        C.int8Sub
           (proj₁ (C.canonicalCReLU8 x))
           (proj₂ (C.canonicalCReLU8 x)))
       xs)
@@ -6311,7 +6311,7 @@ canonicalHaarFeature-recurrent-prefix (x ∷ xs) s =
       xs
       (C.gruStep
         s
-        (int8Sub
+        (C.int8Sub
           (proj₁ (C.canonicalCReLU8 x))
           (proj₂ (C.canonicalCReLU8 x)))))
     (cong
