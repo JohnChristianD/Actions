@@ -365,18 +365,18 @@
                 rm -rf "$out"
                 mkdir -p "$out"
                 bash .ci/mirth/agda_command_sync.sh --check
-                "${agdaWithLibraries system}/bin/agda-with-libraries" --dependency-graph="$out/theorems-monolith.dot" -i . FullCoupled/TheoremsMonolith.agda
+                "${pkgs.agdaPackages.agda}/bin/agda" -i "${typetopology}/source" -i "${agda2hsBaseLib system}" --dependency-graph="$out/theorems-monolith.dot" -i . FullCoupled/TheoremsMonolith.agda
                 test -s "$out/theorems-monolith.dot"
                 bash .ci/discovery/agda_semantic_source_closure.sh \
                   "$out/theorems-monolith.dot" \
                   "$out/.semantic-source-files" \
                   "$PWD/FullCoupled/TheoremsMonolith.agda" \
-                  "${typeTopologyLib system}/source" \
+                  "${typetopology}/source" \
                   "${agda2hsBaseLib system}"
                 test -s "$out/.semantic-source-files"
-                "${agdaWithLibraries system}/bin/agda-with-libraries" -i . FullCoupled/Agda2HsSemanticExtractor.agda
-                "${agdaWithLibraries system}/bin/agda-with-libraries" -i . FullCoupled/Agda2HsSemanticSearch.agda
-                "${agdaWithLibraries system}/bin/agda-with-libraries" -i . FullCoupled/Agda2HsTheoremGraphEGraph.agda
+                "${pkgs.agdaPackages.agda}/bin/agda" -i "${typetopology}/source" -i "${agda2hsBaseLib system}" -i . FullCoupled/Agda2HsSemanticExtractor.agda
+                "${pkgs.agdaPackages.agda}/bin/agda" -i "${typetopology}/source" -i "${agda2hsBaseLib system}" -i . FullCoupled/Agda2HsSemanticSearch.agda
+                "${pkgs.agdaPackages.agda}/bin/agda" -i "${typetopology}/source" -i "${agda2hsBaseLib system}" -i . FullCoupled/Agda2HsTheoremGraphEGraph.agda
                 "${agda2hsWithHaskell system}/bin/agda2hs" -i . FullCoupled/Agda2HsSemanticExtractor.agda -o "$out"
                 "${agda2hsWithHaskell system}/bin/agda2hs" -i . FullCoupled/Agda2HsSemanticSearch.agda -o "$out"
                 "${agda2hsWithHaskell system}/bin/agda2hs" -i . FullCoupled/Agda2HsTheoremGraphEGraph.agda -o "$out"
@@ -521,7 +521,7 @@
           agda-ci = pkgs.mkShellNoCC {
             packages = [
               pkgs.dhall
-              (agdaWithLibraries system)
+              pkgs.agdaPackages.agda
               pkgs.z3
               pkgs.coreutils
               pkgs.findutils
@@ -531,14 +531,16 @@
               pkgs.gnused
             ];
             shellHook = ''
-              export AGDA_COMMAND="${agdaWithLibraries system}/bin/agda-with-libraries"
+              export TYPE_TOPOLOGY_SOURCE="${typetopology}/source"
+              export AGDA2HS_BASE_LIB="${agda2hsBaseLib system}"
+              export AGDA_COMMAND="$PWD/.ci/agda-with-libraries.sh"
             '';
           };
 
           ci = pkgs.mkShell {
             packages = [
               (canonicalHaskellPackages system).dhall
-              (agdaWithLibraries system)
+              pkgs.agdaPackages.agda
               pkgs.z3
               pkgs.coreutils
               pkgs.findutils
@@ -548,7 +550,9 @@
               pkgs.gnused
             ];
             shellHook = ''
-              export AGDA_COMMAND="${agdaWithLibraries system}/bin/agda-with-libraries"
+              export TYPE_TOPOLOGY_SOURCE="${typetopology}/source"
+              export AGDA2HS_BASE_LIB="${agda2hsBaseLib system}"
+              export AGDA_COMMAND="$PWD/.ci/agda-with-libraries.sh"
             '';
           };
 
@@ -559,11 +563,13 @@
               pkgs.z3
               pkgs.mirth
               pkgs.gh
-              (agdaWithLibraries system)
+              pkgs.agdaPackages.agda
               (agdaEmacs system)
             ];
             shellHook = ''
-              export AGDA_COMMAND="${agdaWithLibraries system}/bin/agda-with-libraries"
+              export TYPE_TOPOLOGY_SOURCE="${typetopology}/source"
+              export AGDA2HS_BASE_LIB="${agda2hsBaseLib system}"
+              export AGDA_COMMAND="$PWD/.ci/agda-with-libraries.sh"
               export LIQUID_SOLVER=z3
             '';
           };
@@ -577,15 +583,16 @@
               (canonicalHaskellPackages system).dhall-json
               pkgs.mirth
               pkgs.gh
-              (agdaWithLibraries system)
-              (agdaForShell system)
+              pkgs.agdaPackages.agda
               (agdaEmacs system)
               pkgs.stdenv.cc
               pkgs.yamlscript
               pkgs.elmPackages.elm
             ];
             shellHook = ''
-              export AGDA_COMMAND="${agdaWithLibraries system}/bin/agda-with-libraries"
+              export TYPE_TOPOLOGY_SOURCE="${typetopology}/source"
+              export AGDA2HS_BASE_LIB="${agda2hsBaseLib system}"
+              export AGDA_COMMAND="$PWD/.ci/agda-with-libraries.sh"
               export LIQUID_SOLVER=z3
             '';
           };
