@@ -84,14 +84,6 @@
       agda2hsBaseLib = system:
         agda2hs.packages.${system}.base-lib;
 
-      agdaEmacs = system:
-        let
-          pkgs = pkgsFor system;
-        in
-        (pkgs.emacsPackagesFor pkgs.emacs).emacsWithPackages (epkgs: [
-          epkgs.agda2-mode
-        ]);
-
       agdaForShell = system:
         let
           pkgs = pkgsFor system;
@@ -149,11 +141,19 @@
               "$@"
           '';
         };
+      # Exact consumer-side extensions required by the pinned Curry inversion plugin.
+      # Keep this list aligned with Plugin.InversionPlugin.requiredExtensions.
       ghcLanguageFlags = [
-        "-XNoMonomorphismRestriction"
-        "-XLocalMonoBinds"
-        "-XTemplateHaskell"
+        "-XFlexibleInstances"
         "-XFlexibleContexts"
+        "-XKindSignatures"
+        "-XMonoLocalBinds"
+        "-XScopedTypeVariables"
+        "-XTypeFamilies"
+        "-XUndecidableInstances"
+        "-XIncoherentInstances"
+        "-XEmptyCase"
+        "-XMultiParamTypeClasses"
       ];
 
       ghcPluginFlags = [
@@ -543,7 +543,6 @@
               pkgs.mirth
               pkgs.gh
               (agdaWithLibraries system)
-              (agdaEmacs system)
             ];
             shellHook = ''
               export AGDA_COMMAND="${agdaWithLibraries system}/bin/agda-with-libraries"
@@ -562,7 +561,6 @@
               pkgs.gh
               (agdaWithLibraries system)
               (agdaForShell system)
-              (agdaEmacs system)
               pkgs.stdenv.cc
               pkgs.yamlscript
               pkgs.elmPackages.elm
