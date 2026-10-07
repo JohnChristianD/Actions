@@ -56,6 +56,11 @@
               (prev.parallel-tree-search.override {
                 tree-monad = final.tree-monad;
               });
+          # smtlib-backends-process executes z3 during its test suite.
+          smtlib-backends-process =
+            prev.smtlib-backends-process.overrideAttrs (old: {
+              nativeCheckInputs = (old.nativeCheckInputs or []) ++ [ pkgs.z3 ];
+            });
         });
 
       typeTopologyLib = system:
