@@ -89,7 +89,6 @@ open import UF.UA-FunExt
 ------------------------------------------------------------------------
 
 open import FullCoupled.CanonicalLearnerMonolith as C
-import FullCoupled.RewriteCompression
 -- END THEOREM-SPECIFIC IMPORTS
 
 ------------------------------------------------------------------------
