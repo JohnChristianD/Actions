@@ -11,15 +11,8 @@
   --no-projection-like
   --erased-matches
   --erase-record-parameters
-  --without-K
-  --level-universe
 #-}
 -- END MIRTH-SYNC GLOBAL OPTIONS
-
-
-{-# OPTIONS
-  --safe
-#-}
 
 ------------------------------------------------------------------------
 -- Canonical learner semantics.
