@@ -194,11 +194,12 @@ topLevelHeader line =
       Just name ->
         if syntaxHead name || name == "--" then
           Nothing
-        else if lineContainsChar ':' line then
-          let (_ , fragment) = splitFirstCharString ':' line
-          in Just (name , trimWhitespace fragment)
         else
-          Nothing
+          if lineContainsChar ':' line then
+            let (_ , fragment) = splitFirstCharString ':' line
+            in Just (name , trimWhitespace fragment)
+          else
+            Nothing
   else
     Nothing
 
@@ -410,12 +411,13 @@ recordFieldHeader line =
       Just candidate ->
         if candidate == "field" || syntaxHead candidate then
           Nothing
-        else if lineContainsChar ':' line then
-          let (before , after) = splitFirstCharString ':' line
-              name = trimWhitespace before
-          in Just (name , trimWhitespace after)
         else
-          Nothing
+          if lineContainsChar ':' line then
+            let (before , after) = splitFirstCharString ':' line
+                name = trimWhitespace before
+            in Just (name , trimWhitespace after)
+          else
+            Nothing
   else
     Nothing
 
