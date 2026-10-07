@@ -131,4 +131,4 @@ fi
 echo 'mirth-agda-import-sync=pass'
 echo "canonical=$canonical"
 echo "merged-external-imports=$(grep -Ec '^(open |import )' "$merged" || true)"
-echo "sync-exceptions=FullCoupled/Agda2HsSurface.agda,FullCoupled/Agda2HsSemanticExtractor.agda,FullCoupled/Agda2HsSemanticSearch.agda,FullCoupled/Agda2HsTheoremGraphEGraph.agda,InfinitePigeon.FinitePigeon(theorem-local)"
+echo "sync-exceptions=FullCoupled/Agda2HsSurface.agda,FullCoupled/Agda2HsSemanticExtractor.agda,FullCoupled/Agda2HsSemanticSearch.agda,FullCoupled/Agda2HsTheoremGraphEGraph.agda"
