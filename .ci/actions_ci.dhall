@@ -12,6 +12,7 @@ let script = merge {
   AgdaTheorem = ''
     set -euo pipefail
     nix run .#mirth-agda-sync -- --check
+    grep -Fq -- 'open import InfinitePigeon.FinitePigeon' FullCoupled/CanonicalLearnerMonolith.agda
     while IFS= read -r file; do
       "$AGDA_COMMAND" -i . "$file"
     done < <(git ls-files '*.agda')
