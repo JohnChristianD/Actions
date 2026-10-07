@@ -500,7 +500,7 @@ DHALL
     ! grep -nE '(^|[[:space:];])pkgs\.python3([[:space:]]|$)|(^|[[:space:];])python3([[:space:]]|$)|(^|[[:space:];])python([[:space:]]|$)|pkgs\.pythonPackages' flake.nix .ci/*.sh .ci/*.dhall .ci/mirth/*.mth 2>/dev/null || { echo "non-JAX Python toolchain reference present"; exit 1; }
     # Canonical proof/data surface: use Nat, Int/Integer, Rational, List, and Set-like structures.
     # Keep Fin and Vec out of the project-owned Agda API; transitive library internals remain library concerns.
-    ! git ls-files '*.agda' -z | xargs -0 grep -nE '(^|[[:space:]])(open[[:space:]]+)?import[[:space:]]+[^[:space:]]*(Fin|Vec)([[:space:]]|$)' 2>/dev/null || { echo "Fin/Vec import introduced into project Agda sources"; exit 1; }
+    ! git ls-files '*.agda' -z | xargs -0 grep -nE '^[[:space:]]*(open[[:space:]]+)?import[[:space:]]+((Fin|Vec)(\.|[[:space:]]|$)|[^[:space:]]+\.(Fin|Vec)(\.|[[:space:]]|$))' 2>/dev/null || { echo "Fin/Vec import introduced into project Agda sources"; exit 1; }
     ! grep -nE 'Exotic/ERL/FullCoupled|Exotic/FullCoupled' FullCoupled/*.agda README.md site/Main.elm docs/*.md 2>/dev/null || { echo "stale Exotic source path present"; exit 1; }
     '',
   Versions = ''
