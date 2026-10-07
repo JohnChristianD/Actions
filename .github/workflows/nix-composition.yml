@@ -12,6 +12,7 @@ on:
 
 permissions:
   contents: read
+  id-token: write
 
 concurrency:
   group: ${{ github.workflow }}-semantic-${{ github.ref }}
@@ -40,7 +41,7 @@ jobs:
         timeout-minutes: 30
         run: |
           set -euo pipefail
-          nix develop .#default-versions -c bash -e -c '
+          nix develop .#agda-ci -c bash -e -c '
             set -euo pipefail
             run_lane() {
               local lane="$1"
@@ -48,7 +49,29 @@ jobs:
             }
             run_lane AgdaLearner
             run_lane AgdaTheorem
-            run_lane Versions
+          '
+
+  versions:
+    name: Nix tool versions
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: NixOS/nix-installer-action@62c1943cefa2b84e9f5cc7c1f214b30817ef4b6c
+        with:
+          installer-version: '2.35.1'
+
+      - uses: DeterminateSystems/magic-nix-cache-action@v15
+
+      - name: Run version lane
+        env:
+          CI_LANE: Versions
+        run: |
+          set -euo pipefail
+          nix develop .#agda-versions -c bash -e -c '
+            set -euo pipefail
+            CI_LANE="$CI_LANE" dhall text --file .ci/actions_ci.dhall | bash -e
           '
 
   semantic:
@@ -65,7 +88,7 @@ jobs:
         timeout-minutes: 25
         run: |
           set -euo pipefail
-          nix develop .#default -c bash -e -c '
+          nix develop .#agda-ci -c bash -e -c '
             set -euo pipefail
             run_lane() {
               local lane="$1"
@@ -120,7 +143,7 @@ jobs:
   auto-merge:
     name: Enable auto-merge after full verification
     if: github.event_name == 'pull_request'
-    needs: [agda, semantic, pages]
+    needs: [agda, semantic, pages, versions]
     runs-on: ubuntu-22.04
     permissions:
       contents: write
@@ -140,6 +163,7 @@ jobs:
           CI_LANE: '(< AgdaLearner | AgdaTheorem | AgdaSafe | Agda2Hs | MirthFastDirty | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >.AutoMerge)'
         run: |
           set -euo pipefail
-          nix develop .#default -c bash -e -c 'dhall text --file .ci/actions_ci.dhall | bash -e'
+          gh pr merge "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --auto --rebase
+
 
 # Verification is driven by the Agda2Hs semantic/e-graph kernel.
