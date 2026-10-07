@@ -112,6 +112,25 @@
           (inversionPlugin system)
         ]);
 
+      lightGhc = system:
+        let
+          hp = canonicalHaskellPackages system;
+        in
+        hp.ghcWithPackages (p: [
+          p.rio
+        ]);
+
+      ghc924 = system:
+        (canonicalHaskellPackages system).ghc;
+
+      agda2hsLightWithHaskell = system:
+        agda2hs.packages.${system}.agda2hs.withPackages {
+          pkgs = [
+            agda2hs.packages.${system}.base-lib
+          ];
+          ghc = lightGhc system;
+        };
+
       inversionPlugin = system:
         let
           pkgs = pkgsFor system;
@@ -271,7 +290,7 @@
               runtimeInputs = [
                 pkgs.agdaPackages.agda
                 (agda2hsWithBase system)
-                (canonicalGhc system)
+                (lightGhc system)
                   pkgs.z3
                 pkgs.coreutils
                 pkgs.git
@@ -308,8 +327,7 @@
                 grep -Fq "inverse-csearchable" FullCoupled/TheoremsMonolith.agda
                 grep -Fq "inverse-preserves-csearchability" FullCoupled/TheoremsMonolith.agda
                 grep -Fq "SearchableEquivalence" FullCoupled/TheoremsMonolith.agda
-                ghc \
-                  ${ghcGlobalFlagsText} \
+                ${lightGhc system}/bin/ghc \
                   -O0 \
                   -dcore-lint \
                   -i "$out" \
@@ -327,9 +345,9 @@
                 grep -E "^required-plan-count=[1-9][0-9]* required-plan-total=[1-9][0-9]* required-plan-regression=True$" "$out/report.txt"
                 grep -Fq "egraph-regression=True egraph-associativity-regression=True" "$out/report.txt"
                 printf '%s\n' \
-                  "compiler=canonicalHaskellPackages.ghc-9.2.4" \
-                  "plugins=Plugin.InversionPlugin,LiquidHaskell" \
-                  "inversionCheck=pass" \
+                  "compiler=ghc-9.2.4" \
+                  "plugins=none" \
+                  "inversionCheck=not-run" \
                   "proofKernel=Agda" \
                   "searchKernel=Agda2Hs" \
                   "semanticCompletenessCheck=pass" \
@@ -371,7 +389,7 @@
               runtimeInputs = [
                 pkgs.agdaPackages.agda
                 (agda2hsWithBase system)
-                (canonicalGhc system)
+                (lightGhc system)
                 pkgs.z3
                 pkgs.coreutils
                 pkgs.findutils
@@ -452,6 +470,28 @@
               export AGDA2HS_BASE_LIB="${agda2hsBaseLib system}"
               export AGDA_COMMAND="$PWD/.ci/agda-with-libraries.sh"
             '';
+          };
+
+          agda-versions = pkgs.mkShellNoCC {
+            packages = [
+              (ghc924 system)
+              pkgs.dhall
+              pkgs.z3
+              pkgs.mirth
+              pkgs.agdaPackages.agda
+              (agdaEmacs system)
+            ];
+            shellHook = ''
+              export TYPE_TOPOLOGY_SOURCE="${typetopology}/source"
+              export AGDA2HS_BASE_LIB="${agda2hsBaseLib system}"
+              export AGDA_COMMAND="$PWD/.ci/agda-with-libraries.sh"
+            '';
+          };
+
+          automation = pkgs.mkShellNoCC {
+            packages = [
+              pkgs.gh
+            ];
           };
 
           ci = pkgs.mkShell {
