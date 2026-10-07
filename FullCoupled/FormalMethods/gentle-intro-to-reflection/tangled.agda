@@ -35,7 +35,6 @@ open import Rationals.Order
 open import Rationals.Type
 open import Equality
 open import Haskell.Prelude hiding (String; ⊥)
-open import Haskell.Prelude.Nat.Properties using (add-assoc; add-suc-r; ≤-antisym; ≤-trans; n<1+n)
 open import InfinitePigeon.Addition
 open import InfinitePigeon.Cantor
 open import InfinitePigeon.Equality
@@ -73,7 +72,6 @@ open import Prelude.Char as Char
 open import Prelude.Nat.Properties using (add-assoc; add-suc-r; ≤-antisym; ≤-trans; n<1+n)
 open import Two
 open import UF.Base
-open import UF.ClassicalLogic
 open import UF.FunExt
 open import UF.Powerset
 open import UF.PropTrunc
