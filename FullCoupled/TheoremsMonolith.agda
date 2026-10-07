@@ -42,18 +42,6 @@ open import Haskell.Law.Num.Def using (IsLawfulNum)
 open import Haskell.Law.Num.Int using (iLawfulNumInt)
 open import Haskell.Prelude
 open import Haskell.Prelude hiding (String; ⊥)
-open import InfinitePigeon.Addition
-open import InfinitePigeon.Cantor
-open import InfinitePigeon.Equality
-open import InfinitePigeon.Finite
-open import InfinitePigeon.InfinitePigeon
-open import InfinitePigeon.JK-LogicalFacts
-open import InfinitePigeon.JK-Monads
-open import InfinitePigeon.Logic
-open import InfinitePigeon.LogicalFacts
-open import InfinitePigeon.Naturals
-open import InfinitePigeon.Order
-open import InfinitePigeon.Two
 open import Iterative.Multisets 𝓤
 open import Iterative.Multisets-Addendum ua 𝓤
 open import Iterative.Sets ua 𝓤
@@ -126,6 +114,7 @@ open import W.Type
 ------------------------------------------------------------------------
 
 open import FullCoupled.CanonicalLearnerMonolith as C
+open import InfinitePigeon.FinitePigeon
 -- END THEOREM-SPECIFIC IMPORTS
 
 ------------------------------------------------------------------------
