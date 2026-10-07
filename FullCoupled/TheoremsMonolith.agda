@@ -92,6 +92,30 @@ open import FullCoupled.CanonicalLearnerMonolith as C
 -- END THEOREM-SPECIFIC IMPORTS
 
 ------------------------------------------------------------------------
+-- Reflection compression for repeated equality transport.
+-- The target equality determines the congruence function.
+------------------------------------------------------------------------
+
+𝓋𝓇𝒶 : {A : Set} → A → Arg A
+𝓋𝓇𝒶 = arg (arg-info visible relevant)
+
+≡-type-info : Term → TC (Arg Term × Arg Term × Term × Term)
+≡-type-info (def (quote _≡_) (𝓁 ∷ 𝒯 ∷ arg _ l ∷ arg _ r ∷ [])) = returnTC (𝓁 , 𝒯 , l , r)
+≡-type-info _ = typeError [ strErr "Term is not a ≡-type." ]
+
+macro
+  apply-cong : Term → Term → TC ⊤
+  apply-cong p goal =
+    try
+      (do τ ← inferType goal
+          𝓁 , 𝒯 , l , r ← ≡-type-info τ
+          unify goal
+            (def (quote cong)
+              (𝓋𝓇𝒶 l ∷ 𝓋𝓇𝒶 p ∷ [])))
+      or-else unify goal p
+
+
+------------------------------------------------------------------------
 -- Constructive inversion/search bridge.
 --
 -- The inversion-plugin/Curry line gives inverse computation as a
@@ -378,7 +402,7 @@ leftInverse-implies-injective observe inverse leftInverse eq =
   trans
     (sym (leftInverse _))
     (trans
-      (cong inverse eq)
+      apply-cong eq
       (leftInverse _))
 
 canonicalGRUStatisticalEncodeLeftInverse :
@@ -3845,7 +3869,7 @@ informationPreserving-all-tasks-injective
   trans
     (sym (allTasks (λ x → x) s))
     (trans
-      (cong inverse eq)
+      apply-cong eq
       (allTasks (λ x → x) t))
 
 productObservation :
@@ -4132,7 +4156,7 @@ discreteLeftInverse-observe-injective leftInverse {s} {t} eq =
   trans
     (sym (leftInverse s))
     (trans
-      (cong inverse eq)
+      apply-cong eq
       (leftInverse t))
 
 collision-implies-no-leftInverse-via-injectivity :
@@ -4312,7 +4336,7 @@ canonicalDenseNeighborhoodSeparation
         (trans
           (sym (leftInverse (C.iterateCanonical K m s)))
           (trans
-            (cong inverse eq)
+            apply-cong eq
             (leftInverse (C.iterateCanonical K n s)))))
 
 record CanonicalEndogenousMinimaxBellmanShapleyUAPTheorem : Set₁ where
