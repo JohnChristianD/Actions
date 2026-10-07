@@ -31,10 +31,6 @@ step = C.canonicalFullStep
 
 policy : LearnerKernel → LearnerState → Nat
 policy = C.canonicalPolicy
-
-watkinsStep : LearnerKernel → LearnerState → C.WatkinsState _
-watkinsStep K s = C.canonicalWatkinsStep K s
-
 affine : C.MonoidAffine → C.Int8 → C.Int8
 affine = C.applyMonoidAffine
 
