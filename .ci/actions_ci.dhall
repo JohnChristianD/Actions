@@ -510,6 +510,7 @@ DHALL
     "$AGDA_COMMAND" --version
     mirthc --version
     dhall --version
+    z3 --version
     emacs --version
     emacs --batch --eval '(require (quote agda2-mode))'
     '',
