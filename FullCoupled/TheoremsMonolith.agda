@@ -95,9 +95,6 @@ open import W.Type
 ------------------------------------------------------------------------
 
 
--- BEGIN THEOREM-LOCAL IMPORTS
--- END THEOREM-LOCAL IMPORTS
-
 -- BEGIN THEOREM-SPECIFIC IMPORTS
 ------------------------------------------------------------------------
 -- Theorem-specific imports: vendored Formal Methods in Agda.
