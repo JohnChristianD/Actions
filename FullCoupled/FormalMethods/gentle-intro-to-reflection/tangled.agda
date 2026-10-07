@@ -21,29 +21,20 @@ module tangled where
 
 -- BEGIN MIRTH-SYNC COMMON IMPORTS
 -- Merged external import surface; internal FullCoupled imports remain module-local.
+open import Agda.Builtin.Reflection as Builtin
+open import Addition
+open import Cantor
+open import Equality
 open import Haskell.Law.Num.Def using (IsLawfulNum)
 open import Haskell.Law.Num.Int using (iLawfulNumInt)
-open import Addition
-open import Agda.Builtin.Reflection as Builtin
-open import Agda.Builtin.Sigma hiding (_,_)
-open import Agda.Primitive as Level
-open import Cantor
-open import Rationals.Addition
-open import Rationals.Multiplication
-open import Rationals.Negation
-open import Rationals.Order
-open import Rationals.Type
-open import Equality
 open import Haskell.Prelude hiding (String; ⊥)
-open import Iterative.Multisets 𝓤
-open import Iterative.Multisets-Addendum ua 𝓤
+open import InfinitePigeon.FinitePigeon
 open import Iterative.Sets ua 𝓤
 open import JK-LogicalFacts
 open import JK-Monads
 open import K-AC-N
 open import Logic
 open import LogicalFacts
-open import MLTT.Athenian
 open import MLTT.Spartan hiding (J)
 open import MonadOnTypes.Definition
 open import MonadOnTypes.J
@@ -52,13 +43,13 @@ open import MonadOnTypes.K
 open import Naturals
 open import Naturals.Exponentiation
 open import Naturals.Properties
-open import Notation.CanonicalMap
 open import Notation.Order
 open import Order
-open import Haskell.Prelude
-open import Prelude.Char as Char
-open import Prelude.Nat.Properties using (add-assoc; add-suc-r; ≤-antisym; ≤-trans; n<1+n)
-open import Two
+open import Rationals.Addition
+open import Rationals.Multiplication
+open import Rationals.Negation
+open import Rationals.Order
+open import Rationals.Type
 open import UF.Base
 open import UF.FunExt
 open import UF.PropTrunc
