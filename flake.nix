@@ -63,29 +63,6 @@
             });
         });
 
-      typeTopologyLib = system:
-        let
-          pkgs = pkgsFor system;
-        in
-        pkgs.agdaPackages.mkDerivation {
-          pname = "TypeTopology";
-          version = "0-unstable-2026-10-05";
-          libraryName = "TypeTopology";
-          libraryFile = "typetopology.agda-lib";
-          src = typetopology;
-          dontBuild = true;
-          installPhase = ''
-            mkdir -p "$out/source"
-            cp -R source/. "$out/source/"
-            cp typetopology.agda-lib "$out/typetopology.agda-lib"
-          '';
-          meta = {
-            description = "Logical manifestations of topological concepts via univalent mathematics";
-            homepage = "https://github.com/martinescardo/TypeTopology";
-            license = pkgs.lib.licenses.gpl3Only;
-          };
-        };
-
       agda2hsBaseLib = system:
         agda2hs.packages.${system}.base-lib;
 
@@ -97,63 +74,6 @@
           epkgs.agda2-mode
         ]);
 
-      agdaForShell = system:
-        let
-          pkgs = pkgsFor system;
-        in
-        pkgs.writeShellApplication {
-          name = "agda";
-          runtimeInputs = [ (agdaWithLibraries system) pkgs.z3 ];
-          text = ''
-            set -euo pipefail
-            exec agda-with-libraries "$@"
-          '';
-        };
-
-
-      agdaWithTheoremGraphLibraries = system:
-        let
-          pkgs = pkgsFor system;
-        in
-        pkgs.writeShellApplication {
-          name = "agda-with-theorem-graph";
-          runtimeInputs = [ pkgs.agdaPackages.agda pkgs.coreutils ];
-          text = ''
-            set -euo pipefail
-            tmp=$(mktemp -d)
-            trap 'rm -rf "$tmp"' EXIT
-            mkdir -p "$tmp/TypeTopology" "$tmp/agda2hs-base"
-            cp -R "${typeTopologyLib system}/source/." "$tmp/TypeTopology/"
-            cp -R "${agda2hsBaseLib system}/." "$tmp/agda2hs-base/"
-            chmod -R u+rwX "$tmp/TypeTopology" "$tmp/agda2hs-base"
-            exec ${pkgs.agdaPackages.agda}/bin/agda \
-              -i "$tmp/TypeTopology" \
-              -i "$tmp/agda2hs-base" \
-              "$@"
-          '';
-        };
-
-      agdaWithLibraries = system:
-        let
-          pkgs = pkgsFor system;
-        in
-        pkgs.writeShellApplication {
-          name = "agda-with-libraries";
-          runtimeInputs = [ pkgs.agdaPackages.agda pkgs.coreutils ];
-          text = ''
-            set -euo pipefail
-            tmp=$(mktemp -d)
-            trap 'rm -rf "$tmp"' EXIT
-            mkdir -p "$tmp/TypeTopology" "$tmp/agda2hs-base"
-            cp -R "${typeTopologyLib system}/source/." "$tmp/TypeTopology/"
-            cp -R "${agda2hsBaseLib system}/." "$tmp/agda2hs-base/"
-            chmod -R u+rwX "$tmp/TypeTopology" "$tmp/agda2hs-base"
-            exec ${pkgs.agdaPackages.agda}/bin/agda \
-              -i "$tmp/TypeTopology" \
-              -i "$tmp/agda2hs-base" \
-              "$@"
-          '';
-        };
       # Exact consumer-side extensions required by the pinned Curry inversion plugin.
       # Keep this list aligned with Plugin.InversionPlugin.requiredExtensions.
       ghcLanguageFlags = [
@@ -230,9 +150,9 @@
           pkgs = pkgsFor system;
         in
         {
-          agda = agdaWithLibraries system;
+          agda = pkgs.agdaPackages.agda;
           agda2hs = agda2hsWithHaskell system;
-          typetopology = typeTopologyLib system;
+          typetopology = typetopology;
           ci = (canonicalHaskellPackages system).dhall;
           yamlscript = pkgs.yamlscript;
           default = (canonicalHaskellPackages system).dhall;
@@ -352,7 +272,7 @@
             script = pkgs.writeShellApplication {
               name = "agda2hs-semantic-search";
               runtimeInputs = [
-                (agdaWithLibraries system)
+                pkgs.agdaPackages.agda
                 (agda2hsWithHaskell system)
                 (canonicalGhc system)
                   pkgs.z3
@@ -452,7 +372,7 @@
             script = pkgs.writeShellApplication {
               name = "agda-haskell-pipeline";
               runtimeInputs = [
-                (agdaWithLibraries system)
+                pkgs.agdaPackages.agda
                 (agda2hsWithHaskell system)
                 (canonicalGhc system)
                 pkgs.z3
