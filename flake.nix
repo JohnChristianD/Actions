@@ -103,7 +103,7 @@
         in
         pkgs.writeShellApplication {
           name = "agda";
-          runtimeInputs = [ (agdaWithLibraries system) ];
+          runtimeInputs = [ (agdaWithLibraries system) pkgs.z3 ];
           text = ''
             set -euo pipefail
             exec agda-with-libraries "$@"
