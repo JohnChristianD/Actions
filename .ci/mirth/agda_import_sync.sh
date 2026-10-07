@@ -42,6 +42,7 @@ collect_imports() {
       !inside && $0 ~ /^[[:space:]]*(open[[:space:]]+)?import[[:space:]]+/ {
         line=$0
         if (line ~ /FullCoupled[.]/) next
+      if (line ~ /^open import InfinitePigeon[.]/) next
         if (line ~ /TWA[.]Thesis[.]Chapter3[.](ClosenessSpaces|SearchableTypes)[[:space:]]+fe([[:space:]]|$)/) next
         print line
       }
@@ -81,6 +82,7 @@ external_drift() {
       mod=$0
       sub(/^[[:space:]]*(open[[:space:]]+)?import[[:space:]]+/, "", mod)
       if (mod !~ /^FullCoupled[.]/ &&
+          mod !~ /^InfinitePigeon[.]/ &&
           mod !~ /^TWA[.]Thesis[.]Chapter3[.](ClosenessSpaces|SearchableTypes)[[:space:]]+fe([[:space:]]|$)/)
         print FILENAME ": " $0
     }
