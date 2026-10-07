@@ -67,3 +67,33 @@ canonicalFullStep-qLogControl-short :
   ∀ {A : Set} (K : C.FullLearnerKernel A) (s : C.FullLearnerState A) →
   C.qLogControl (C.canonicalFullStep K s) ≡ C.canonicalQLogControlStep K s
 canonicalFullStep-qLogControl-short K s = apply₃ refl
+
+
+$-head : Term → Term
+$-head (var v args) = var v []
+$-head (con c args) = con c []
+$-head (def f args) = def f []
+$-head (pat-lam cs args) = pat-lam cs []
+$-head t = t
+
+macro
+  apply₄ : Term → Term → TC ⊤
+  apply₄ p goal =
+    try
+      do
+        τ ← inferType goal
+        _ , _ , l , r ← ≡-type-info τ
+        unify
+          goal
+          (def (quote cong)
+            (𝓋𝓇𝒶 ($-head l) ∷ 𝓋𝓇𝒶 p ∷ []))
+    or-else
+      unify goal p
+
+cong-short :
+  ∀ {A B : Set}
+  (f : A → B)
+  {x y : A} →
+  x ≡ y →
+  f x ≡ f y
+cong-short f p = apply₄ p
