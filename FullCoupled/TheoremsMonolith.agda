@@ -32,6 +32,7 @@ module FullCoupled.TheoremsMonolith where
 
 -- BEGIN MIRTH-SYNC COMMON IMPORTS
 -- Merged external import surface; internal FullCoupled imports remain module-local.
+open import InfinitePigeon.FinitePigeon
 open import Addition
 open import Agda.Builtin.Reflection as Builtin
 open import Agda.Builtin.Sigma hiding (_,_)
