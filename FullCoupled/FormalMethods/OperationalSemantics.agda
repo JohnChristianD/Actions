@@ -27,7 +27,8 @@ module FullCoupled.FormalMethods.OperationalSemantics where
 
 -- BEGIN MIRTH-SYNC COMMON IMPORTS
 -- Merged external import surface; internal FullCoupled imports remain module-local.
-import Prelude.Int.Properties as IntegerProperties
+open import Haskell.Law.Num.Def using (IsLawfulNum)
+open import Haskell.Law.Num.Int using (iLawfulNumInt)
 open import Addition
 open import Agda.Builtin.Reflection as Builtin
 open import Agda.Builtin.Sigma hiding (_,_)

@@ -34,7 +34,8 @@ module FullCoupled.TheoremsMonolith where
 
 -- BEGIN MIRTH-SYNC COMMON IMPORTS
 -- Merged external import surface; internal FullCoupled imports remain module-local.
-import Prelude.Int.Properties as IntegerProperties
+open import Haskell.Law.Num.Def using (IsLawfulNum)
+open import Haskell.Law.Num.Int using (iLawfulNumInt)
 open import Addition
 open import Agda.Builtin.Reflection as Builtin
 open import Agda.Builtin.Sigma hiding (_,_)
@@ -286,7 +287,8 @@ record IntegerRingSolverNormalizationTheorem : Set₁ where
 integer-ring-solver-assoc :
   ∀ (i j k : Int) →
   i + (j + k) ≡ (i + j) + k
-integer-ring-solver-assoc = IntegerProperties.addInt-assoc
+integer-ring-solver-assoc i j k =
+  sym (IsLawfulNum.+-assoc iLawfulNumInt i j k)
 
 integer-ring-solver-normalization-theorem :
   IntegerRingSolverNormalizationTheorem
