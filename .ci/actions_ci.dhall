@@ -485,6 +485,8 @@ DHALL
     [ "$agda_count" -eq 14 ] || { echo "expected exactly fourteen tracked Agda sources, found $agda_count"; exit 1; }
     [ -f FullCoupled/CanonicalLearnerMonolith.agda ] || { echo "missing canonical learner monolith"; exit 1; }
     [ -f FullCoupled/TheoremsMonolith.agda ] || { echo "missing theorem monolith"; exit 1; }
+    imports=$(git ls-files '*.agda' | xargs grep -hE '^[[:space:]]*(open[[:space:]]+)?import[[:space:]]+' || true)
+    ! printf '%s\n' "$imports" | grep -E '(^|[[:space:]])(Fin|.*[.]Fin)([.]|[[:space:]]|$)|(^|[[:space:]])(Vec|.*[.]Vec)([.]|[[:space:]]|$)|(^|[[:space:]])Data[.]|(^|[[:space:]])Agda[.]Prelude([[:space:]]|$)' || { echo "forbidden Fin/Vec/stdlib/agda-prelude import present"; exit 1; }
     [ -f .ci/actions_ci.dhall ] || { echo "missing Dhall orchestrator"; exit 1; }
     ! git ls-files '*.json' | grep -q . || { echo "JSON source/artifact remains"; exit 1; }
     ! find .ci/discovery -type f -name '*.json' -print -quit | grep -q . || { echo "generated JSON artifact remains"; exit 1; }
