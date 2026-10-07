@@ -22,24 +22,12 @@ module tangled where
 -- BEGIN MIRTH-SYNC COMMON IMPORTS
 -- Merged external import surface; internal FullCoupled imports remain module-local.
 open import Agda.Builtin.Reflection as Builtin
-open import Addition
-open import Cantor
-open import Equality
 open import Haskell.Law.Num.Def using (IsLawfulNum)
 open import Haskell.Law.Num.Int using (iLawfulNumInt)
 open import Haskell.Prelude hiding (String; ⊥)
+open import Haskell.Prelude.Nat.Properties using (add-assoc; add-suc-r; ≤-antisym; ≤-trans; n<1+n)
 open import InfinitePigeon.FinitePigeon
-open import Iterative.Sets ua 𝓤
-open import JK-LogicalFacts
-open import JK-Monads
-open import K-AC-N
-open import Logic
-open import LogicalFacts
 open import MLTT.Spartan hiding (J)
-open import MonadOnTypes.Definition
-open import MonadOnTypes.J
-open import MonadOnTypes.JK R
-open import MonadOnTypes.K
 open import Naturals
 open import Naturals.Exponentiation
 open import Naturals.Division
@@ -58,7 +46,6 @@ open import UF.Size
 open import UF.Subsingletons
 open import UF.Subsingletons-FunExt
 open import UF.UA-FunExt
-open import W.Type
 -- END MIRTH-SYNC COMMON IMPORTS
 
 -- BEGIN MIRTH-SYNC CANONICAL COMMAND
