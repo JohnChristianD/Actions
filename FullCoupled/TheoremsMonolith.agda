@@ -53,6 +53,7 @@ open import MonadOnTypes.JK R
 open import MonadOnTypes.K
 open import Naturals
 open import Naturals.Exponentiation
+open import Naturals.Division
 open import Naturals.Properties
 open import Notation.Order
 open import Order
@@ -3959,7 +3960,7 @@ canonical-qLog2Bias8-law :
   C.qLog2Bias8 x ≡
   C.int8Neg
     (C.int8OfNat
-      (Data.Nat._/_
+      (C.dyadicDivide
         (C.munchausenScale8 * C.dyadicNumerator (C.qLog8 x))
         (C.dyadicDenominator (C.qLog8 x))))
 canonical-qLog2Bias8-law x with C.int8Magnitude x
@@ -3975,7 +3976,7 @@ record CanonicalBiasedWatkinsNegativeQMunchausenL2TargetTheorem : Set₁ where
       C.qLog2Bias8 x ≡
       C.int8Neg
         (C.int8OfNat
-          (Data.Nat._/_
+          (C.dyadicDivide
             (C.munchausenScale8 * C.dyadicNumerator (C.qLog8 x))
             (C.dyadicDenominator (C.qLog8 x))))
 
@@ -4019,7 +4020,7 @@ record CanonicalQMunchausenL2SharedNegationPolarityTheorem : Set₁ where
       C.qLog2Bias8 x ≡
       C.int8Neg
         (C.int8OfNat
-          (Data.Nat._/_
+          (C.dyadicDivide
             (C.munchausenScale8 * C.dyadicNumerator (C.qLog8 x))
             (C.dyadicDenominator (C.qLog8 x))))
 
@@ -4569,7 +4570,7 @@ bundleCost :
   (Good → Nat) →
   Nat
 bundleCost goods price bundle =
-  sumNat (Data.List.Base.map (λ g → price g * bundle g) goods)
+  sumNat (map (λ g → price g * bundle g) goods)
 
 BudgetFeasible :
   ∀ {Good : Set} →
@@ -4603,8 +4604,8 @@ record FiniteNonIIDWalrasianEquilibrium
       utility i (allocation i)
     marketClearing :
       ∀ g →
-      sumNat (Data.List.Base.map (λ i → allocation i g) agents) ≡
-      sumNat (Data.List.Base.map (λ i → endowment i g) agents)
+      sumNat (map (λ i → allocation i g) agents) ≡
+      sumNat (map (λ i → endowment i g) agents)
 
 open FiniteNonIIDWalrasianEquilibrium public
 
@@ -4622,7 +4623,7 @@ record FiniteTUShapleyAllocationEquilibrium
       scaledValue * payoff p ≡
       scaledShapley p
     scaledEfficiency :
-      sumNat (Data.List.Base.map payoff players) ≡
+      sumNat (map payoff players) ≡
       scaledValue * coalitionWorth players
 
 open FiniteTUShapleyAllocationEquilibrium public
@@ -5353,12 +5354,12 @@ jaxAffine x =
 
 jaxVmapAffine : List Int → List Int
 jaxVmapAffine =
-  Data.List.Base.map jaxAffine
+  map jaxAffine
 
 jaxVmapAffine-law :
   ∀ xs →
   jaxVmapAffine xs ≡
-  Data.List.Base.map (λ x → (+ 2) *Int x +Int (+ 1)) xs
+  map (λ x → (+ 2) *Int x +Int (+ 1)) xs
 jaxVmapAffine-law xs = refl
 
 jaxPrefixSum : Int → List Int → List Int
@@ -5421,12 +5422,12 @@ jaxLexicographicScoreOrder :
   List C.ScoreEntry →
   List Nat
 jaxLexicographicScoreOrder xs =
-  Data.List.Base.map proj₂ (C.sortScores xs)
+  map proj₂ (C.sortScores xs)
 
 jaxLexicographicScoreOrder-law :
   ∀ xs →
   jaxLexicographicScoreOrder xs ≡
-  Data.List.Base.map proj₂ (C.sortScores xs)
+  map proj₂ (C.sortScores xs)
 jaxLexicographicScoreOrder-law xs = refl
 
 jaxSparseSupportSize :
@@ -5519,14 +5520,14 @@ jaxBatchedIntegerLayerNormRadicand :
   Nat →
   List Int
 jaxBatchedIntegerLayerNormRadicand batch epsilon =
-  Data.List.Base.map
+  map
     (λ xs → jaxIntegerLayerNormRadicand xs epsilon)
     batch
 
 jaxBatchedIntegerLayerNormRadicand-law :
   ∀ batch epsilon →
   jaxBatchedIntegerLayerNormRadicand batch epsilon ≡
-  Data.List.Base.map
+  map
     (λ xs → C.integerLayerNormRadicand xs epsilon)
     batch
 jaxBatchedIntegerLayerNormRadicand-law batch epsilon = refl
@@ -5570,14 +5571,14 @@ jaxBatchedGRUHiddenStep :
   List C.Int8 →
   List C.Int8
 jaxBatchedGRUHiddenStep states xs =
-  Data.List.Base.map
+  map
     (λ stateX → jaxGRUHiddenStep (proj₁ stateX) (proj₂ stateX))
     (zipGRUStatesInts states xs)
 
 jaxBatchedGRUHiddenStep-law :
   ∀ states xs →
   jaxBatchedGRUHiddenStep states xs ≡
-  Data.List.Base.map
+  map
     (λ stateX →
       C.hiddenState
         (C.gruStep
@@ -5625,7 +5626,7 @@ record JAXExecutionMirrorReproof : Set₁ where
     vmapAffine :
       ∀ xs →
       jaxVmapAffine xs ≡
-      Data.List.Base.map (λ x → (+ 2) *Int x +Int (+ 1)) xs
+      map (λ x → (+ 2) *Int x +Int (+ 1)) xs
     associativePrefixSum :
       ∀ xs →
       jaxAssociativePrefixSum xs ≡
@@ -5642,7 +5643,7 @@ record JAXExecutionMirrorReproof : Set₁ where
     lexicographicScoreOrder :
       ∀ xs →
       jaxLexicographicScoreOrder xs ≡
-      Data.List.Base.map proj₂ (C.sortScores xs)
+      map proj₂ (C.sortScores xs)
     sparseSupportSize :
       ∀ {A : Set}
       (K : C.ActionSpace A)
@@ -5674,7 +5675,7 @@ record JAXExecutionMirrorReproof : Set₁ where
     batchedIntegerLayerNormRadicand :
       ∀ batch epsilon →
       jaxBatchedIntegerLayerNormRadicand batch epsilon ≡
-      Data.List.Base.map (λ xs → C.integerLayerNormRadicand xs epsilon) batch
+      map (λ xs → C.integerLayerNormRadicand xs epsilon) batch
     signedGate :
       ∀ x →
       jaxSignedGate x ≡ C.gateFromInput x
@@ -5685,7 +5686,7 @@ record JAXExecutionMirrorReproof : Set₁ where
     batchedGRUHiddenStep :
       ∀ states xs →
       jaxBatchedGRUHiddenStep states xs ≡
-      Data.List.Base.map
+      map
         (λ stateX →
           C.hiddenState
             (C.gruStep
@@ -8804,8 +8805,8 @@ record FiniteNonIIDGeneralizedEquilibrium
       utility i (allocation i)
     marketClearing :
       ∀ g →
-      sumNat (Data.List.Base.map (λ i → allocation i g) agents) ≡
-      sumNat (Data.List.Base.map (λ i → endowment i g) agents)
+      sumNat (map (λ i → allocation i g) agents) ≡
+      sumNat (map (λ i → endowment i g) agents)
 
 megaParetoOptimal :
   ∀ {Agent Allocation : Set}
@@ -9005,8 +9006,8 @@ finiteNonIIDDemandCostKernel :
     (FiniteNonIIDStrictPreference utility)
     (λ a →
       ∀ g →
-      sumNat (Data.List.Base.map (λ i → a i g) agents) ≡
-      sumNat (Data.List.Base.map (λ i → endowment i g) agents))
+      sumNat (map (λ i → a i g) agents) ≡
+      sumNat (map (λ i → endowment i g) agents))
     (λ p i bundle → BudgetFeasible goods p (endowment i) bundle)
     (λ p a →
       FiniteNonIIDGeneralizedEquilibrium
