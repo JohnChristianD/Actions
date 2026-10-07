@@ -32,9 +32,6 @@ module FullCoupled.TheoremsMonolith where
 
 -- BEGIN MIRTH-SYNC COMMON IMPORTS
 -- Merged external import surface; internal FullCoupled imports remain module-local.
-open import Agda.Builtin.Reflection as Builtin
-open import Haskell.Law.Num.Def using (IsLawfulNum)
-open import Haskell.Law.Num.Int using (iLawfulNumInt)
 open import Haskell.Prelude hiding (String; ⊥)
 open import Haskell.Prelude.Nat.Properties using (add-assoc; add-suc-r; ≤-antisym; ≤-trans; n<1+n)
 open import InfinitePigeon.FinitePigeon
@@ -58,6 +55,11 @@ open import UF.Subsingletons
 open import UF.Subsingletons-FunExt
 open import UF.UA-FunExt
 -- END MIRTH-SYNC COMMON IMPORTS
+
+open import Agda.Builtin.Reflection as Builtin
+open import Haskell.Law.Num.Def using (IsLawfulNum)
+open import Haskell.Law.Num.Int using (iLawfulNumInt)
+open import Haskell.Prelude.Nat.Properties using (≤-trans; n<1+n)
 
 -- BEGIN MIRTH-SYNC CANONICAL COMMAND
 -- "$AGDA_COMMAND" -i .
@@ -103,15 +105,22 @@ open import FullCoupled.CanonicalLearnerMonolith as C
 ≡-type-info (def (quote _≡_) (𝓁 ∷ 𝒯 ∷ arg _ l ∷ arg _ r ∷ [])) = returnTC (𝓁 , 𝒯 , l , r)
 ≡-type-info _ = typeError [ strErr "Term is not a ≡-type." ]
 
+$-head : Term → Term
+$-head (var v args) = var v []
+$-head (con c args) = con c []
+$-head (def f args) = def f []
+$-head (pat-lam cs args) = pat-lam cs []
+$-head t = t
+
 macro
   apply-cong : Term → Term → TC ⊤
   apply-cong p goal =
     try
       (do τ ← inferType goal
-          𝓁 , 𝒯 , l , r ← ≡-type-info τ
+          _ , _ , l , _ ← ≡-type-info τ
           unify goal
             (def (quote cong)
-              (𝓋𝓇𝒶 l ∷ 𝓋𝓇𝒶 p ∷ [])))
+              (𝓋𝓇𝒶 ($-head l) ∷ 𝓋𝓇𝒶 p ∷ [])))
       or-else unify goal p
 
 
