@@ -114,9 +114,7 @@ open import W.Type
 -- Imported qualified; theorem names remain isolated from this monolith.
 ------------------------------------------------------------------------
 
-open import FullCoupled.CanonicalLearnerMonolith as C
-open import InfinitePigeon.FinitePigeon
--- END THEOREM-SPECIFIC IMPORTS
+open import FullCoupled.CanonicalLearnerMonolith as C-- END THEOREM-SPECIFIC IMPORTS
 
 ------------------------------------------------------------------------
 -- Constructive inversion/search bridge.
