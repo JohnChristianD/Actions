@@ -8,6 +8,8 @@ open import Haskell.Prelude
 
 import FullCoupled.CanonicalLearnerMonolith as C
 import FullCoupled.TheoremsMonolith as T
+import FullCoupled.ProofCompress as P
+import FullCoupled.Guarded.TypeTopologyUnsafe as U
 
 record Surface (ℓ : Level) : Set (lsuc ℓ) where
   field
