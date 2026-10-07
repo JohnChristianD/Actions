@@ -4,7 +4,6 @@
   --backtracking-instance-search
   --experimental-lazy-instances
   --confluence-check
-  --syntactic-equality
   --polarity
   --auto-inline
   --guarded
