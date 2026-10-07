@@ -53,6 +53,8 @@ open import UF.Subsingletons-FunExt
 open import UF.UA-FunExt
 -- END MIRTH-SYNC COMMON IMPORTS
 
+open import Haskell.Prelude.Nat.Properties using (≤-trans)
+
 -- BEGIN MIRTH-SYNC CANONICAL COMMAND
 -- "$AGDA_COMMAND" -i .
 -- END MIRTH-SYNC CANONICAL COMMAND
