@@ -58,15 +58,6 @@
               });
         });
 
-      haskellLiquidGhc = system:
-        let
-          pkgs = pkgsFor system;
-        in
-        pkgs.haskellPackages.ghcWithPackages (p: [
-          p.rio
-          p.liquidhaskell
-        ]);
-
       typeTopologyLib = system:
         let
           pkgs = pkgsFor system;
@@ -206,7 +197,7 @@
 
       agda2hsWithHaskell = system:
         let
-          ghc = haskellLiquidGhc system;
+          ghc = canonicalGhc system;
         in
         agda2hs.packages.${system}.agda2hs.withPackages {
           pkgs = [
