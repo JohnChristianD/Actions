@@ -26,12 +26,7 @@ module FullCoupled.FormalMethods.VerificationConditions where
 
 -- BEGIN MIRTH-SYNC COMMON IMPORTS
 -- Merged external import surface; internal FullCoupled imports remain module-local.
-open import Agda.Builtin.Reflection as Builtin
-open import Haskell.Law.Num.Def using (IsLawfulNum)
-open import Haskell.Law.Num.Int using (iLawfulNumInt)
 open import Haskell.Prelude hiding (String; ⊥)
-open import Haskell.Prelude.Nat.Properties using (add-assoc; add-suc-r; ≤-antisym; ≤-trans; n<1+n)
-open import InfinitePigeon.FinitePigeon
 open import MLTT.Spartan hiding (J)
 open import Naturals
 open import Naturals.Exponentiation
