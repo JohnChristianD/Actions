@@ -27,6 +27,7 @@ module FullCoupled.FormalMethods.Types where
 
 -- BEGIN MIRTH-SYNC COMMON IMPORTS
 -- Merged external import surface; internal FullCoupled imports remain module-local.
+open import InfinitePigeon.FinitePigeon
 open import Haskell.Law.Num.Def using (IsLawfulNum)
 open import Haskell.Law.Num.Int using (iLawfulNumInt)
 open import Addition
