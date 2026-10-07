@@ -42,6 +42,7 @@ open import MonadOnTypes.JK R
 open import MonadOnTypes.K
 open import Naturals
 open import Naturals.Exponentiation
+open import Naturals.Division
 open import Naturals.Properties
 open import Notation.Order
 open import Order
