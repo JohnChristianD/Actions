@@ -123,14 +123,6 @@
       ghc924 = system:
         (canonicalHaskellPackages system).ghc;
 
-      agda2hsLightWithHaskell = system:
-        agda2hs.packages.${system}.agda2hs.withPackages {
-          pkgs = [
-            agda2hs.packages.${system}.base-lib
-          ];
-          ghc = lightGhc system;
-        };
-
       inversionPlugin = system:
         let
           pkgs = pkgsFor system;
@@ -405,7 +397,7 @@
                 "${agda2hsWithBase system}/bin/agda2hs" -i . FullCoupled/Agda2HsSurface.agda -o "$out"
                 test -s "$out/FullCoupled/Agda2HsSurface.hs"
                 mkdir -p "$out/ghc"
-                "${canonicalGhc system}/bin/ghc" ${ghcGlobalFlagsText} -O0 -dcore-lint -package rio -i "$out" -odir "$out/ghc" -hidir "$out/ghc" -c "$out/FullCoupled/Agda2HsSurface.hs"
+                "${lightGhc system}/bin/ghc" -O0 -dcore-lint -package rio -i "$out" -odir "$out/ghc" -hidir "$out/ghc" -c "$out/FullCoupled/Agda2HsSurface.hs"
                 printf '%s\n' \
                   "source=FullCoupled/Agda2HsSurface.agda generated=build/agda-haskell/FullCoupled/Agda2HsSurface.hs ghc:pass" \
                   > "$out/agda2hs-manifest.tsv"
