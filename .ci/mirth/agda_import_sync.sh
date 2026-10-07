@@ -43,6 +43,7 @@ collect_imports() {
         line=$0
         if (line ~ /FullCoupled[.]/) next
         if (line ~ /TWA[.]Thesis[.]Chapter3[.](ClosenessSpaces|SearchableTypes)[[:space:]]+fe([[:space:]]|$)/) next
+        if (line ~ /^InfinitePigeon[.]FinitePigeon$/) next
         print line
       }
     ' "$file"
@@ -130,4 +131,4 @@ fi
 echo 'mirth-agda-import-sync=pass'
 echo "canonical=$canonical"
 echo "merged-external-imports=$(grep -Ec '^(open |import )' "$merged" || true)"
-echo "sync-exceptions=FullCoupled/Agda2HsSurface.agda,FullCoupled/Agda2HsSemanticExtractor.agda,FullCoupled/Agda2HsSemanticSearch.agda,FullCoupled/Agda2HsTheoremGraphEGraph.agda"
+echo "sync-exceptions=FullCoupled/Agda2HsSurface.agda,FullCoupled/Agda2HsSemanticExtractor.agda,FullCoupled/Agda2HsSemanticSearch.agda,FullCoupled/Agda2HsTheoremGraphEGraph.agda,InfinitePigeon.FinitePigeon(theorem-local)"

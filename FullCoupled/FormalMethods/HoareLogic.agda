@@ -27,20 +27,15 @@ module FullCoupled.FormalMethods.HoareLogic where
 
 -- BEGIN MIRTH-SYNC COMMON IMPORTS
 -- Merged external import surface; internal FullCoupled imports remain module-local.
-open import InfinitePigeon.FinitePigeon
-open import Haskell.Law.Num.Def using (IsLawfulNum)
-open import Haskell.Law.Num.Int using (iLawfulNumInt)
 open import Addition
 open import Agda.Builtin.Reflection as Builtin
 open import Agda.Builtin.Sigma hiding (_,_)
 open import Agda.Primitive as Level
 open import Cantor
-open import Rationals.Addition
-open import Rationals.Multiplication
-open import Rationals.Negation
-open import Rationals.Order
-open import Rationals.Type
 open import Equality
+open import Haskell.Law.Num.Def using (IsLawfulNum)
+open import Haskell.Law.Num.Int using (iLawfulNumInt)
+open import Haskell.Prelude
 open import Haskell.Prelude hiding (String; ⊥)
 open import Iterative.Multisets 𝓤
 open import Iterative.Multisets-Addendum ua 𝓤
@@ -62,9 +57,13 @@ open import Naturals.Properties
 open import Notation.CanonicalMap
 open import Notation.Order
 open import Order
-open import Haskell.Prelude
 open import Prelude.Char as Char
 open import Prelude.Nat.Properties using (add-assoc; add-suc-r; ≤-antisym; ≤-trans; n<1+n)
+open import Rationals.Addition
+open import Rationals.Multiplication
+open import Rationals.Negation
+open import Rationals.Order
+open import Rationals.Type
 open import Two
 open import UF.Base
 open import UF.FunExt

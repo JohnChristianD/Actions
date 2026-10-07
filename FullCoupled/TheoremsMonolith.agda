@@ -32,7 +32,6 @@ module FullCoupled.TheoremsMonolith where
 
 -- BEGIN MIRTH-SYNC COMMON IMPORTS
 -- Merged external import surface; internal FullCoupled imports remain module-local.
-open import InfinitePigeon.FinitePigeon
 open import Addition
 open import Agda.Builtin.Reflection as Builtin
 open import Agda.Builtin.Sigma hiding (_,_)
@@ -114,7 +113,9 @@ open import W.Type
 -- Imported qualified; theorem names remain isolated from this monolith.
 ------------------------------------------------------------------------
 
-open import FullCoupled.CanonicalLearnerMonolith as C-- END THEOREM-SPECIFIC IMPORTS
+open import InfinitePigeon.FinitePigeon
+open import FullCoupled.CanonicalLearnerMonolith as C
+-- END THEOREM-SPECIFIC IMPORTS
 
 ------------------------------------------------------------------------
 -- Constructive inversion/search bridge.
