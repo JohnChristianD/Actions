@@ -43,7 +43,6 @@ module FullCoupled.CanonicalLearnerMonolith where
 -- Merged external import surface; internal FullCoupled imports remain module-local.
 open import Haskell.Law.Num.Def using (IsLawfulNum)
 open import Haskell.Law.Num.Int using (iLawfulNumInt)
-open import Addition
 open import Agda.Builtin.Reflection as Builtin
 open import Agda.Builtin.Sigma hiding (_,_)
 open import Agda.Primitive as Level
