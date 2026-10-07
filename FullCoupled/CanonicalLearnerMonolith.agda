@@ -68,6 +68,9 @@ open import UF.Subsingletons-FunExt
 open import UF.UA-FunExt
 -- END MIRTH-SYNC COMMON IMPORTS
 
+open import Haskell.Prelude.Nat.Properties using (≤-antisym)
+open import InfinitePigeon.FinitePigeon
+
 -- BEGIN MIRTH-SYNC CANONICAL COMMAND
 -- "$AGDA_COMMAND" -i .
 -- END MIRTH-SYNC CANONICAL COMMAND
