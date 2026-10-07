@@ -31,7 +31,12 @@ canonical_imports() {
   extract_block "$canonical" |
     sed '1d' |
     sed '$d' |
-    sed '/^-- Merged external import surface/d'
+    sed '/^-- Merged external import surface/d' |
+    sed '/^open import Agda\.Builtin\.Reflection/d' |
+    sed '/^open import Haskell\.Law\.Num\.Def/d' |
+    sed '/^open import Haskell\.Law\.Num\.Int/d' |
+    sed '/^open import Haskell\.Prelude\.Nat\.Properties/d' |
+    sed '/^open import InfinitePigeon\.FinitePigeon/d'
 }
 collect_imports() {
   canonical_imports
@@ -43,7 +48,8 @@ collect_imports() {
         line=$0
         if (line ~ /FullCoupled[.]/) next
         if (line ~ /TWA[.]Thesis[.]Chapter3[.](ClosenessSpaces|SearchableTypes)[[:space:]]+fe([[:space:]]|$)/) next
-        if (line ~ /^InfinitePigeon[.]FinitePigeon$/) next
+        if (line ~ /^open import (Agda[.]Builtin[.]Reflection|Haskell[.]Law[.]Num[.]Def|Haskell[.]Law[.]Num[.]Int|Haskell[.]Prelude[.]Nat[.]Properties)([[:space:]]|$)/) next
+        if (line ~ /^open import InfinitePigeon[.]FinitePigeon([[:space:]]|$)/) next
         print line
       }
     ' "$file"
@@ -82,7 +88,11 @@ external_drift() {
       mod=$0
       sub(/^[[:space:]]*(open[[:space:]]+)?import[[:space:]]+/, "", mod)
       if (mod !~ /^FullCoupled[.]/ &&
-          mod !~ /^TWA[.]Thesis[.]Chapter3[.](ClosenessSpaces|SearchableTypes)[[:space:]]+fe([[:space:]]|$)/)
+          mod !~ /^TWA[.]Thesis[.]Chapter3[.](ClosenessSpaces|SearchableTypes)[[:space:]]+fe([[:space:]]|$)/ &&
+          mod !~ /^Agda[.]Builtin[.]Reflection([[:space:]]|$)/ &&
+          mod !~ /^Haskell[.]Law[.]Num[.](Def|Int)([[:space:]]|$)/ &&
+          mod !~ /^Haskell[.]Prelude[.]Nat[.]Properties([[:space:]]|$)/ &&
+          mod !~ /^InfinitePigeon[.]FinitePigeon([[:space:]]|$)/)
         print FILENAME ": " $0
     }
   ' "$file"
