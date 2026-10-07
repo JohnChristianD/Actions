@@ -517,6 +517,7 @@
             packages = [
               pkgs.dhall
               (agdaWithLibraries system)
+              pkgs.z3
               pkgs.coreutils
               pkgs.findutils
               pkgs.git
@@ -533,6 +534,7 @@
             packages = [
               (canonicalHaskellPackages system).dhall
               (agdaWithLibraries system)
+              pkgs.z3
               pkgs.coreutils
               pkgs.findutils
               pkgs.git
