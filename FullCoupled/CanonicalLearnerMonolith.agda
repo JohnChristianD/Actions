@@ -62,6 +62,7 @@ open import MonadOnTypes.JK R
 open import MonadOnTypes.K
 open import Naturals
 open import Naturals.Exponentiation
+open import Naturals.Division
 open import Naturals.Properties
 open import Notation.Order
 open import Order
@@ -497,6 +498,10 @@ dyadicDenominator : Dyadic → Nat
 dyadicDenominator ((z , d) , _) =
   succ d
 
+dyadicDivide : Nat → Dyadic → Nat
+dyadicDivide n ((z , d) , _) =
+  pr₁ (division n d)
+
 qLog8 : Int8 → Dyadic
 qLog8 x with int8Magnitude x
 ... | zero = fromNatDyadic 1 zero
@@ -510,9 +515,9 @@ signedDyadicBias8 q with dyadicNumerator q
 ... | zero = zero8
 ... | suc n = int8Neg
   (int8OfNat
-    (Data.Nat._/_
+    (dyadicDivide
       (munchausenScale8 * suc n)
-      (dyadicDenominator q)))
+      q))
 
 qLog2Bias8 : Int8 → Int8
 qLog2Bias8 x =
@@ -1296,9 +1301,9 @@ canonicalPolicy-optimizer-invariant K s o = refl
 
 maxCriticValueList : List Int8 → Int8
 maxCriticValueList [] = zero8
-maxCriticValueList (x ∷ xs) with code x ≤? code (maxCriticValueList xs)
-... | Relation.Nullary.yes _ = maxCriticValueList xs
-... | Relation.Nullary.no _ = x
+maxCriticValueList (x ∷ xs) with code x <= code (maxCriticValueList xs)
+... | True = maxCriticValueList xs
+... | False = x
 
 maxCriticValue8 : ∀ {A : Set} → ActionSpace A → CriticState A → Int8
 maxCriticValue8 K q = maxCriticValueList (map (λ a → values q a) (candidates K))
