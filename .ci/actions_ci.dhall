@@ -507,8 +507,6 @@ DHALL
     "$AGDA_COMMAND" --version
     mirthc --version
     dhall --version
-    emacs --version
-    emacs --batch --eval '(require (quote agda2-mode))'
     '',
   AutoMerge = ''
     set -euo pipefail
@@ -524,8 +522,6 @@ DHALL
     "$AGDA_COMMAND" --version
     ghc --numeric-version
     dhall --version
-    emacs --version
-    emacs --batch --eval '(require (quote agda2-mode))'
     while IFS= read -r file; do
       "$AGDA_COMMAND" -i . "$file"
     done < <(git ls-files '*.agda')
