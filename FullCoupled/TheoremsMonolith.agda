@@ -1110,7 +1110,7 @@ eGraphAStarConvergenceSemanticClosure W s
 ------------------------------------------------------------------------
 -- Rank + strict descent can now discharge eventual stability once the
 -- stable predicate is decidable. The Nat measure is consumed through
--- the standard library's well-founded accessibility proof; no search
+-- TypeTopology's well-founded accessibility structure; no search
 -- cost or heuristic is used as semantic evidence.
 ------------------------------------------------------------------------
 
