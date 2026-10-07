@@ -86,7 +86,7 @@ open import Two
 open import UF.Base
 open import UF.ClassicalLogic
 open import UF.FunExt
-open import UF.Powerset
+
 open import UF.PropTrunc
 open import UF.Size
 open import UF.Subsingletons
