@@ -6650,7 +6650,8 @@ record CanonicalFullCompositionGraphTheorem : Set₁ where
       (∀ {s t : KLAFullBeliefState} →
         klaAffineProjection s ≡
         klaAffineProjection t →
-        s ≡ t)    haarKlaAffineComposition :
+        s ≡ t)
+    haarKlaAffineComposition :
       CanonicalHaarKLAAffineCompositionTheorem
 
 
