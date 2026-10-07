@@ -482,16 +482,8 @@
               (agdaEmacs system)
             ];
             shellHook = ''
-              export TYPE_TOPOLOGY_SOURCE="${typetopology}/source"
-              export AGDA2HS_BASE_LIB="${agda2hsBaseLib system}"
-              export AGDA_COMMAND="$PWD/.ci/agda-with-libraries.sh"
+              export AGDA_COMMAND="agda"
             '';
-          };
-
-          automation = pkgs.mkShellNoCC {
-            packages = [
-              pkgs.gh
-            ];
           };
 
           ci = pkgs.mkShell {
