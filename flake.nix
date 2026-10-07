@@ -130,15 +130,12 @@
           doCheck = false;
         });
 
-      agda2hsWithHaskell = system:
-        let
-          ghc = canonicalGhc system;
-        in
+      agda2hsWithBase = system:
         agda2hs.packages.${system}.agda2hs.withPackages {
           pkgs = [
             agda2hs.packages.${system}.base-lib
           ];
-          inherit ghc;
+          ghc = null;
         };
 
 
@@ -151,7 +148,7 @@
         in
         {
           agda = pkgs.agdaPackages.agda;
-          agda2hs = agda2hsWithHaskell system;
+          agda2hs = agda2hsWithBase system;
           typetopology = typetopology;
           ci = (canonicalHaskellPackages system).dhall;
           yamlscript = pkgs.yamlscript;
@@ -273,7 +270,7 @@
               name = "agda2hs-semantic-search";
               runtimeInputs = [
                 pkgs.agdaPackages.agda
-                (agda2hsWithHaskell system)
+                (agda2hsWithBase system)
                 (canonicalGhc system)
                   pkgs.z3
                 pkgs.coreutils
@@ -297,9 +294,9 @@
                 "${pkgs.agdaPackages.agda}/bin/agda" -i "${typetopology}/source" -i "${agda2hsBaseLib system}" -i . FullCoupled/Agda2HsSemanticExtractor.agda
                 "${pkgs.agdaPackages.agda}/bin/agda" -i "${typetopology}/source" -i "${agda2hsBaseLib system}" -i . FullCoupled/Agda2HsSemanticSearch.agda
                 "${pkgs.agdaPackages.agda}/bin/agda" -i "${typetopology}/source" -i "${agda2hsBaseLib system}" -i . FullCoupled/Agda2HsTheoremGraphEGraph.agda
-                "${agda2hsWithHaskell system}/bin/agda2hs" -i . FullCoupled/Agda2HsSemanticExtractor.agda -o "$out"
-                "${agda2hsWithHaskell system}/bin/agda2hs" -i . FullCoupled/Agda2HsSemanticSearch.agda -o "$out"
-                "${agda2hsWithHaskell system}/bin/agda2hs" -i . FullCoupled/Agda2HsTheoremGraphEGraph.agda -o "$out"
+                "${agda2hsWithBase system}/bin/agda2hs" -i . FullCoupled/Agda2HsSemanticExtractor.agda -o "$out"
+                "${agda2hsWithBase system}/bin/agda2hs" -i . FullCoupled/Agda2HsSemanticSearch.agda -o "$out"
+                "${agda2hsWithBase system}/bin/agda2hs" -i . FullCoupled/Agda2HsTheoremGraphEGraph.agda -o "$out"
                 test -s "$out/FullCoupled/Agda2HsSemanticExtractor.hs"
                 test -s "$out/FullCoupled/Agda2HsSemanticSearch.hs"
                 test -s "$out/FullCoupled/Agda2HsTheoremGraphEGraph.hs"
@@ -350,7 +347,7 @@
             script = pkgs.writeShellApplication {
               name = "agda2hs-extract";
               runtimeInputs = [
-                (agda2hsWithHaskell system)
+                (agda2hsWithBase system)
                 pkgs.coreutils
               ];
               text = ''
@@ -358,7 +355,7 @@
                 out="build/agda2hs"
                 rm -rf "$out"
                 mkdir -p "$out"
-                "${agda2hsWithHaskell system}/bin/agda2hs" -i . FullCoupled/Agda2HsSurface.agda -o "$out"
+                "${agda2hsWithBase system}/bin/agda2hs" -i . FullCoupled/Agda2HsSurface.agda -o "$out"
                 test -s "$out/FullCoupled/Agda2HsSurface.hs"
                 echo "agda2hs-extract=pass"
               '';
@@ -373,7 +370,7 @@
               name = "agda-haskell-pipeline";
               runtimeInputs = [
                 pkgs.agdaPackages.agda
-                (agda2hsWithHaskell system)
+                (agda2hsWithBase system)
                 (canonicalGhc system)
                 pkgs.z3
                 pkgs.coreutils
@@ -387,7 +384,7 @@
                 out="build/agda-haskell"
                 rm -rf "$out"
                 mkdir -p "$out"
-                "${agda2hsWithHaskell system}/bin/agda2hs" -i . FullCoupled/Agda2HsSurface.agda -o "$out"
+                "${agda2hsWithBase system}/bin/agda2hs" -i . FullCoupled/Agda2HsSurface.agda -o "$out"
                 test -s "$out/FullCoupled/Agda2HsSurface.hs"
                 mkdir -p "$out/ghc"
                 "${canonicalGhc system}/bin/ghc" ${ghcGlobalFlagsText} -O0 -dcore-lint -package rio -i "$out" -odir "$out/ghc" -hidir "$out/ghc" -c "$out/FullCoupled/Agda2HsSurface.hs"
