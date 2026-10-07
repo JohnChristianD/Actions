@@ -177,20 +177,23 @@
         let
           pkgs = pkgsFor system;
         in
-        pkgs.haskell.lib.overrideCabal
-          (pkgs.haskell.lib.doJailbreak
-            (pkgs.haskellPackages.callCabal2nix
-              "inversion-plugin"
-              inversion-plugin-src
-              {}))
-          (drv: {
-            doCheck = false;
-            meta = drv.meta // {
-              description = "GHC plugin for automatic function inversion and functional patterns";
-              homepage = "https://github.com/cau-placc/inversion-plugin";
-              license = pkgs.lib.licenses.bsd3;
-            };
-          });
+        (
+          pkgs.haskell.lib.overrideCabal
+            (pkgs.haskell.lib.doJailbreak
+              (pkgs.haskellPackages.callCabal2nix
+                "inversion-plugin"
+                inversion-plugin-src
+                {}))
+            (drv: {
+              doCheck = false;
+            })
+        ).overrideAttrs (drv: {
+          meta = drv.meta // {
+            description = "GHC plugin for automatic function inversion and functional patterns";
+            homepage = "https://github.com/cau-placc/inversion-plugin";
+            license = pkgs.lib.licenses.bsd3;
+          };
+        });
 
       agda2hsWithHaskell = system:
         let
