@@ -141,8 +141,8 @@ plus-succ-not-self m n eq =
   lt-irrefl m (transport (λ z → m < z) eq (plus-succ-lt m n))
 
 succ-succ-lt : ∀ n → n < succ (succ n)
-succ-succ-lt zero = s≤s z≤n
-succ-succ-lt (succ n) = s≤s (succ-succ-lt n)
+succ-succ-lt zero = ≤-succ zero
+succ-succ-lt (succ n) = ≤-succ (succ-succ-lt n)
 
 succ-succ-not-self : ∀ n → succ (succ n) ≠ n
 succ-succ-not-self n eq =
