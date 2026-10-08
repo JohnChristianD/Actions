@@ -7,8 +7,6 @@ module FullCoupled.Agda2HsSemanticExtractor where
 
 -- BEGIN MIRTH-SYNC COMMON IMPORTS
 open import Haskell.Prelude
-open import Agda.Builtin.Char using (Char; primIsAlpha; primIsDigit; primIsSpace; primCharEquality)
-open import Agda.Builtin.String using (primStringFromList; primStringToList)
 -- END MIRTH-SYNC COMMON IMPORTS
 
 -- BEGIN MIRTH-SYNC CANONICAL COMMAND
@@ -17,6 +15,30 @@ open import Agda.Builtin.String using (primStringFromList; primStringToList)
 
 CharList : Type
 CharList = List Char
+
+charEq : Char → Char → Bool
+charEq a b = eqNat (c2n a) (c2n b)
+
+natBetween : Nat → Nat → Nat → Bool
+natBetween lo hi n =
+  if lo <= n then
+    if n <= hi then True else False
+  else
+    False
+
+isAsciiAlpha : Char → Bool
+isAsciiAlpha c =
+  natBetween 65 90 (c2n c) || natBetween 97 122 (c2n c)
+
+isAsciiDigit : Char → Bool
+isAsciiDigit c = natBetween 48 57 (c2n c)
+
+isSourceSpace : Char → Bool
+isSourceSpace c =
+  if charEq c ' ' then True
+  else if charEq c '\n' then True
+  else if charEq c '\r' then True
+  else charEq c '\t'
 
 data SemanticKind : Type where
   semantic-top-level : SemanticKind
@@ -69,9 +91,9 @@ charEq = primCharEquality
 
 isIdentifierChar : Char -> Bool
 isIdentifierChar c =
-  if primIsAlpha c then
+  if isAsciiAlpha c then
     True
-  else if primIsDigit c then
+  else if isAsciiDigit c then
     True
   else if charEq c '_' then
     True
@@ -148,7 +170,7 @@ splitFirstCharString target source =
 topLevelLine : String -> Bool
 topLevelLine [] = False
 topLevelLine source =
-  case primStringToList source of λ where
+  case source of λ where
     [] -> False
     (c ∷ _) -> not (isSpace c)
 
