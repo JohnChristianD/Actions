@@ -7619,7 +7619,7 @@ f4-unit-forcing-no-upper-bound thetaZero boundedWitness =
       pos (suc B) ≤ pos B
     impossibleOrder =
       subst
-        (λ z → z ≤Int + B)
+        (λ z → z ≤ pos B)
         growthFromZero
         horizonBound
   in
