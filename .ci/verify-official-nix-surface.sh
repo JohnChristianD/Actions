@@ -22,14 +22,9 @@ done
 grep -Fq 'github:NixOS/nixpkgs/' flake.nix
 grep -Fq 'github:martinescardo/TypeTopology/' flake.nix
 
-inputs=$(awk '
-  /^  inputs = \{/ { in_inputs=1; next }
-  in_inputs && /^  \};/ { exit }
-  in_inputs && /^[[:space:]]+[A-Za-z0-9_-]+[[:space:]]*=.*github:/ { print }
-' flake.nix)
-
-printf '%s\n' "$inputs" | grep -Eq '^    nixpkgs[[:space:]]*='
-printf '%s\n' "$inputs" | grep -Eq '^    typetopology[[:space:]]*='
-! printf '%s\n' "$inputs" | grep -Eq 'nixpkgs-ghc924|inversion-plugin|DeterminateSystems|nix-community|cachix'
-
+input_count=$(grep -Ec '^[[:space:]]+[A-Za-z0-9_-]+\.url[[:space:]]*=[[:space:]]*"github:' flake.nix)
+[ "$input_count" -eq 2 ]
+grep -Fq 'nixpkgs.url = "github:NixOS/nixpkgs/' flake.nix
+grep -Fq 'url = "github:martinescardo/TypeTopology/' flake.nix
+! grep -Eq '^\s+[A-Za-z0-9_-]+\.url\s*=\s*"github:(?!NixOS/nixpkgs|martinescardo/TypeTopology)' flake.nix
 echo 'official-nix-surface=pass'
