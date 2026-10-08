@@ -71,6 +71,18 @@
       agda2hsWithCanonicalGhc = system:
         agda2hsTool system;
 
+      agdaTypeTopologySetup = ''
+        set -euo pipefail
+        typetopology_dir="''${TMPDIR:-/tmp}/agda2hs-typetopology"
+        if [ ! -f "$typetopology_dir/.ready" ]; then
+          rm -rf "$typetopology_dir"
+          mkdir -p "$typetopology_dir"
+          cp -a "${typetopology}/source" "$typetopology_dir/source"
+          cp "${typetopology}/typetopology.agda-lib" "$typetopology_dir/"
+          touch "$typetopology_dir/.ready"
+        fi
+      '';
+
       agdaCommand = system:
         let
           pkgs = pkgsFor system;
@@ -79,10 +91,27 @@
           name = "agda2hs-agda";
           runtimeInputs = [
             (agdaWithPackages system)
+            pkgs.coreutils
           ];
           text = ''
-            set -euo pipefail
-            exec agda -l agda2hs-base -i . -i "${typetopology}/source" "$@"
+            ${agdaTypeTopologySetup}
+            exec agda -l agda2hs-base -i "$typetopology_dir/source" -i . "$@"
+          '';
+        };
+
+      agda2hsCommand = system:
+        let
+          pkgs = pkgsFor system;
+        in
+        pkgs.writeShellApplication {
+          name = "agda2hs-ci";
+          runtimeInputs = [
+            (agda2hsWithCanonicalGhc system)
+            pkgs.coreutils
+          ];
+          text = ''
+            ${agdaTypeTopologySetup}
+            exec agda2hs -l agda2hs-base -i "$typetopology_dir/source" -i . "$@"
           '';
         };
 
@@ -215,8 +244,8 @@
             script = pkgs.writeShellApplication {
               name = "agda2hs-semantic-search";
               runtimeInputs = [
-                (agdaWithPackages system)
-                (agda2hsWithCanonicalGhc system)
+                (agdaCommand system)
+                (agda2hsCommand system)
                 pkgs.z3
                 pkgs.coreutils
                 pkgs.git
@@ -227,7 +256,7 @@
                 rm -rf "$out"
                 mkdir -p "$out"
                 bash .ci/mirth/agda_command_sync.sh --check
-                "${agdaWithPackages system}/bin/agda" -l agda2hs-base --dependency-graph="$out/theorems-monolith.dot" -i . FullCoupled/TheoremsMonolith.agda
+                "${agdaCommand system}/bin/agda2hs-agda" -l agda2hs-base --dependency-graph="$out/theorems-monolith.dot" -i . FullCoupled/TheoremsMonolith.agda
                 test -s "$out/theorems-monolith.dot"
                 bash .ci/discovery/agda_semantic_source_closure.sh \
                   "$out/theorems-monolith.dot" \
@@ -235,12 +264,12 @@
                   "$PWD/FullCoupled/TheoremsMonolith.agda" \
                   "${agda2hsBaseLib system}"
                 test -s "$out/.semantic-source-files"
-                "${agdaWithPackages system}/bin/agda" -l agda2hs-base -i . -i "${typetopology}/source" FullCoupled/Agda2HsSemanticExtractor.agda
-                "${agdaWithPackages system}/bin/agda" -l agda2hs-base -i . -i "${typetopology}/source" FullCoupled/Agda2HsSemanticSearch.agda
-                "${agdaWithPackages system}/bin/agda" -l agda2hs-base -i . -i "${typetopology}/source" FullCoupled/Agda2HsTheoremGraphEGraph.agda
-                "${agda2hsWithCanonicalGhc system}/bin/agda2hs" -l agda2hs-base -i . -i "${typetopology}/source" FullCoupled/Agda2HsSemanticExtractor.agda -o "$out"
-                "${agda2hsWithCanonicalGhc system}/bin/agda2hs" -l agda2hs-base -i . -i "${typetopology}/source" FullCoupled/Agda2HsSemanticSearch.agda -o "$out"
-                "${agda2hsWithCanonicalGhc system}/bin/agda2hs" -l agda2hs-base -i . -i "${typetopology}/source" FullCoupled/Agda2HsTheoremGraphEGraph.agda -o "$out"
+                "${agdaCommand system}/bin/agda2hs-agda" -l agda2hs-base -i . -i "${typetopology}/source" FullCoupled/Agda2HsSemanticExtractor.agda
+                "${agdaCommand system}/bin/agda2hs-agda" -l agda2hs-base -i . -i "${typetopology}/source" FullCoupled/Agda2HsSemanticSearch.agda
+                "${agdaCommand system}/bin/agda2hs-agda" -l agda2hs-base -i . -i "${typetopology}/source" FullCoupled/Agda2HsTheoremGraphEGraph.agda
+                "${agda2hsCommand system}/bin/agda2hs-ci" -l agda2hs-base -i . -i "${typetopology}/source" FullCoupled/Agda2HsSemanticExtractor.agda -o "$out"
+                "${agda2hsCommand system}/bin/agda2hs-ci" -l agda2hs-base -i . -i "${typetopology}/source" FullCoupled/Agda2HsSemanticSearch.agda -o "$out"
+                "${agda2hsCommand system}/bin/agda2hs-ci" -l agda2hs-base -i . -i "${typetopology}/source" FullCoupled/Agda2HsTheoremGraphEGraph.agda -o "$out"
                 test -s "$out/FullCoupled/Agda2HsSemanticExtractor.hs"
                 test -s "$out/FullCoupled/Agda2HsSemanticSearch.hs"
                 test -s "$out/FullCoupled/Agda2HsTheoremGraphEGraph.hs"
@@ -290,7 +319,7 @@
             script = pkgs.writeShellApplication {
               name = "agda2hs-extract";
               runtimeInputs = [
-                (agda2hsWithCanonicalGhc system)
+                (agda2hsCommand system)
                 pkgs.coreutils
               ];
               text = ''
@@ -298,7 +327,7 @@
                 out="build/agda2hs"
                 rm -rf "$out"
                 mkdir -p "$out"
-                "${agda2hsWithCanonicalGhc system}/bin/agda2hs" -l agda2hs-base -i . -i "${typetopology}/source" FullCoupled/Agda2HsSurface.agda -o "$out"
+                "${agda2hsCommand system}/bin/agda2hs-ci" -l agda2hs-base -i . -i "${typetopology}/source" FullCoupled/Agda2HsSurface.agda -o "$out"
                 test -s "$out/FullCoupled/Agda2HsSurface.hs"
                 echo "agda2hs-extract=pass"
               '';
@@ -312,8 +341,8 @@
             script = pkgs.writeShellApplication {
               name = "agda-haskell-pipeline";
               runtimeInputs = [
-                (agdaWithPackages system)
-                (agda2hsWithCanonicalGhc system)
+                (agdaCommand system)
+                (agda2hsCommand system)
                 pkgs.z3
                 pkgs.coreutils
                 pkgs.findutils
@@ -326,7 +355,7 @@
                 out="build/agda-haskell"
                 rm -rf "$out"
                 mkdir -p "$out"
-                "${agda2hsWithCanonicalGhc system}/bin/agda2hs" -l agda2hs-base -i . -i "${typetopology}/source" FullCoupled/Agda2HsSurface.agda -o "$out"
+                "${agda2hsCommand system}/bin/agda2hs-ci" -l agda2hs-base -i . -i "${typetopology}/source" FullCoupled/Agda2HsSurface.agda -o "$out"
                 test -s "$out/FullCoupled/Agda2HsSurface.hs"
                 mkdir -p "$out/ghc"
                 "${canonicalGhc system}/bin/ghc" ${builtins.concatStringsSep " " ghcLanguageFlags} -O0 -dcore-lint -package rio -i "$out" -odir "$out/ghc" -hidir "$out/ghc" -c "$out/FullCoupled/Agda2HsSurface.hs"
