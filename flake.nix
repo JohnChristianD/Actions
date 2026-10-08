@@ -292,19 +292,23 @@
                 out="build/agda2hs-semantic-search"
                 rm -rf "$out"
                 mkdir -p "$out"
+                libroot="$out/agda-libs"
+                mkdir -p "$libroot/typetopology" "$libroot/agda2hs-base"
+                cp -a "${typetopology}/source/." "$libroot/typetopology/"
+                cp -a "${agda2hsBaseLib system}/." "$libroot/agda2hs-base/"
                 bash .ci/mirth/agda_command_sync.sh --check
-                "${pkgs.agdaPackages.agda}/bin/agda" -i "${typetopology}/source" -i "${agda2hsBaseLib system}" --dependency-graph="$out/theorems-monolith.dot" -i . FullCoupled/TheoremsMonolith.agda
+                "${pkgs.agdaPackages.agda}/bin/agda" -i "$libroot/typetopology" -i "$libroot/agda2hs-base" --dependency-graph="$out/theorems-monolith.dot" -i . FullCoupled/TheoremsMonolith.agda
                 test -s "$out/theorems-monolith.dot"
                 bash .ci/discovery/agda_semantic_source_closure.sh \
                   "$out/theorems-monolith.dot" \
                   "$out/.semantic-source-files" \
                   "$PWD/FullCoupled/TheoremsMonolith.agda" \
-                  "${typetopology}/source" \
-                  "${agda2hsBaseLib system}"
+                  "$libroot/typetopology" \
+                  "$libroot/agda2hs-base"
                 test -s "$out/.semantic-source-files"
-                "${pkgs.agdaPackages.agda}/bin/agda" -i "${typetopology}/source" -i "${agda2hsBaseLib system}" -i . FullCoupled/Agda2HsSemanticExtractor.agda
-                "${pkgs.agdaPackages.agda}/bin/agda" -i "${typetopology}/source" -i "${agda2hsBaseLib system}" -i . FullCoupled/Agda2HsSemanticSearch.agda
-                "${pkgs.agdaPackages.agda}/bin/agda" -i "${typetopology}/source" -i "${agda2hsBaseLib system}" -i . FullCoupled/Agda2HsTheoremGraphEGraph.agda
+                "${pkgs.agdaPackages.agda}/bin/agda" -i "$libroot/typetopology" -i "$libroot/agda2hs-base" -i . FullCoupled/Agda2HsSemanticExtractor.agda
+                "${pkgs.agdaPackages.agda}/bin/agda" -i "$libroot/typetopology" -i "$libroot/agda2hs-base" -i . FullCoupled/Agda2HsSemanticSearch.agda
+                "${pkgs.agdaPackages.agda}/bin/agda" -i "$libroot/typetopology" -i "$libroot/agda2hs-base" -i . FullCoupled/Agda2HsTheoremGraphEGraph.agda
                 "${agda2hsWithBase system}/bin/agda2hs" -i . FullCoupled/Agda2HsSemanticExtractor.agda -o "$out"
                 "${agda2hsWithBase system}/bin/agda2hs" -i . FullCoupled/Agda2HsSemanticSearch.agda -o "$out"
                 "${agda2hsWithBase system}/bin/agda2hs" -i . FullCoupled/Agda2HsTheoremGraphEGraph.agda -o "$out"
@@ -458,8 +462,16 @@
               pkgs.gnused
             ];
             shellHook = ''
+              set -euo pipefail
               export TYPE_TOPOLOGY_SOURCE="${typetopology}/source"
               export AGDA2HS_BASE_LIB="${agda2hsBaseLib system}"
+              export AGDA_LIBRARY_CACHE="$PWD/build/agda-library-cache"
+              rm -rf "$AGDA_LIBRARY_CACHE"
+              mkdir -p "$AGDA_LIBRARY_CACHE/typetopology" "$AGDA_LIBRARY_CACHE/agda2hs-base"
+              cp -a "${typetopology}/source/." "$AGDA_LIBRARY_CACHE/typetopology/"
+              cp -a "${agda2hsBaseLib system}/." "$AGDA_LIBRARY_CACHE/agda2hs-base/"
+              export TYPE_TOPOLOGY_SOURCE_WRITABLE="$AGDA_LIBRARY_CACHE/typetopology"
+              export AGDA2HS_BASE_LIB_WRITABLE="$AGDA_LIBRARY_CACHE/agda2hs-base"
               export AGDA_COMMAND="$PWD/.ci/agda-with-libraries.sh"
             '';
           };
