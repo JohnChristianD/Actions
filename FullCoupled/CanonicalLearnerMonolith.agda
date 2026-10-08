@@ -560,12 +560,12 @@ data HardSign : Set where
 hardSignNonnegative : Int8 → HardSign
 hardSignNonnegative (int8 (pos 0)) = zeroSign
 hardSignNonnegative (int8 (pos (succ n))) = positiveSign
-hardSignNonnegative (int8 (-[1+ n ])) = negativeSign
+hardSignNonnegative (int8 (negsucc n)) = negativeSign
 
 hardSign : Int8 → HardSign
 hardSign (int8 (pos 0)) = zeroSign
 hardSign (int8 (pos (succ n))) = positiveSign
-hardSign (int8 (-[1+ n ])) = negativeSign
+hardSign (int8 (negsucc n)) = negativeSign
 
 hardSignGate : Int8 → Int8
 hardSignGate x with hardSign x
@@ -673,7 +673,7 @@ data MonoidLSTMGate : Set where
 monoidLSTMGateOf : Int8 → MonoidLSTMGate
 monoidLSTMGateOf (int8 (pos 0)) = monoidHold
 monoidLSTMGateOf (int8 (pos (succ n))) = monoidAccum
-monoidLSTMGateOf (int8 (-[1+ n ])) = monoidReset
+monoidLSTMGateOf (int8 (negsucc n)) = monoidReset
 
 monoidLSTMCellStep : MonoidLSTMGate → Int8 → Int8 → Int8
 monoidLSTMCellStep monoidHold c x = c
@@ -1692,7 +1692,7 @@ canonicalHaarFeatureReconstruct
 canonicalHaarFeatureReconstruct
   (int8 (pos (succ n))) = refl
 canonicalHaarFeatureReconstruct
-  (int8 (-[1+ n ])) = refl
+  (int8 (negsucc n)) = refl
 
 canonicalHaarFeatureInjective :
   ∀ {x y} →
