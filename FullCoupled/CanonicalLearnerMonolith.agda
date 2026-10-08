@@ -148,7 +148,7 @@ succ-succ-lt (succ n) = ≤-succ (succ-succ-lt n)
 succ-succ-not-self : ∀ n → succ (succ n) ≠ n
 succ-succ-not-self n eq =
   lt-irrefl (succ (succ n))
-    (transport (λ z → z < succ (succ n)) (sym eq) (succ-succ-lt n))
+    (transport (λ z → z < succ (succ n)) (eq ⁻¹) (succ-succ-lt n))
 
 iterate : ∀ {S : Set} → (S → S) → ℕ → S → S
 iterate step zero s = s
