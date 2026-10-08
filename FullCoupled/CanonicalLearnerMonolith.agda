@@ -47,9 +47,6 @@ open import Integers.Type
 open import Integers.Addition renaming (_+_ to _ℤ+_)
 open import Integers.Multiplication renaming (_*_ to _ℤ*_)
 
-Nat : Set
-Nat = ℕ
-
 Int : Set
 Int = ℤ
 
@@ -69,7 +66,7 @@ open import Rationals.Multiplication
 open import Rationals.Negation
 open import Rationals.Order
 open import Rationals.Type
-open import UF.Base hiding (Nat)
+open import UF.Base hiding (ℕ)
 open import UF.FunExt
 open import UF.PropTrunc
 open import UF.Size
@@ -99,7 +96,7 @@ zero8 = int8 (pos 0)
 one8 : Int8
 one8 = int8 (pos 1)
 
-int8OfNat : Nat → Int8
+int8OfNat : ℕ → Int8
 int8OfNat n = int8 (pos n)
 
 int8Add : Int8 → Int8 → Int8
@@ -129,15 +126,15 @@ plus-zero : ∀ n → n + zero ≡ n
 plus-zero zero = refl
 plus-zero (suc n) = cong suc (plus-zero n)
 
-plus-suc : ∀ (m n : Nat) → m + suc n ≡ suc (m + n)
+plus-suc : ∀ (m n : ℕ) → m + suc n ≡ suc (m + n)
 plus-suc zero n = refl
 plus-suc (suc m) n = cong suc (plus-suc m n)
 
-plus-suc-lt : ∀ (m n : Nat) → m < m + suc n
+plus-suc-lt : ∀ (m n : ℕ) → m < m + suc n
 plus-suc-lt zero n = s≤s z≤n
 plus-suc-lt (suc m) n = s≤s (plus-suc-lt m n)
 
-plus-suc-not-self : ∀ (m n : Nat) → m + suc n ≢ m
+plus-suc-not-self : ∀ (m n : ℕ) → m + suc n ≢ m
 plus-suc-not-self m n eq =
   lt-irrefl m (subst (λ z → m < z) eq (plus-suc-lt m n))
 
@@ -150,7 +147,7 @@ suc-suc-not-self n eq =
   lt-irrefl (suc (suc n))
     (subst (λ z → z < suc (suc n)) (sym eq) (suc-suc-lt n))
 
-iterate : ∀ {S : Set} → (S → S) → Nat → S → S
+iterate : ∀ {S : Set} → (S → S) → ℕ → S → S
 iterate step zero s = s
 iterate step (suc n) s = step (iterate step n s)
 
@@ -158,9 +155,9 @@ OrbitNonFixed : ∀ {S : Set} {step : S → S} → S → Set
 OrbitNonFixed {step = step} s = ∀ n → iterate step n s ≢ step (iterate step n s)
 
 data Signed : Set where
-  signedNeg : Nat → Signed
+  signedNeg : ℕ → Signed
   signedZer : Signed
-  signedPos : Nat → Signed
+  signedPos : ℕ → Signed
 
 signedCode : Int8 → Signed
 signedCode (int8 (pos 0)) = signedZer
@@ -173,15 +170,15 @@ data BoolLike : Set where
 record ActionSpace (A : Set) : Set where
   constructor actionSpace
   field
-    candidates : List Nat
-    witness : Nat
+    candidates : List ℕ
+    witness : ℕ
 open ActionSpace public
 
 QFunction : ∀ {A : Set} → Set
-QFunction {A} = Nat → Int8
+QFunction {A} = ℕ → Int8
 
 CountFunction : ∀ {A : Set} → Set
-CountFunction {A} = Nat → Nat
+CountFunction {A} = ℕ → ℕ
 
 zeroQ : ∀ {A : Set} → QFunction {A}
 zeroQ _ = zero8
@@ -189,34 +186,34 @@ zeroQ _ = zero8
 zeroCounts : ∀ {A : Set} → CountFunction {A}
 zeroCounts _ = zero
 
-natEq : Nat → Nat → BoolLike
+natEq : ℕ → ℕ → BoolLike
 natEq zero zero = enabled
 natEq zero (suc n) = disabled
 natEq (suc m) zero = disabled
 natEq (suc m) (suc n) = natEq m n
 
-natLt : Nat → Nat → BoolLike
+natLt : ℕ → ℕ → BoolLike
 natLt zero zero = disabled
 natLt zero (suc n) = enabled
 natLt (suc m) zero = disabled
 natLt (suc m) (suc n) = natLt m n
 
-natLE : Nat → Nat → BoolLike
+natLE : ℕ → ℕ → BoolLike
 natLE zero n = enabled
 natLE (suc m) zero = disabled
 natLE (suc m) (suc n) = natLE m n
 
-maxNat : Nat → Nat → Nat
+maxNat : ℕ → ℕ → ℕ
 maxNat zero n = n
 maxNat (suc m) zero = suc m
 maxNat (suc m) (suc n) = suc (maxNat m n)
 
-updateAt : ∀ {A : Set} → QFunction {A} → Nat → Int8 → QFunction {A}
+updateAt : ∀ {A : Set} → QFunction {A} → ℕ → Int8 → QFunction {A}
 updateAt q a r i with natEq i a
 ... | enabled = int8Add (q i) r
 ... | disabled = q i
 
-incAt : ∀ {A : Set} → CountFunction {A} → Nat → CountFunction {A}
+incAt : ∀ {A : Set} → CountFunction {A} → ℕ → CountFunction {A}
 incAt c a i with natEq i a
 ... | enabled = suc (c i)
 ... | disabled = c i
@@ -250,15 +247,15 @@ watkinsStep K s = watkinsState
 record LCBCountState (A : Set) : Set where
   constructor lcbCountState
   field valuesCount : CountFunction {A}
-        totalCount : Nat
+        totalCount : ℕ
 open LCBCountState public
 
 record LCBCountKernel : Set₁ where
   constructor lcbCountKernel
-  field bonus : Nat → Int8
+  field bonus : ℕ → Int8
 open LCBCountKernel public
 
-finiteLCBBonus8 : Nat → Int8
+finiteLCBBonus8 : ℕ → Int8
 finiteLCBBonus8 zero = int8OfNat 127
 finiteLCBBonus8 (suc zero) = int8OfNat 63
 finiteLCBBonus8 (suc (suc zero)) = int8OfNat 31
@@ -271,17 +268,17 @@ finiteLCBBonus8 _ = zero8
 lcbNegate : Int8 → Int8
 lcbNegate x = int8 (- code x)
 
-scoreA : ∀ {A : Set} → QFunction {A} → CountFunction {A} → Nat → Int8
+scoreA : ∀ {A : Set} → QFunction {A} → CountFunction {A} → ℕ → Int8
 scoreA q c a = int8Add (q a) (lcbNegate (finiteLCBBonus8 (c a)))
 
 lcbScore : ∀ {A : Set} → LCBCountKernel → LCBCountState A → CriticState A → QFunction {A}
 lcbScore L c q a = int8Add (values q a) (lcbNegate (bonus L (valuesCount c a)))
 
-sparsemaxTemperature : Nat
+sparsemaxTemperature : ℕ
 sparsemaxTemperature = 16
 
 ScoreEntry : Set
-ScoreEntry = Int8 × Nat
+ScoreEntry = Int8 × ℕ
 
 int8-code-injective : ∀ {x y : Int8} → code x ≡ code y → x ≡ y
 int8-code-injective refl = refl
@@ -295,7 +292,7 @@ compareInt8 x y with ℤ-trichotomous (code x) (code y)
 ... | inr (inl _) = equal
 ... | inr (inr _) = greater
 
-compareNat : Nat → Nat → FullCoupled.TypeTopologyCompat.ComparisonResult
+compareNat : ℕ → ℕ → FullCoupled.TypeTopologyCompat.ComparisonResult
 compareNat zero zero = equal
 compareNat zero (suc _) = less
 compareNat (suc _) zero = greater
@@ -320,12 +317,12 @@ sortScores : List ScoreEntry → List ScoreEntry
 sortScores [] = []
 sortScores (x ∷ xs) = insertScore x (sortScores xs)
 
-natAt : Nat → List Nat → Nat
+natAt : ℕ → List ℕ → ℕ
 natAt k [] = zero
 natAt zero (x ∷ xs) = x
 natAt (suc k) (x ∷ xs) = natAt k xs
 
-sumList : List Nat → Nat
+sumList : List ℕ → ℕ
 sumList [] = zero
 sumList (x ∷ xs) = x + sumList xs
 
@@ -371,12 +368,12 @@ integerLayerNormVarianceNumerator xs =
       (integerLayerNormCenteredNumerators xs))
 
 integerLayerNormEpsilonContribution :
-  List Int8 → Nat → Int
+  List Int8 → ℕ → Int
 integerLayerNormEpsilonContribution xs epsilon =
   (pos (epsilon * (length xs) * (length xs)))
 
 integerLayerNormRadicand :
-  List Int8 → Nat → Int
+  List Int8 → ℕ → Int
 integerLayerNormRadicand xs epsilon =
   integerLayerNormVarianceNumerator xs
   +Int
@@ -391,8 +388,8 @@ record IntegerLayerNormCertificate
   (xs : List Int8) : Set where
   constructor integerLayerNormCertificate
   field
-    epsilon : Nat
-    root : Nat
+    epsilon : ℕ
+    root : ℕ
     rootSquared :
       (pos (root * root)) ≡
       integerLayerNormRadicand xs epsilon
@@ -403,7 +400,7 @@ record IntegerLayerNormValue : Set where
   constructor mkIntegerLayerNormValue
   field
     numerator : Int
-    denominator : Nat
+    denominator : ℕ
     denominatorNonZero : denominator ≢ zero
 open IntegerLayerNormValue public
 
@@ -424,35 +421,35 @@ integerLayerNormValue {xs} config certificate x =
     (rootNonZero certificate)
 
 
-int8Magnitude : Int8 → Nat
+int8Magnitude : Int8 → ℕ
 int8Magnitude (int8 (pos n)) = n
 int8Magnitude (int8 (-[1+ n ])) = suc n
 
-topCodes : Nat → List ScoreEntry → List Nat
+topCodes : ℕ → List ScoreEntry → List ℕ
 topCodes zero xs = []
 topCodes (suc k) [] = []
 topCodes (suc k) ((x , a) ∷ xs) = int8Magnitude x ∷ topCodes k xs
 
-supportValid : List ScoreEntry → Nat → Nat → BoolLike
+supportValid : List ScoreEntry → ℕ → ℕ → BoolLike
 supportValid xs temperature k with natLt (sumList (topCodes k xs)) ((k * natAt (k ∸ 1) (topCodes k xs)) + temperature)
 ... | enabled = enabled
 ... | disabled = disabled
 
-searchSupport : List ScoreEntry → Nat → Nat → Nat → Nat → Nat
+searchSupport : List ScoreEntry → ℕ → ℕ → ℕ → ℕ → ℕ
 searchSupport xs temperature zero current best = best
 searchSupport xs temperature (suc n) current best with supportValid xs temperature current
 ... | enabled = searchSupport xs temperature n (suc current) (maxNat best current)
 ... | disabled = searchSupport xs temperature n (suc current) best
 
-supportSize : ∀ {A : Set} → ActionSpace A → QFunction {A} → CountFunction {A} → Nat
+supportSize : ∀ {A : Set} → ActionSpace A → QFunction {A} → CountFunction {A} → ℕ
 supportSize K q c = searchSupport (sortScores (scoreList K q c)) sparsemaxTemperature (length (candidates K)) (suc zero) (suc zero)
 
 record SparseWeight : Set where
   constructor sparseWeight
-  field numerator denominator : Nat
+  field numerator denominator : ℕ
 open SparseWeight public
 
-sparsemaxWeight : ∀ {A : Set} → ActionSpace A → QFunction {A} → CountFunction {A} → Nat → SparseWeight
+sparsemaxWeight : ∀ {A : Set} → ActionSpace A → QFunction {A} → CountFunction {A} → ℕ → SparseWeight
 sparsemaxWeight {A} K q c a = sparseWeight ((k * int8Magnitude (scoreA {A = A} q c a)) + sparsemaxTemperature ∸ s) (k * sparsemaxTemperature)
   where
     xs = sortScores (scoreList K q c)
@@ -464,13 +461,13 @@ weightPositive (sparseWeight n d) with natEq n zero
 ... | enabled = disabled
 ... | disabled = enabled
 
-selectPositive : ∀ {A : Set} → ActionSpace A → QFunction {A} → CountFunction {A} → List ScoreEntry → Nat
+selectPositive : ∀ {A : Set} → ActionSpace A → QFunction {A} → CountFunction {A} → List ScoreEntry → ℕ
 selectPositive K q c [] = witness K
 selectPositive K q c ((s , a) ∷ xs) with weightPositive (sparsemaxWeight K q c a)
 ... | enabled = a
 ... | disabled = selectPositive K q c xs
 
-sparsemaxPolicy : ∀ {A : Set} → ActionSpace A → QFunction {A} → CountFunction {A} → Nat
+sparsemaxPolicy : ∀ {A : Set} → ActionSpace A → QFunction {A} → CountFunction {A} → ℕ
 sparsemaxPolicy K q c = selectPositive K q c (sortScores (scoreList K q c))
 
 ------------------------------------------------------------------------
@@ -479,7 +476,7 @@ sparsemaxPolicy K q c = selectPositive K q c (sortScores (scoreList K q c))
 -- No probability normalization is claimed by this definition.
 ------------------------------------------------------------------------
 
-updateLCBCount : ∀ {A : Set} → Nat → LCBCountState A → LCBCountState A
+updateLCBCount : ∀ {A : Set} → ℕ → LCBCountState A → LCBCountState A
 updateLCBCount {A} a (lcbCountState counts total) =
   lcbCountState (incAt {A = A} counts a) (suc total)
 
@@ -492,19 +489,19 @@ updateLCBCount {A} a (lcbCountState counts total) =
 Dyadic : Set
 Dyadic = ℚ
 
-fromNatDyadic : Nat → Nat → Dyadic
+fromNatDyadic : ℕ → ℕ → Dyadic
 fromNatDyadic n exponent =
   toℚ (pos n , exponent)
 
-dyadicNumerator : Dyadic → Nat
+dyadicNumerator : Dyadic → ℕ
 dyadicNumerator ((pos n , d) , _) = n
 dyadicNumerator ((negsucc n , d) , _) = zero
 
-dyadicDenominator : Dyadic → Nat
+dyadicDenominator : Dyadic → ℕ
 dyadicDenominator ((z , d) , _) =
   succ d
 
-dyadicDivide : Nat → Dyadic → Nat
+dyadicDivide : ℕ → Dyadic → ℕ
 dyadicDivide n ((z , d) , _) =
   pr₁ (division n d)
 
@@ -513,7 +510,7 @@ qLog8 x with int8Magnitude x
 ... | zero = fromNatDyadic 1 zero
 ... | suc n = fromNatDyadic (128 ∸ suc n) (suc n)
 
-munchausenScale8 : Nat
+munchausenScale8 : ℕ
 munchausenScale8 = 16
 
 signedDyadicBias8 : Dyadic → Int8
@@ -978,8 +975,8 @@ recurrentInputEndomorphism R x =
 recurrentPrefixState :
   ∀ {State Input : Set} →
   RecurrentNetwork State Input →
-  (Nat → Input) →
-  Nat →
+  (ℕ → Input) →
+  ℕ →
   State →
   State
 recurrentPrefixState R xs zero s = s
@@ -991,8 +988,8 @@ recurrentPrefixState R xs (suc n) s =
 recurrentPrefixEndomorphism :
   ∀ {State Input : Set} →
   RecurrentNetwork State Input →
-  (Nat → Input) →
-  Nat →
+  (ℕ → Input) →
+  ℕ →
   Endomorphism State
 recurrentPrefixEndomorphism R xs zero =
   identityEndomorphism
@@ -1004,8 +1001,8 @@ recurrentPrefixEndomorphism R xs (suc n) =
 recurrentPrefix-correct :
   ∀ {State Input : Set}
   (R : RecurrentNetwork State Input)
-  (xs : Nat → Input)
-  (n : Nat)
+  (xs : ℕ → Input)
+  (n : ℕ)
   (s : State) →
   applyEndomorphism
     (recurrentPrefixEndomorphism R xs n)
@@ -1020,17 +1017,17 @@ recurrentPrefix-correct R xs (suc n) s =
 
 shiftInput :
   ∀ {Input : Set} →
-  (Nat → Input) →
-  Nat →
-  Nat →
+  (ℕ → Input) →
+  ℕ →
+  ℕ →
   Input
 shiftInput xs m n = xs (m + n)
 
 recurrentPrefix-split :
   ∀ {State Input : Set}
   (R : RecurrentNetwork State Input)
-  (xs : Nat → Input)
-  (m n : Nat)
+  (xs : ℕ → Input)
+  (m n : ℕ)
   (s : State) →
   recurrentPrefixState R xs (m + n) s
   ≡
@@ -1046,7 +1043,7 @@ recurrentPrefix-split R xs m (suc n) s rewrite +-suc m n =
     (recurrentPrefix-split R xs m n s)
 
 canonicalMonoidLSTM-recurrent-prefix-correct :
-  ∀ (xs : Nat → Int8) (n : Nat) (s : MonoidLSTMState) →
+  ∀ (xs : ℕ → Int8) (n : ℕ) (s : MonoidLSTMState) →
   applyEndomorphism
     (recurrentPrefixEndomorphism
       canonicalMonoidLSTMRecurrentNetwork
@@ -1063,7 +1060,7 @@ canonicalMonoidLSTM-recurrent-prefix-correct =
   recurrentPrefix-correct canonicalMonoidLSTMRecurrentNetwork
 
 canonicalMonoidLSTM-recurrent-prefix-split :
-  ∀ (xs : Nat → Int8) (m n : Nat) (s : MonoidLSTMState) →
+  ∀ (xs : ℕ → Int8) (m n : ℕ) (s : MonoidLSTMState) →
   recurrentPrefixState
     canonicalMonoidLSTMRecurrentNetwork
     xs
@@ -1083,7 +1080,7 @@ canonicalMonoidLSTM-recurrent-prefix-split =
   recurrentPrefix-split canonicalMonoidLSTMRecurrentNetwork
 
 canonicalGRU-recurrent-prefix-correct :
-  ∀ (xs : Nat → Int8) (n : Nat) (s : GRUState) →
+  ∀ (xs : ℕ → Int8) (n : ℕ) (s : GRUState) →
   applyEndomorphism
     (recurrentPrefixEndomorphism
       canonicalGRURecurrentNetwork
@@ -1100,7 +1097,7 @@ canonicalGRU-recurrent-prefix-correct =
   recurrentPrefix-correct canonicalGRURecurrentNetwork
 
 canonicalGRU-recurrent-prefix-split :
-  ∀ (xs : Nat → Int8) (m n : Nat) (s : GRUState) →
+  ∀ (xs : ℕ → Int8) (m n : ℕ) (s : GRUState) →
   recurrentPrefixState
     canonicalGRURecurrentNetwork
     xs
@@ -1139,16 +1136,16 @@ gruInputActionAssociativity :
 gruInputActionAssociativity x y z s = refl
 
 
-gruStateInt8CoordinateCount : Nat
+gruStateInt8CoordinateCount : ℕ
 gruStateInt8CoordinateCount = 10
 
-criticInt8CoordinateCount : Nat
+criticInt8CoordinateCount : ℕ
 criticInt8CoordinateCount = 2
 
-gruPersistentQuotientCoordinateCount : Nat
+gruPersistentQuotientCoordinateCount : ℕ
 gruPersistentQuotientCoordinateCount = 8
 
-fullLearnerInt8CoordinateCount : Nat
+fullLearnerInt8CoordinateCount : ℕ
 fullLearnerInt8CoordinateCount = 24
 
 fullLearnerInt8CoordinateCount-law : fullLearnerInt8CoordinateCount ≡ 24
@@ -1211,7 +1208,7 @@ CanonicalFullLearnerState = FullLearnerState ⊤
 CanonicalFullLearnerKernel : Set₁
 CanonicalFullLearnerKernel = FullLearnerKernel ⊤
 
-canonicalPolicy : ∀ {A : Set} → FullLearnerKernel A → FullLearnerState A → Nat
+canonicalPolicy : ∀ {A : Set} → FullLearnerKernel A → FullLearnerState A → ℕ
 canonicalPolicy K s = sparsemaxPolicy (actionSpaceK K) (lcbScore (lcbKernel K) (lcbCounts s) (critic (watkins s))) (valuesCount (lcbCounts s))
 
 canonicalPolicyWeight : ∀ {A : Set} → FullLearnerKernel A → FullLearnerState A → SparseWeight
@@ -1220,7 +1217,7 @@ canonicalPolicyWeight K s = sparsemaxWeight (actionSpaceK K) (lcbScore (lcbKerne
 canonicalPolicyWeightCode : ∀ {A : Set} → FullLearnerKernel A → FullLearnerState A → Int8
 
 BehaviorPolicy : Set
-BehaviorPolicy = Nat → SparseWeight
+BehaviorPolicy = ℕ → SparseWeight
 
 canonicalBehaviorPolicy :
   ∀ {A : Set} →
@@ -1241,7 +1238,7 @@ canonicalBehaviorAction :
   ∀ {A : Set} →
   FullLearnerKernel A →
   FullLearnerState A →
-  Nat
+  ℕ
 canonicalBehaviorAction K s = canonicalPolicy K s
 
 canonicalBehaviorAction-law :
@@ -1255,17 +1252,17 @@ canonicalPolicyWeightCode K s = int8OfNat (numerator (canonicalPolicyWeight K s)
 
 HardSparse : ∀ {A : Set} → FullLearnerKernel A → FullLearnerState A → Set
 HardSparse {A} K s =
-  ∀ {a : Nat} →
+  ∀ {a : ℕ} →
   a ≢ canonicalPolicy K s →
   numerator (sparsemaxWeight (actionSpaceK K) (lcbScore (lcbKernel K) (lcbCounts s) (critic (watkins s))) (valuesCount (lcbCounts s)) a) ≡ zero
 
 SoftSparseBounded : ∀ {A : Set} →
   FullLearnerKernel A →
   FullLearnerState A →
-  Nat →
+  ℕ →
   Set
 SoftSparseBounded {A} K s epsilon =
-  ∀ {a : Nat} →
+  ∀ {a : ℕ} →
   a ≢ canonicalPolicy K s →
   numerator
     (sparsemaxWeight
@@ -1479,12 +1476,12 @@ canonicalNoFixedPoint K s eq =
         (trans (sym (canonicalTotalCountStep K s))
           (cong (λ t → totalCount (lcbCounts t)) eq))))
 
-iterateCanonical : ∀ {A} → FullLearnerKernel A → Nat → FullLearnerState A → FullLearnerState A
+iterateCanonical : ∀ {A} → FullLearnerKernel A → ℕ → FullLearnerState A → FullLearnerState A
 iterateCanonical K zero s = s
 iterateCanonical K (suc n) s = canonicalFullStep K (iterateCanonical K n s)
 
 canonicalTotalCountAfter :
-  ∀ {A} (K : FullLearnerKernel A) (n : Nat) (s : FullLearnerState A) →
+  ∀ {A} (K : FullLearnerKernel A) (n : ℕ) (s : FullLearnerState A) →
   totalCount (lcbCounts (iterateCanonical K n s)) ≡
   totalCount (lcbCounts s) + n
 canonicalTotalCountAfter K zero s = sym (plus-zero (totalCount (lcbCounts s)))
@@ -1495,17 +1492,17 @@ canonicalTotalCountAfter K (suc n) s =
       (cong suc (canonicalTotalCountAfter K n s))
       (sym (plus-suc (totalCount (lcbCounts s)) n)))
 
-canonicalAperiodic : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) (n : Nat) → iterateCanonical K (suc n) s ≢ s
+canonicalAperiodic : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) (n : ℕ) → iterateCanonical K (suc n) s ≢ s
 canonicalAperiodic K s n cyc = plus-suc-not-self (totalCount (lcbCounts s)) n
   (trans
     (sym (canonicalTotalCountAfter K (suc n) s))
     (cong (λ t → totalCount (lcbCounts t)) cyc))
 
-canonicalOrbitNonFixed : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) (n : Nat) → iterateCanonical K n s ≢ canonicalFullStep K (iterateCanonical K n s)
+canonicalOrbitNonFixed : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) (n : ℕ) → iterateCanonical K n s ≢ canonicalFullStep K (iterateCanonical K n s)
 canonicalOrbitNonFixed K s n eq =
   canonicalNoFixedPoint K (iterateCanonical K n s) (sym eq)
 
-canonicalNoNontrivialFiniteCycle : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) (n : Nat) → iterateCanonical K (suc n) s ≡ s → ⊥
+canonicalNoNontrivialFiniteCycle : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) (n : ℕ) → iterateCanonical K (suc n) s ≡ s → ⊥
 canonicalNoNontrivialFiniteCycle K s n cyc = canonicalAperiodic K s n cyc
 
 canonicalTotalCountIterate2 : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) → totalCount (lcbCounts (iterateCanonical K 2 s)) ≡ suc (suc (totalCount (lcbCounts s)))
@@ -1525,7 +1522,7 @@ pessimisticInit = int8OfNat 128
 pessimisticCritic : ∀ {A} → CriticState A
 pessimisticCritic {A} = criticState (λ _ → pessimisticInit)
 
-pessimisticCritic-law : ∀ {A} (i : Nat) → values (pessimisticCritic {A = A}) i ≡ pessimisticInit
+pessimisticCritic-law : ∀ {A} (i : ℕ) → values (pessimisticCritic {A = A}) i ≡ pessimisticInit
 pessimisticCritic-law {A = A} i = refl
 
 canonicalPersistent : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) → persistentGRU (canonicalGRUStep K s) ≡ persistentGRU (gru s)
