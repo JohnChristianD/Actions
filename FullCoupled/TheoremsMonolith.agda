@@ -139,8 +139,8 @@ macro
 ------------------------------------------------------------------------
 -- Constructive inversion/search bridge.
 --
--- The inversion-plugin/Curry line gives inverse computation as a
--- non-deterministic preimage search with a single-solution condition.
+-- The Haskell-minus-one line gives inverse computation as a
+-- preimage search with an explicit correctness condition.
 -- TWA's exact-real-search framework makes the search constructive by
 -- requiring searchable domains and explicit uniform-continuity moduli.
 --
