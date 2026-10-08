@@ -286,13 +286,13 @@ record IntegerRingSolverNormalizationTheorem : Set₁ where
   field
     normalization :
       ∀ (i j k : Int) →
-      i + (j + k) ≡ (i + j) + k
+      i +Int (j +Int k) ≡ (i +Int j) +Int k
 
 integer-ring-solver-assoc :
   ∀ (i j k : Int) →
-  i + (j + k) ≡ (i + j) + k
+  i +Int (j +Int k) ≡ (i +Int j) +Int k
 integer-ring-solver-assoc i j k =
-  sym (_ℤ+-assoc i j k)
+  sym (ℤ+-assoc i j k)
 
 integer-ring-solver-normalization-theorem :
   IntegerRingSolverNormalizationTheorem
