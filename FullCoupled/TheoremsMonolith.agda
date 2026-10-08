@@ -1422,7 +1422,7 @@ eGraphAStarEventualStableFromRank W stableOrNot s =
       (step W s)
       (rank W (step W s))
       refl
-      (smaller (subst (λ k → rank W (step W s) < k) rankEq descent))
+      (smaller (transport (λ k → rank W (step W s) < k) rankEq descent))
   ... | n′ , stableAtN′ =
     succ n′ , stableAtN′
 
@@ -7571,8 +7571,7 @@ finiteMixedNash-cycle-transport
 ... | n , nashAtN =
   ( n
     ,
-    subst
-      (λ p → mixedNashB p)
+    transport (λ p → mixedNashB p)
       targetIterateEquality
       (transportNash
         (eGraphAStarIterate
@@ -7846,8 +7845,7 @@ f4-unit-forcing-no-upper-bound thetaZero boundedWitness =
     impossibleOrder :
       pos (succ B) ≤ pos B
     impossibleOrder =
-      subst
-        (λ z → z ≤ pos B)
+      transport (λ z → z ≤ pos B)
         growthFromZero
         horizonBound
   in
@@ -9869,8 +9867,7 @@ noPositiveFiniteCycleFromStrictProgress :
 noPositiveFiniteCycleFromStrictProgress W n s eq =
   irreflexive W
     (measure W s)
-    (subst
-      (λ t → measure W s < measure W t)
+    (transport (λ t → measure W s < measure W t)
       eq
       (strictProgressAfterIterate W n s))
 
@@ -9945,8 +9942,7 @@ canonicalTotalCountStepProgress :
   C.totalCount (C.lcbCounts s) <
   C.totalCount (C.lcbCounts (C.canonicalFullStep K s))
 canonicalTotalCountStepProgress K s =
-  subst
-    (λ t → C.totalCount (C.lcbCounts s) < t)
+  transport (λ t → C.totalCount (C.lcbCounts s) < t)
     (C.canonicalTotalCountStep K s)
     (natSucProgress (C.totalCount (C.lcbCounts s)))
 
@@ -10880,11 +10876,9 @@ noUnconditionalCommonsPreservation :
       (localOptimal C)
 noUnconditionalCommonsPreservation C D =
   twoNotLeOne
-    (subst
-      (λ n → n ≤ succ zero)
+    (transport (λ n → n ≤ succ zero)
       (capacityIsOne C)
-      (subst
-        (λ n → succ (succ zero) ≤ n)
+      (transport (λ n → succ (succ zero) ≤ n)
         (aggregateExtractionIsTwo C)
         (derive D
           (commonsWorld C)
@@ -11284,11 +11278,9 @@ noUnconditionalNestedCommonsPreservation :
   ¬ NestedCommonsPreservationDerivation Level C
 noUnconditionalNestedCommonsPreservation level C D =
   twoNotLeOne
-    (subst
-      (λ n → n ≤ succ zero)
+    (transport (λ n → n ≤ succ zero)
       (capacityIsOne C)
-      (subst
-        (λ n → succ (succ zero) ≤ n)
+      (transport (λ n → succ (succ zero) ≤ n)
         (aggregateExtractionIsTwo C)
         (derive D
           level
