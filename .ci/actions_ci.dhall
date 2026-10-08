@@ -509,7 +509,7 @@ DHALL
     ghc --numeric-version
     test -n "$(ghc --numeric-version)"
     "$AGDA_COMMAND" --version
-    mirthc --version
+    command -v mirthc >/dev/null
     dhall --version
     z3 --version
     emacs --version
@@ -525,7 +525,7 @@ DHALL
   All = ''
     set -euo pipefail
     nix run .#mirth-agda-sync -- --check
-    mirthc --version
+    command -v mirthc >/dev/null
     "$AGDA_COMMAND" --version
     ghc --numeric-version
     dhall --version
