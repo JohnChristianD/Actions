@@ -51,6 +51,24 @@ _+Int_ = _+_
 infixl 31 _*Int_
 _*Int_ : Int → Int → Int
 _*Int_ = _*_
+open import Naturals
+open import Naturals.Exponentiation
+open import Naturals.Division
+open import Naturals.Properties
+open import Notation.Order
+open import Order
+open import Rationals.Addition
+open import Rationals.Multiplication
+open import Rationals.Negation
+open import Rationals.Order
+open import Rationals.Type
+open import UF.Base
+open import UF.FunExt
+open import UF.PropTrunc
+open import UF.Size
+open import UF.Subsingletons
+open import UF.Subsingletons-FunExt
+open import UF.UA-FunExt
 -- END MIRTH-SYNC COMMON IMPORTS
 
 open import Agda.Builtin.Reflection as Builtin
