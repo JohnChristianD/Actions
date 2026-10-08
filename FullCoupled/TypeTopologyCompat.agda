@@ -21,6 +21,9 @@ Nat = ℕ
 Int : Set
 Int = ℤ
 
+data ComparisonResult : Set where
+  less equal greater : ComparisonResult
+
 _+Int_ : Int → Int → Int
 _+Int_ = _+_
 
@@ -56,7 +59,7 @@ listBind [] f = []
 listBind (x ∷ xs) f = f x ++ listBind xs f
 
 listMonad : Monad List
-listMonad = monad (λ x → x) listBind
+listMonad = monad (λ x → x ∷ []) listBind
 
 statePure : {S A : Set} → A → State S A
 statePure x s = x , s
