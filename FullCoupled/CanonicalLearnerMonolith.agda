@@ -118,7 +118,7 @@ le-refl : ∀ n → n ≤ n
 le-refl zero = ⋆
 le-refl (succ n) = le-refl n
 
-lt-irrefl : ∀ n → (n < n) → ⊥
+lt-irrefl : ∀ n → (n < n) → 𝟘
 lt-irrefl zero ()
 lt-irrefl (succ n) (s≤s p) = lt-irrefl n p
 
