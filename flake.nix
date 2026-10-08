@@ -83,7 +83,7 @@
           text = ''
             set -euo pipefail
             exec agda -l agda2hs-base "$@"
-          ''';
+          '';
         };
 
 
