@@ -93,10 +93,8 @@ dropTrailingSpaces chars =
 
 trimWhitespace : String -> String
 trimWhitespace source =
-  primStringFromList
-    (dropTrailingSpaces
-      (dropLeadingSpaces
-        (primStringToList source)))
+  dropTrailingSpaces
+    (dropLeadingSpaces source)
 
 firstWord : String -> Maybe String
 firstWord source =
@@ -120,7 +118,7 @@ containsChar target (c ∷ rest) =
 
 lineContainsChar : Char -> String -> Bool
 lineContainsChar target source =
-  containsChar target (primStringToList source)
+  containsChar target source
 
 splitFirstChar :
   Char ->
@@ -140,10 +138,10 @@ splitFirstCharString :
   String × String
 splitFirstCharString target source =
   let (before , after) =
-        splitFirstChar target (primStringToList source)
+        splitFirstChar target source
   in
-  primStringFromList before ,
-  primStringFromList after
+  before ,
+  after
 
 topLevelLine : String -> Bool
 topLevelLine [] = False
@@ -384,7 +382,7 @@ leadingSpaceCount :
   Nat
 leadingSpaceCount source =
   leadingSpaceCountChars
-    (primStringToList source)
+    source
     zero
 
 leadingSpaceCountChars :
@@ -602,8 +600,8 @@ containsIdentifier :
 containsIdentifier text name =
   containsIdentifierFrom
     Nothing
-    (primStringToList text)
-    (primStringToList name)
+    text
+    name
 
 dependencyText : SemanticDecl -> String
 dependencyText decl =
