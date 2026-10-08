@@ -119,6 +119,12 @@ int8Neg x = int8 (- code x)
 int8Sub : Int8 → Int8 → Int8
 int8Sub x y = int8 (code x +Int (- code y))
 
+int8+-assoc : ∀ a b c → int8Add (int8Add a b) c ＝ int8Add a (int8Add b c)
+int8+-assoc a b c = ap int8 (ℤ+-assoc (code a) (code b) (code c))
+
+int8*-assoc : ∀ a b c → int8Mul (int8Mul a b) c ＝ int8Mul a (int8Mul b c)
+int8*-assoc a b c = ap int8 (ℤ*-assoc (code a) (code b) (code c))
+
 int8Roundtrip : ∀ n → code (int8OfNat n) ＝ pos n
 int8Roundtrip n = refl
 
