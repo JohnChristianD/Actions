@@ -52,7 +52,6 @@ _*Int_ = _ℤ*_
 open import Naturals.Addition
 open import Naturals.Exponentiation
 open import Naturals.Division
-open import Naturals.Subtraction
 open import Naturals.Properties
 open import Naturals.Order
 open import Notation.Order
@@ -5565,14 +5564,14 @@ tsallis2NearDyadic-oneHot = refl
 generalSupportSparsityDyadic : ActionWeights → C.Dyadic
 generalSupportSparsityDyadic xs =
   C.fromNatDyadic
-    (length xs ∸ actionSupportCount xs)
+    (length xs C._∸_ actionSupportCount xs)
     (length xs)
 
 generalSupportSparsityDyadic-definition :
   ∀ xs →
   generalSupportSparsityDyadic xs ＝
     C.fromNatDyadic
-      (length xs ∸ actionSupportCount xs)
+      (length xs C._∸_ actionSupportCount xs)
       (length xs)
 generalSupportSparsityDyadic-definition xs = refl
 
