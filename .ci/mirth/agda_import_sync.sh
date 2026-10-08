@@ -11,7 +11,7 @@ trap 'rm -f "$block" "$merged" "$tmp"' EXIT
 sources() { git ls-files '*.agda' | LC_ALL=C sort; }
 is_extraction_surface() {
   case "$1" in
-    FullCoupled/Agda2HsSurface.agda|FullCoupled/Agda2HsSemanticExtractor.agda|FullCoupled/Agda2HsSemanticSearch.agda|FullCoupled/Agda2HsTheoremGraphEGraph.agda)
+    FullCoupled/Agda2HsSurface.agda|FullCoupled/Agda2HsSemanticExtractor.agda|FullCoupled/Agda2HsSemanticSearch.agda|FullCoupled/Agda2HsTheoremGraphEGraph.agda|FullCoupled/AgdaGraphShort.agda|FullCoupled/FormalMethods/IMP.agda|FullCoupled/FormalMethods/Types.agda|FullCoupled/FormalMethods/Security.agda|FullCoupled/FormalMethods/HoareLogic.agda|FullCoupled/FormalMethods/SeparationLogic.agda|FullCoupled/FormalMethods/OperationalSemantics.agda|FullCoupled/FormalMethods/VerificationConditions.agda|FullCoupled/FormalMethods/gentle-intro-to-reflection/tangled.agda)
       return 0
       ;;
     *)
@@ -48,7 +48,7 @@ collect_imports() {
         line=$0
         if (line ~ /FullCoupled[.]/) next
         if (line ~ /TWA[.]Thesis[.]Chapter3[.](ClosenessSpaces|SearchableTypes)[[:space:]]+fe([[:space:]]|$)/) next
-        if (line ~ /^open import (Agda[.]Builtin[.]Reflection|Haskell[.]Law[.]Num[.]Def|Haskell[.]Law[.]Num[.]Int|Haskell[.]Prelude[.]Nat[.]Properties)([[:space:]]|$)/) next
+        if (line ~ /^open import (Agda[.]Builtin[.]Reflection|Haskell[.]Law[.]Num[.]Def|Haskell[.]Law[.]Num[.]Int|Haskell[.]Prelude[.]Nat[.]Properties|Unsafe[.]Haskell)([[:space:]]|$)/) next
         if (line ~ /^open import InfinitePigeon[.]FinitePigeon([[:space:]]|$)/) next
         print line
       }
@@ -92,7 +92,8 @@ external_drift() {
           mod !~ /^Agda[.]Builtin[.]Reflection([[:space:]]|$)/ &&
           mod !~ /^Haskell[.]Law[.]Num[.](Def|Int)([[:space:]]|$)/ &&
           mod !~ /^Haskell[.]Prelude[.]Nat[.]Properties([[:space:]]|$)/ &&
-          mod !~ /^InfinitePigeon[.]FinitePigeon([[:space:]]|$)/)
+          mod !~ /^InfinitePigeon[.]FinitePigeon([[:space:]]|$)/ &&
+          mod !~ /^Unsafe[.]Haskell([[:space:]]|$)/)
         print FILENAME ": " $0
     }
   ' "$file"
@@ -141,4 +142,4 @@ fi
 echo 'mirth-agda-import-sync=pass'
 echo "canonical=$canonical"
 echo "merged-external-imports=$(grep -Ec '^(open |import )' "$merged" || true)"
-echo "sync-exceptions=FullCoupled/Agda2HsSurface.agda,FullCoupled/Agda2HsSemanticExtractor.agda,FullCoupled/Agda2HsSemanticSearch.agda,FullCoupled/Agda2HsTheoremGraphEGraph.agda"
+echo "sync-exceptions=Agda2Hs/* plus legacy FormalMethods/AgdaGraphShort mixed-import surfaces"

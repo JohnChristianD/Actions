@@ -18,8 +18,18 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  policy:
+    name: Verify official Nix surface
+    runs-on: ubuntu-22.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify official Nix surface
+        run: bash .ci/verify-official-nix-surface.sh
+
   agda:
     name: Agda learner + theorem monoliths
+    needs: policy
     runs-on: ubuntu-22.04
     timeout-minutes: 35
     steps:
@@ -43,6 +53,7 @@ jobs:
 
   versions:
     name: Nix tool versions
+    needs: policy
     runs-on: ubuntu-22.04
     timeout-minutes: 15
     steps:
@@ -55,7 +66,7 @@ jobs:
 
       - name: Run version lane
         env:
-          CI_LANE: Versions
+          CI_LANE: '(< AgdaLearner | AgdaTheorem | AgdaSafe | Agda2Hs | MirthFastDirty | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >.Versions)'
         run: |
           set -euo pipefail
           nix develop .#agda-versions -c bash -e -c '
@@ -65,6 +76,7 @@ jobs:
 
   semantic:
     name: Agda semantic/e-graph verification
+    needs: policy
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
@@ -106,6 +118,7 @@ jobs:
 
   pages:
     name: Pages build verification
+    needs: policy
     runs-on: ubuntu-22.04
     timeout-minutes: 25
     steps:

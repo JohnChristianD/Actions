@@ -32,14 +32,29 @@ module FullCoupled.TheoremsMonolith where
 
 -- BEGIN MIRTH-SYNC COMMON IMPORTS
 -- Merged external import surface; internal FullCoupled imports remain module-local.
-open import Haskell.Prelude hiding (String; ⊥)
 open import MLTT.Spartan hiding (J)
-open import Naturals
+open import MLTT.Athenian
+open import Integers.Type
+open import Integers.Addition renaming (_+_ to _ℤ+_)
+open import Integers.Multiplication renaming (_*_ to _ℤ*_)
+
+Nat : Set
+Nat = ℕ
+
+Int : Set
+Int = ℤ
+
+infixl 31 _+Int_
+_+Int_ : Int → Int → Int
+_+Int_ = _ℤ+_
+
+infixl 31 _*Int_
+_*Int_ : Int → Int → Int
+_*Int_ = _ℤ*_
 open import Naturals.Exponentiation
 open import Naturals.Division
 open import Naturals.Properties
 open import Notation.Order
-open import Order
 open import Rationals.Addition
 open import Rationals.Multiplication
 open import Rationals.Negation
@@ -55,9 +70,6 @@ open import UF.UA-FunExt
 -- END MIRTH-SYNC COMMON IMPORTS
 
 open import Agda.Builtin.Reflection as Builtin
-open import Haskell.Law.Num.Def using (IsLawfulNum)
-open import Haskell.Law.Num.Int using (iLawfulNumInt)
-open import Haskell.Prelude.Nat.Properties using (≤-trans; n<1+n)
 
 -- BEGIN MIRTH-SYNC CANONICAL COMMAND
 -- "$AGDA_COMMAND" -i .
@@ -125,8 +137,8 @@ macro
 ------------------------------------------------------------------------
 -- Constructive inversion/search bridge.
 --
--- The inversion-plugin/Curry line gives inverse computation as a
--- non-deterministic preimage search with a single-solution condition.
+-- The Haskell-minus-one line gives inverse computation as a
+-- preimage search with an explicit correctness condition.
 -- TWA's exact-real-search framework makes the search constructive by
 -- requiring searchable domains and explicit uniform-continuity moduli.
 --
@@ -272,13 +284,13 @@ record IntegerRingSolverNormalizationTheorem : Set₁ where
   field
     normalization :
       ∀ (i j k : Int) →
-      i + (j + k) ≡ (i + j) + k
+      i +Int (j +Int k) ≡ (i +Int j) +Int k
 
 integer-ring-solver-assoc :
   ∀ (i j k : Int) →
-  i + (j + k) ≡ (i + j) + k
+  i +Int (j +Int k) ≡ (i +Int j) +Int k
 integer-ring-solver-assoc i j k =
-  sym (IsLawfulNum.+-assoc iLawfulNumInt i j k)
+  sym (ℤ+-assoc i j k)
 
 integer-ring-solver-normalization-theorem :
   IntegerRingSolverNormalizationTheorem
@@ -952,12 +964,12 @@ open AStarHaskellMonadSurface public
 aStar-frontier-monad :
   ∀ {Expression : Set} →
   Monad (State (List (List Expression)))
-aStar-frontier-monad = it
+aStar-frontier-monad = stateMonad
 
 aStar-candidate-plan-monad :
   ∀ {Expression : Set} →
   Monad List
-aStar-candidate-plan-monad = it
+aStar-candidate-plan-monad = listMonad
 
 aStar-haskell-monad-surface :
   ∀ (Expression : Set) →
@@ -1511,11 +1523,11 @@ integerLayerNormAStarStrictDescent :
 integerLayerNormAStarStrictDescent
   integerLayerNormRawPhase
   _ =
-  n<1+n
+  <-succ _
 integerLayerNormAStarStrictDescent
   integerLayerNormCenteredPhase
   _ =
-  n<1+n
+  <-succ _
 integerLayerNormAStarStrictDescent
   integerLayerNormRadicandPhase
   notStable =
@@ -1806,20 +1818,20 @@ integerLayerNorm-radicand-epsilon-suc :
   ≡
   C.integerLayerNormRadicand xs epsilon
   +Int
-  (+ (length xs * length xs))
+  (pos (length xs * length xs))
 integerLayerNorm-radicand-epsilon-suc xs epsilon =
   trans
     (cong
       (λ n →
         C.integerLayerNormVarianceNumerator xs
         +Int
-        (+ n))
+        (pos n))
       (integerLayerNorm-epsilon-contribution-suc xs epsilon))
     (sym
       (integer-ring-solver-assoc
         (C.integerLayerNormVarianceNumerator xs)
-        (+ (epsilon * length xs * length xs))
-        (+ (length xs * length xs))))
+        (pos (epsilon * length xs * length xs))
+        (pos (length xs * length xs))))
 
 record IntegerLayerNormConfigurationStabilityTheorem : Set₁ where
   constructor integerLayerNormConfigurationStabilityTheorem
@@ -1886,12 +1898,12 @@ integerLayerNorm-radicand-epsilon-linear :
   ≡
   C.integerLayerNormVarianceNumerator xs
   +Int
-  (+ (epsilon * length xs * length xs))
+  (pos (epsilon * length xs * length xs))
 integerLayerNorm-radicand-epsilon-linear xs zero =
   trans
     (integerLayerNorm-radicand-epsilon-zero xs)
     (sym
-      (IntegerProperties.+-identityʳ
+      (ℤ-zero-right-neutral
         (C.integerLayerNormVarianceNumerator xs)))
 integerLayerNorm-radicand-epsilon-linear xs (suc epsilon) =
   trans
@@ -1902,15 +1914,15 @@ integerLayerNorm-radicand-epsilon-linear xs (suc epsilon) =
         refl)
       (trans
         (sym
-          (IntegerProperties.+-assoc
+          (ℤ+-assoc
             (C.integerLayerNormVarianceNumerator xs)
-            (+ (epsilon * length xs * length xs))
-            (+ (length xs * length xs))))
+            (pos (epsilon * length xs * length xs))
+            (pos (length xs * length xs))))
         (cong
           (λ n →
             C.integerLayerNormVarianceNumerator xs
             +Int
-            (+ n))
+            (pos n))
           (sym
             (integerLayerNorm-epsilon-contribution-suc
               xs
@@ -1932,14 +1944,14 @@ record IntegerLayerNormEpsilonRayGrowthTheorem : Set₁ where
       ≡
       C.integerLayerNormRadicand xs epsilon
       +Int
-      (+ (length xs * length xs))
+      (pos (length xs * length xs))
     linearRay :
       ∀ (xs : List C.Int8) (epsilon : Nat) →
       C.integerLayerNormRadicand xs epsilon
       ≡
       C.integerLayerNormVarianceNumerator xs
       +Int
-      (+ (epsilon * length xs * length xs))
+      (pos (epsilon * length xs * length xs))
 
 open IntegerLayerNormEpsilonRayGrowthTheorem public
 
@@ -2276,7 +2288,7 @@ canonicalPermutation-right :
 canonicalPermutation-right = refl
 
 canonicalZeroInt-not-oneInt :
-  ¬ ((+ 0) ≡ (+ 1))
+  ¬ ((pos 0) ≡ (pos 1))
 canonicalZeroInt-not-oneInt ()
 
 canonicalZero8-not-one8 :
@@ -5365,7 +5377,7 @@ jaxIntegerSum (x ∷ xs) =
 
 jaxAffine : Int → Int
 jaxAffine x =
-  (+ 2) *Int x +Int (+ 1)
+  (pos 2) *Int x +Int (pos 1)
 
 jaxVmapAffine : List Int → List Int
 jaxVmapAffine =
@@ -5374,7 +5386,7 @@ jaxVmapAffine =
 jaxVmapAffine-law :
   ∀ xs →
   jaxVmapAffine xs ≡
-  map (λ x → (+ 2) *Int x +Int (+ 1)) xs
+  map (λ x → (pos 2) *Int x +Int (pos 1)) xs
 jaxVmapAffine-law xs = refl
 
 jaxPrefixSum : Int → List Int → List Int
@@ -5641,7 +5653,7 @@ record JAXExecutionMirrorReproof : Set₁ where
     vmapAffine :
       ∀ xs →
       jaxVmapAffine xs ≡
-      map (λ x → (+ 2) *Int x +Int (+ 1)) xs
+      map (λ x → (pos 2) *Int x +Int (pos 1)) xs
     associativePrefixSum :
       ∀ xs →
       jaxAssociativePrefixSum xs ≡
@@ -7498,7 +7510,7 @@ record F4UpperBoundedTrajectory
     bound : Nat
     bounded :
       ∀ n →
-      C.code (C.thetaQ (f4Orbit K g n s)) ≤Int + bound
+      C.code (C.thetaQ (f4Orbit K g n s)) ≤ pos bound
 
 nat-plus-one :
   ∀ n → n + suc zero ≡ suc n
@@ -7508,7 +7520,7 @@ nat-plus-one n =
     (cong suc (+-identityʳ n))
 
 integer-nat-plus-one :
-  ∀ n → (+ n) +Int (+ 1) ≡ + (suc n)
+  ∀ n → (pos n) +Int (pos 1) ≡ pos (suc n)
 integer-nat-plus-one n =
   cong +_ (nat-plus-one n)
 
@@ -7521,7 +7533,7 @@ f4-zero-L2-unit-step-code :
         s
         C.one8))
   ≡
-  C.code (C.thetaQ s) +Int (+ 1)
+  C.code (C.thetaQ s) +Int (pos 1)
 f4-zero-L2-unit-step-code s =
   trans
     (cong C.code
@@ -7529,8 +7541,8 @@ f4-zero-L2-unit-step-code s =
         (C.f4IntUKernel C.zero8)
         s
         C.one8))
-    (IntegerProperties.+-identityʳ
-      (C.code (C.thetaQ s) +Int (+ 1)))
+    (ℤ-zero-right-neutral
+      (C.code (C.thetaQ s) +Int (pos 1)))
 
 f4-unit-forcing-linear-growth :
   ∀ n s →
@@ -7542,22 +7554,22 @@ f4-unit-forcing-linear-growth :
         n
         s))
   ≡
-  C.code (C.thetaQ s) +Int (+ n)
+  C.code (C.thetaQ s) +Int (pos n)
 f4-unit-forcing-linear-growth zero s =
-  sym (IntegerProperties.+-identityʳ (C.code (C.thetaQ s)))
+  sym (ℤ-zero-right-neutral (C.code (C.thetaQ s)))
 f4-unit-forcing-linear-growth (suc n) s =
   trans
     (f4-zero-L2-unit-step-code
       (f4Orbit (C.f4IntUKernel C.zero8) C.one8 n s))
     (trans
       (cong
-        (λ z → z +Int (+ 1))
+        (λ z → z +Int (pos 1))
         (f4-unit-forcing-linear-growth n s))
       (trans
-        (IntegerProperties.+-assoc
+        (ℤ+-assoc
           (C.code (C.thetaQ s))
-          (+ n)
-          (+ 1))
+          (pos n)
+          (pos 1))
         (cong
           (λ z → C.code (C.thetaQ s) +Int z)
           (integer-nat-plus-one n))))
@@ -7592,25 +7604,26 @@ f4-unit-forcing-no-upper-bound thetaZero boundedWitness =
             (suc B)
             _))
       ≡
-      + (suc B)
+      pos (suc B)
     growthFromZero =
       trans
         growth
         (trans
           (cong
-            (λ z → z +Int (+ suc B))
+            (λ z → z +Int (pos (suc B)))
             (cong C.code thetaZero))
-          (IntegerProperties.+-identityˡ (+ suc B)))
+          (ℤ-zero-left-neutral (pos (suc B))))
     impossibleOrder :
-      + (suc B) ≤Int + B
+      pos (suc B) ≤ pos B
     impossibleOrder =
       subst
-        (λ z → z ≤Int + B)
+        (λ z → z ≤ pos B)
         growthFromZero
         horizonBound
   in
     nat-suc-not-le B
-      (IntegerProperties.drop‿+≤+ impossibleOrder)
+      (ℤ-bigger-or-equal-not-less (pos (suc B)) (pos B) impossibleOrder
+       (ℕ-order-respects-ℤ-order B (suc B) (<-succ B)))
 
 record CanonicalPureNonOrangeBypassCompletionTheorem : Set₁ where
   constructor canonicalPureNonOrangeBypassCompletionTheorem

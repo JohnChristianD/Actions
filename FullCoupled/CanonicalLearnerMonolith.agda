@@ -41,14 +41,29 @@ module FullCoupled.CanonicalLearnerMonolith where
 
 -- BEGIN MIRTH-SYNC COMMON IMPORTS
 -- Merged external import surface; internal FullCoupled imports remain module-local.
-open import Haskell.Prelude hiding (String; ⊥)
 open import MLTT.Spartan hiding (J)
-open import Naturals
+open import MLTT.Athenian
+open import Integers.Type
+open import Integers.Addition renaming (_+_ to _ℤ+_)
+open import Integers.Multiplication renaming (_*_ to _ℤ*_)
+
+Nat : Set
+Nat = ℕ
+
+Int : Set
+Int = ℤ
+
+infixl 31 _+Int_
+_+Int_ : Int → Int → Int
+_+Int_ = _ℤ+_
+
+infixl 31 _*Int_
+_*Int_ : Int → Int → Int
+_*Int_ = _ℤ*_
 open import Naturals.Exponentiation
 open import Naturals.Division
 open import Naturals.Properties
 open import Notation.Order
-open import Order
 open import Rationals.Addition
 open import Rationals.Multiplication
 open import Rationals.Negation
@@ -63,7 +78,6 @@ open import UF.Subsingletons-FunExt
 open import UF.UA-FunExt
 -- END MIRTH-SYNC COMMON IMPORTS
 
-open import Haskell.Prelude.Nat.Properties using (≤-antisym)
 open import InfinitePigeon.FinitePigeon
 
 -- BEGIN MIRTH-SYNC CANONICAL COMMAND
@@ -80,13 +94,13 @@ int8StateSpace : Set
 int8StateSpace = Int
 
 zero8 : Int8
-zero8 = int8 (+ 0)
+zero8 = int8 (pos 0)
 
 one8 : Int8
-one8 = int8 (+ 1)
+one8 = int8 (pos 1)
 
 int8OfNat : Nat → Int8
-int8OfNat n = int8 (+ n)
+int8OfNat n = int8 (pos n)
 
 int8Add : Int8 → Int8 → Int8
 int8Add x y = int8 (code x +Int code y)
@@ -100,7 +114,7 @@ int8Neg x = int8 (- code x)
 int8Sub : Int8 → Int8 → Int8
 int8Sub x y = int8 (code x +Int (- code y))
 
-int8Roundtrip : ∀ n → code (int8OfNat n) ≡ + n
+int8Roundtrip : ∀ n → code (int8OfNat n) ≡ pos n
 int8Roundtrip n = refl
 
 le-refl : ∀ n → n ≤ n
@@ -149,8 +163,8 @@ data Signed : Set where
   signedPos : Nat → Signed
 
 signedCode : Int8 → Signed
-signedCode (int8 (+ 0)) = signedZer
-signedCode (int8 (+ (suc n))) = signedPos (suc n)
+signedCode (int8 (pos 0)) = signedZer
+signedCode (int8 (pos (suc n))) = signedPos (suc n)
 signedCode (int8 (-[1+ n ])) = signedNeg (suc n)
 
 data BoolLike : Set where
@@ -272,32 +286,39 @@ ScoreEntry = Int8 × Nat
 int8-code-injective : ∀ {x y : Int8} → code x ≡ code y → x ≡ y
 int8-code-injective refl = refl
 
-instance
-  OrdInt8 : Ord Int8
-  OrdInt8 = OrdBy int8-code-injective
-
-ScoreEntryLess : ScoreEntry → ScoreEntry → Set
-ScoreEntryLess (s₁ , a₁) (s₂ , a₂) =
-  Either (s₁ > s₂) (s₁ ≡ s₂ × a₁ > a₂)
-
-scoreEntryCompare : ∀ x y → Comparison ScoreEntryLess x y
-scoreEntryCompare (s₁ , a₁) (s₂ , a₂) with compare s₁ s₂
-... | less p = greater p
-... | greater p = less p
-... | equal refl with compare a₁ a₂
-... | less p = greater p
-... | greater p = less p
-... | equal refl = equal refl
-
-instance
-  OrdScoreEntry : Ord ScoreEntry
-  OrdScoreEntry = defaultOrd scoreEntryCompare
-
 scoreList : ∀ {A : Set} → ActionSpace A → QFunction {A} → CountFunction {A} → List ScoreEntry
 scoreList {A} K q c = map (λ a → (scoreA {A = A} q c a , a)) (candidates K)
 
+compareInt8 : Int8 → Int8 → FullCoupled.TypeTopologyCompat.ComparisonResult
+compareInt8 x y with ℤ-trichotomous (code x) (code y)
+... | inl _ = less
+... | inr (inl _) = equal
+... | inr (inr _) = greater
+
+compareNat : Nat → Nat → FullCoupled.TypeTopologyCompat.ComparisonResult
+compareNat zero zero = equal
+compareNat zero (suc _) = less
+compareNat (suc _) zero = greater
+compareNat (suc m) (suc n) = compareNat m n
+
+scoreBefore : ScoreEntry → ScoreEntry → Bool
+scoreBefore (s₁ , a₁) (s₂ , a₂) with compareInt8 s₁ s₂
+... | less = false
+... | greater = true
+... | equal with compareNat a₁ a₂
+... | less = false
+... | equal = true
+... | greater = true
+
+insertScore : ScoreEntry → List ScoreEntry → List ScoreEntry
+insertScore x [] = x ∷ []
+insertScore x (y ∷ ys) with scoreBefore x y
+... | true = x ∷ y ∷ ys
+... | false = y ∷ insertScore x ys
+
 sortScores : List ScoreEntry → List ScoreEntry
-sortScores = sort
+sortScores [] = []
+sortScores (x ∷ xs) = insertScore x (sortScores xs)
 
 natAt : Nat → List Nat → Nat
 natAt k [] = zero
@@ -329,7 +350,7 @@ integerCodeSumList (x ∷ xs) = x +Int integerCodeSumList xs
 integerLayerNormCenteredNumerator :
   List Int8 → Int8 → Int
 integerLayerNormCenteredNumerator xs x =
-  (+ (length xs)) *Int code x +Int (- integerCodeSum xs)
+  (pos (length xs)) *Int code x +Int (- integerCodeSum xs)
 
 integerLayerNormCenteredNumerators :
   List Int8 → List Int
@@ -352,7 +373,7 @@ integerLayerNormVarianceNumerator xs =
 integerLayerNormEpsilonContribution :
   List Int8 → Nat → Int
 integerLayerNormEpsilonContribution xs epsilon =
-  (+ (epsilon * (length xs) * (length xs)))
+  (pos (epsilon * (length xs) * (length xs)))
 
 integerLayerNormRadicand :
   List Int8 → Nat → Int
@@ -373,7 +394,7 @@ record IntegerLayerNormCertificate
     epsilon : Nat
     root : Nat
     rootSquared :
-      (+ (root * root)) ≡
+      (pos (root * root)) ≡
       integerLayerNormRadicand xs epsilon
     rootNonZero : root ≢ zero
 open IntegerLayerNormCertificate public
@@ -398,13 +419,13 @@ integerLayerNormValue {xs} config certificate x =
       (code (fixedScale config) *Int
         integerLayerNormCenteredNumerator xs x)
      +Int
-     (code (beta config) *Int (+ (root certificate))))
+     (code (beta config) *Int (pos (root certificate))))
     (root certificate)
     (rootNonZero certificate)
 
 
 int8Magnitude : Int8 → Nat
-int8Magnitude (int8 (+ n)) = n
+int8Magnitude (int8 (pos n)) = n
 int8Magnitude (int8 (-[1+ n ])) = suc n
 
 topCodes : Nat → List ScoreEntry → List Nat
@@ -527,13 +548,13 @@ data HardSign : Set where
   negativeSign zeroSign positiveSign : HardSign
 
 hardSignNonnegative : Int8 → HardSign
-hardSignNonnegative (int8 (+ 0)) = zeroSign
-hardSignNonnegative (int8 (+ (suc n))) = positiveSign
+hardSignNonnegative (int8 (pos 0)) = zeroSign
+hardSignNonnegative (int8 (pos (suc n))) = positiveSign
 hardSignNonnegative (int8 (-[1+ n ])) = negativeSign
 
 hardSign : Int8 → HardSign
-hardSign (int8 (+ 0)) = zeroSign
-hardSign (int8 (+ (suc n))) = positiveSign
+hardSign (int8 (pos 0)) = zeroSign
+hardSign (int8 (pos (suc n))) = positiveSign
 hardSign (int8 (-[1+ n ])) = negativeSign
 
 hardSignGate : Int8 → Int8
@@ -640,8 +661,8 @@ data MonoidLSTMGate : Set where
   monoidHold monoidWrite monoidReset monoidAccum : MonoidLSTMGate
 
 monoidLSTMGateOf : Int8 → MonoidLSTMGate
-monoidLSTMGateOf (int8 (+ 0)) = monoidHold
-monoidLSTMGateOf (int8 (+ (suc n))) = monoidAccum
+monoidLSTMGateOf (int8 (pos 0)) = monoidHold
+monoidLSTMGateOf (int8 (pos (suc n))) = monoidAccum
 monoidLSTMGateOf (int8 (-[1+ n ])) = monoidReset
 
 monoidLSTMCellStep : MonoidLSTMGate → Int8 → Int8 → Int8
@@ -1273,7 +1294,7 @@ softSparse-zero-to-hardSparse :
   SoftSparseBounded K s zero →
   HardSparse K s
 softSparse-zero-to-hardSparse K s h {a} distinct =
-  ≤-antisym (h distinct) z≤n
+  ≤-anti (h distinct) z≤n
 
 replaceOptimizer : ∀ {A} → FullLearnerState A → F4IntUState → FullLearnerState A
 replaceOptimizer s o = fullLearnerState (watkins s) (gru s) o
@@ -1286,9 +1307,9 @@ canonicalPolicy-optimizer-invariant K s o = refl
 
 maxCriticValueList : List Int8 → Int8
 maxCriticValueList [] = zero8
-maxCriticValueList (x ∷ xs) with code x <= code (maxCriticValueList xs)
-... | True = maxCriticValueList xs
-... | False = x
+maxCriticValueList (x ∷ xs) with leIntBool (code x) (code (maxCriticValueList xs))
+... | true = maxCriticValueList xs
+... | false = x
 
 maxCriticValue8 : ∀ {A : Set} → ActionSpace A → CriticState A → Int8
 maxCriticValue8 K q = maxCriticValueList (map (λ a → values q a) (candidates K))
@@ -1658,9 +1679,9 @@ canonicalHaarFeatureReconstruct :
       n = proj₂ (canonicalCReLU8 x)
   in int8Sub p n ≡ x
 canonicalHaarFeatureReconstruct
-  (int8 (+ 0)) = refl
+  (int8 (pos 0)) = refl
 canonicalHaarFeatureReconstruct
-  (int8 (+ (suc n))) = refl
+  (int8 (pos (suc n))) = refl
 canonicalHaarFeatureReconstruct
   (int8 (-[1+ n ])) = refl
 

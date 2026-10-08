@@ -7,9 +7,6 @@ module FullCoupled.Agda2HsSemanticExtractor where
 
 -- BEGIN MIRTH-SYNC COMMON IMPORTS
 open import Haskell.Prelude
-import Unsafe.Haskell as Unsafe
-open import Equality
-open import Naturals
 -- END MIRTH-SYNC COMMON IMPORTS
 
 -- BEGIN MIRTH-SYNC CANONICAL COMMAND
@@ -17,7 +14,31 @@ open import Naturals
 -- END MIRTH-SYNC CANONICAL COMMAND
 
 CharList : Type
-CharList = List Unsafe.Char
+CharList = List Char
+
+charEq : Char → Char → Bool
+charEq a b = eqNat (c2n a) (c2n b)
+
+natBetween : Nat → Nat → Nat → Bool
+natBetween lo hi n =
+  if lo <= n then
+    if n <= hi then True else False
+  else
+    False
+
+isAsciiAlpha : Char → Bool
+isAsciiAlpha c =
+  natBetween 65 90 (c2n c) || natBetween 97 122 (c2n c)
+
+isAsciiDigit : Char → Bool
+isAsciiDigit c = natBetween 48 57 (c2n c)
+
+isSourceSpace : Char → Bool
+isSourceSpace c =
+  if charEq c ' ' then True
+  else if charEq c '\n' then True
+  else if charEq c '\r' then True
+  else charEq c '\t'
 
 data SemanticKind : Type where
   semantic-top-level : SemanticKind
@@ -65,22 +86,22 @@ data RecordFieldScanState : Type where
   field-collecting :
     String -> String -> List String -> RecordFieldScanState
 
-charEq : Unsafe.Char -> Unsafe.Char -> Bool
-charEq = Unsafe.primCharEquality
+charEq : Char -> Char -> Bool
+charEq = primCharEquality
 
-isIdentifierChar : Unsafe.Char -> Bool
+isIdentifierChar : Char -> Bool
 isIdentifierChar c =
-  if Unsafe.primIsAlpha c then
+  if isAsciiAlpha c then
     True
-  else if Unsafe.primIsDigit c then
+  else if isAsciiDigit c then
     True
   else if charEq c '_' then
     True
   else
     charEq c '-'
 
-isSpace : Unsafe.Char -> Bool
-isSpace = Unsafe.primIsSpace
+isSpace : Char -> Bool
+isSpace = primIsSpace
 
 dropLeadingSpaces : CharList -> CharList
 dropLeadingSpaces [] = []
@@ -96,10 +117,8 @@ dropTrailingSpaces chars =
 
 trimWhitespace : String -> String
 trimWhitespace source =
-  Unsafe.primStringFromList
-    (dropTrailingSpaces
-      (dropLeadingSpaces
-        (Unsafe.primStringToList source)))
+  dropTrailingSpaces
+    (dropLeadingSpaces source)
 
 firstWord : String -> Maybe String
 firstWord source =
@@ -113,7 +132,7 @@ secondWord source =
     (_ ∷ word ∷ _) -> Just word
     _ -> Nothing
 
-containsChar : Unsafe.Char -> CharList -> Bool
+containsChar : Char -> CharList -> Bool
 containsChar _ [] = False
 containsChar target (c ∷ rest) =
   if charEq target c then
@@ -121,12 +140,12 @@ containsChar target (c ∷ rest) =
   else
     containsChar target rest
 
-lineContainsChar : Unsafe.Char -> String -> Bool
+lineContainsChar : Char -> String -> Bool
 lineContainsChar target source =
-  containsChar target (Unsafe.primStringToList source)
+  containsChar target source
 
 splitFirstChar :
-  Unsafe.Char ->
+  Char ->
   CharList ->
   CharList × CharList
 splitFirstChar target [] = [] , []
@@ -138,20 +157,20 @@ splitFirstChar target (c ∷ rest) =
     in c ∷ before , after
 
 splitFirstCharString :
-  Unsafe.Char ->
+  Char ->
   String ->
   String × String
 splitFirstCharString target source =
   let (before , after) =
-        splitFirstChar target (Unsafe.primStringToList source)
+        splitFirstChar target source
   in
-  Unsafe.primStringFromList before ,
-  Unsafe.primStringFromList after
+  before ,
+  after
 
 topLevelLine : String -> Bool
 topLevelLine [] = False
 topLevelLine source =
-  case Unsafe.primStringToList source of λ where
+  case source of λ where
     [] -> False
     (c ∷ _) -> not (isSpace c)
 
@@ -387,7 +406,7 @@ leadingSpaceCount :
   Nat
 leadingSpaceCount source =
   leadingSpaceCountChars
-    (Unsafe.primStringToList source)
+    source
     zero
 
 leadingSpaceCountChars :
@@ -570,7 +589,7 @@ matchesPrefix (needle ∷ needles) (candidate ∷ candidates) =
     False
 
 boundaryBefore :
-  Maybe Unsafe.Char ->
+  Maybe Char ->
   Bool
 boundaryBefore Nothing = True
 boundaryBefore (Just c) = not (isIdentifierChar c)
@@ -580,7 +599,7 @@ boundaryAfter [] = True
 boundaryAfter (c ∷ _) = not (isIdentifierChar c)
 
 containsIdentifierFrom :
-  Maybe Unsafe.Char ->
+  Maybe Char ->
   CharList ->
   CharList ->
   Bool
@@ -605,8 +624,8 @@ containsIdentifier :
 containsIdentifier text name =
   containsIdentifierFrom
     Nothing
-    (Unsafe.primStringToList text)
-    (Unsafe.primStringToList name)
+    text
+    name
 
 dependencyText : SemanticDecl -> String
 dependencyText decl =

@@ -7,10 +7,6 @@ module FullCoupled.Agda2HsTheoremGraphEGraph where
 
 -- BEGIN MIRTH-SYNC COMMON IMPORTS
 open import Haskell.Prelude
-import Unsafe.Haskell as Unsafe
-open import Equality
-open import Naturals
-open import Naturals.Properties
 -- END MIRTH-SYNC COMMON IMPORTS
 
 -- BEGIN MIRTH-SYNC CANONICAL COMMAND
@@ -399,7 +395,7 @@ saturateUntilStable rules graph =
 
 stringLength : String -> Nat
 stringLength text =
-  length (Unsafe.primStringToList text)
+  length (text)
 
 localCost : ENode -> Nat
 localCost (enode symbol children) =

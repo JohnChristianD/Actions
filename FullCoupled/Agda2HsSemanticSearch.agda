@@ -7,12 +7,6 @@ module FullCoupled.Agda2HsSemanticSearch where
 
 -- BEGIN MIRTH-SYNC COMMON IMPORTS
 open import Haskell.Prelude
-import Unsafe.Haskell as Unsafe
-open import Equality
-open import Naturals
-open import Naturals.Properties
-open import MLTT.Two-Properties
-open import UF.FunExt
 -- END MIRTH-SYNC COMMON IMPORTS
 
 open import FullCoupled.Agda2HsSemanticExtractor as Extractor
@@ -22,22 +16,6 @@ open import FullCoupled.Agda2HsTheoremGraphEGraph using
   )
 
 open import FullCoupled.Agda2HsTheoremGraphEGraph as EGraph
-
-module ExactRealSearchSurface (fe : FunExt) where
-
-  open import TWA.Thesis.Chapter3.ClosenessSpaces fe
-    using (ClosenessSpace)
-
-  open import TWA.Thesis.Chapter3.SearchableTypes fe
-    using (searchable; csearchable; searchable→csearchable)
-
-  exactSearchPreservesSearchability :
-    ∀ {X : ClosenessSpace 𝓤₀} →
-    searchable 𝓤₀ ⟨ X ⟩ →
-    csearchable 𝓤₀ X
-  exactSearchPreservesSearchability {X} =
-    searchable→csearchable X
-
 
 -- BEGIN MIRTH-SYNC CANONICAL COMMAND
 -- "$AGDA_COMMAND" -i .
@@ -1224,18 +1202,59 @@ requiredPlanEGraphComplete :
 requiredPlanEGraphComplete names laws =
   requiredPlanEGraphCount names laws == length names
 
+haskellMinusOneTargetCapabilities : List Capability
+haskellMinusOneTargetCapabilities =
+  inversion ∷ exact-search ∷ []
+
+haskellMinusOneLaws : List SemanticLaw
+haskellMinusOneLaws =
+  semanticLaw
+    "inverse-correct"
+    (inversion ∷ [])
+    []
+    (suc (suc (suc zero)))
+  ∷ semanticLaw
+      "inverse-csearchable"
+      (exact-search ∷ [])
+      ("inverse-correct" ∷ [])
+      (suc (suc zero))
+  ∷ []
+
+haskellMinusOneAStar : Maybe SearchNode
+haskellMinusOneAStar =
+  astar
+    haskellMinusOneTargetCapabilities
+    haskellMinusOneLaws
+    (searchNode [] [] zero ∷ [])
+
+haskellMinusOneAStarPlan : List String
+haskellMinusOneAStarPlan =
+  case haskellMinusOneAStar of λ where
+    Nothing → []
+    Just node → plan node
+
+haskellMinusOneAStarComplete : Bool
+haskellMinusOneAStarComplete =
+  allRequiredCovered
+    haskellMinusOneTargetCapabilities
+    (case haskellMinusOneAStar of λ where
+      Nothing → []
+      Just node → covered node)
+
+haskellMinusOneAStarIsComplete :
+  haskellMinusOneAStarComplete ≡ True
+haskellMinusOneAStarIsComplete = refl
+
 hybridInverseExactRealPlan : List String
 hybridInverseExactRealPlan =
-  "inverse-correct" ∷
-  "inverse-csearchable" ∷
-  "inverse-preserves-csearchability" ∷
-  []
+  haskellMinusOneAStarPlan
+  ++ "inverse-preserves-csearchability" ∷ []
 
 hybridInverseExactRealSearchReport : String
 hybridInverseExactRealSearchReport =
-  "hybrid-search="
-    ++ show (length hybridInverseExactRealPlan)
-    ++ " inverse laws; ExactRealSearchSurface preserves searchability"
+  "haskell-minus-one-A*="
+    ++ show (length haskellMinusOneAStarPlan)
+    ++ " proof-backed laws; TypeTopology extension is separate"
 
 agdaSemanticPortReport :
   List Extractor.SemanticLaw ->
@@ -1315,6 +1334,11 @@ main = do
 {-# COMPILE AGDA2HS semanticPlanEGraphExtractable #-}
 {-# COMPILE AGDA2HS requiredPlanEGraphCount #-}
 {-# COMPILE AGDA2HS requiredPlanEGraphComplete #-}
+{-# COMPILE AGDA2HS haskellMinusOneTargetCapabilities #-}
+{-# COMPILE AGDA2HS haskellMinusOneLaws #-}
+{-# COMPILE AGDA2HS haskellMinusOneAStar #-}
+{-# COMPILE AGDA2HS haskellMinusOneAStarPlan #-}
+{-# COMPILE AGDA2HS haskellMinusOneAStarComplete #-}
 {-# COMPILE AGDA2HS hybridInverseExactRealPlan #-}
 {-# COMPILE AGDA2HS hybridInverseExactRealSearchReport #-}
 {-# COMPILE AGDA2HS agdaSemanticPortReport #}
