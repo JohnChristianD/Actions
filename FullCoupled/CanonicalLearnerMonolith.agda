@@ -136,7 +136,7 @@ plus-succ-lt : ∀ (m n : ℕ) → m < m + succ n
 plus-succ-lt zero n = ⋆
 plus-succ-lt (succ m) n = plus-succ-lt m n
 
-plus-succ-not-self : ∀ (m n : ℕ) → m + succ n ≢ m
+plus-succ-not-self : ∀ (m n : ℕ) → m + succ n ≠ m
 plus-succ-not-self m n eq =
   lt-irrefl m (subst (λ z → m < z) eq (plus-succ-lt m n))
 
@@ -144,7 +144,7 @@ succ-succ-lt : ∀ n → n < succ (succ n)
 succ-succ-lt zero = s≤s z≤n
 succ-succ-lt (succ n) = s≤s (succ-succ-lt n)
 
-succ-succ-not-self : ∀ n → succ (succ n) ≢ n
+succ-succ-not-self : ∀ n → succ (succ n) ≠ n
 succ-succ-not-self n eq =
   lt-irrefl (succ (succ n))
     (subst (λ z → z < succ (succ n)) (sym eq) (succ-succ-lt n))
@@ -154,7 +154,7 @@ iterate step zero s = s
 iterate step (succ n) s = step (iterate step n s)
 
 OrbitNonFixed : ∀ {S : Set} {step : S → S} → S → Set
-OrbitNonFixed {step = step} s = ∀ n → iterate step n s ≢ step (iterate step n s)
+OrbitNonFixed {step = step} s = ∀ n → iterate step n s ≠ step (iterate step n s)
 
 data Signed : Set where
   signedNeg : ℕ → Signed
@@ -395,7 +395,7 @@ record IntegerLayerNormCertificate
     rootSquared :
       (pos (root * root)) ＝
       integerLayerNormRadicand xs epsilon
-    rootNonZero : root ≢ zero
+    rootNonZero : root ≠ zero
 open IntegerLayerNormCertificate public
 
 record IntegerLayerNormValue : Set where
@@ -403,7 +403,7 @@ record IntegerLayerNormValue : Set where
   field
     numerator : Int
     denominator : ℕ
-    denominatorNonZero : denominator ≢ zero
+    denominatorNonZero : denominator ≠ zero
 open IntegerLayerNormValue public
 
 integerLayerNormValue :
@@ -1255,7 +1255,7 @@ canonicalPolicyWeightCode K s = int8OfNat (numerator (canonicalPolicyWeight K s)
 HardSparse : ∀ {A : Set} → FullLearnerKernel A → FullLearnerState A → Set
 HardSparse {A} K s =
   ∀ {a : ℕ} →
-  a ≢ canonicalPolicy K s →
+  a ≠ canonicalPolicy K s →
   numerator (sparsemaxWeight (actionSpaceK K) (lcbScore (lcbKernel K) (lcbCounts s) (critic (watkins s))) (valuesCount (lcbCounts s)) a) ＝ zero
 
 SoftSparseBounded : ∀ {A : Set} →
@@ -1265,7 +1265,7 @@ SoftSparseBounded : ∀ {A : Set} →
   Set
 SoftSparseBounded {A} K s epsilon =
   ∀ {a : ℕ} →
-  a ≢ canonicalPolicy K s →
+  a ≠ canonicalPolicy K s →
   numerator
     (sparsemaxWeight
       (actionSpaceK K)
@@ -1470,7 +1470,7 @@ canonicalTotalCountStep K s = refl
 
 canonicalNoFixedPoint :
   ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) →
-  canonicalFullStep K s ≢ s
+  canonicalFullStep K s ≠ s
 canonicalNoFixedPoint K s eq =
   plus-succ-not-self (totalCount (lcbCounts s)) zero
     (trans (plus-succ (totalCount (lcbCounts s)) zero)
@@ -1494,13 +1494,13 @@ canonicalTotalCountAfter K (succ n) s =
       (ap succ (canonicalTotalCountAfter K n s))
       (sym (plus-succ (totalCount (lcbCounts s)) n)))
 
-canonicalAperiodic : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) (n : ℕ) → iterateCanonical K (succ n) s ≢ s
+canonicalAperiodic : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) (n : ℕ) → iterateCanonical K (succ n) s ≠ s
 canonicalAperiodic K s n cyc = plus-succ-not-self (totalCount (lcbCounts s)) n
   (trans
     (sym (canonicalTotalCountAfter K (succ n) s))
     (ap (λ t → totalCount (lcbCounts t)) cyc))
 
-canonicalOrbitNonFixed : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) (n : ℕ) → iterateCanonical K n s ≢ canonicalFullStep K (iterateCanonical K n s)
+canonicalOrbitNonFixed : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) (n : ℕ) → iterateCanonical K n s ≠ canonicalFullStep K (iterateCanonical K n s)
 canonicalOrbitNonFixed K s n eq =
   canonicalNoFixedPoint K (iterateCanonical K n s) (sym eq)
 
