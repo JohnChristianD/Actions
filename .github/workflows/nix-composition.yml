@@ -18,14 +18,22 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  agda:
-    name: Agda learner + theorem monoliths
+  policy:
+    name: Verify official Nix surface
     runs-on: ubuntu-22.04
-    timeout-minutes: 35
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
       - name: Verify official Nix surface
         run: bash .ci/verify-official-nix-surface.sh
+
+  agda:
+    name: Agda learner + theorem monoliths
+    needs: policy
+    runs-on: ubuntu-22.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
       - uses: NixOS/nix-installer-action@62c1943b776c509394b550f3f983adc14e9212d6
         with:
           installer-version: '2.35.1'
@@ -45,6 +53,7 @@ jobs:
 
   versions:
     name: Nix tool versions
+    needs: policy
     runs-on: ubuntu-22.04
     timeout-minutes: 15
     steps:
@@ -67,6 +76,7 @@ jobs:
 
   semantic:
     name: Agda semantic/e-graph verification
+    needs: policy
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
@@ -108,6 +118,7 @@ jobs:
 
   pages:
     name: Pages build verification
+    needs: policy
     runs-on: ubuntu-22.04
     timeout-minutes: 25
     steps:
