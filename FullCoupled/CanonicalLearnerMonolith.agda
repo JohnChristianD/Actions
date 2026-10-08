@@ -45,6 +45,7 @@ module FullCoupled.CanonicalLearnerMonolith where
 open import MLTT.Spartan hiding (J; _+_)
 open import MLTT.Athenian
 open import Integers.Type
+open import Integers.Order
 open import Integers.Addition renaming (_+_ to _ℤ+_)
 open import Integers.Multiplication renaming (_*_ to _ℤ*_)
 
