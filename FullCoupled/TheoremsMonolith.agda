@@ -66,7 +66,215 @@ open import UF.Subsingletons-FunExt
 open import UF.UA-FunExt
 -- END MIRTH-SYNC COMMON IMPORTS
 
-open import Agda.Builtin.Reflection as Builtin
+-- Stable Agda 2.8.0.2 reflection compatibility surface.
+-- Reuses TypeTopology's existing BOOL/NATURAL/LIST/SIGMA bindings instead
+-- of importing Agda.Builtin.Reflection, whose dependency closure attempts
+-- to install competing builtin owners.
+postulate String : Set
+{-# BUILTIN STRING String #-}
+
+postulate Char : Set
+{-# BUILTIN CHAR Char #-}
+
+postulate Word64 : Set
+{-# BUILTIN WORD64 Word64 #-}
+
+postulate Float : Set
+{-# BUILTIN FLOAT Float #-}
+
+{-# BUILTIN UNIT 𝟙 #-}
+{-# BUILTIN SIGMA Σ #-}
+
+⊤ : Set
+⊤ = 𝟙
+
+tt : ⊤
+tt = ⋆
+
+module ReflectionCompat where
+
+  postulate Name : Set
+  {-# BUILTIN QNAME Name #-}
+
+  primitive
+    primQNameEquality : Name → Name → Bool
+    primQNameLess : Name → Name → Bool
+    primShowQName : Name → String
+
+  postulate Meta : Set
+  {-# BUILTIN AGDAMETA Meta #-}
+
+  primitive
+    primMetaEquality : Meta → Meta → Bool
+    primMetaLess : Meta → Meta → Bool
+    primShowMeta : Meta → String
+    primMetaToNat : Meta → ℕ
+
+  data Visibility : Set where
+    visible hidden instance′ : Visibility
+
+  data Relevance : Set where
+    relevant irrelevant : Relevance
+
+  data Quantity : Set where
+    quantity-0 quantity-ω : Quantity
+
+  data Modality : Set where
+    modality : Relevance → Quantity → Modality
+
+  data ArgInfo : Set where
+    arg-info : Visibility → Modality → ArgInfo
+
+  data Arg {a} (A : Set a) : Set a where
+    arg : ArgInfo → A → Arg A
+
+  {-# BUILTIN HIDING   Visibility #-}
+  {-# BUILTIN VISIBLE  visible #-}
+  {-# BUILTIN HIDDEN   hidden #-}
+  {-# BUILTIN INSTANCE instance′ #-}
+  {-# BUILTIN RELEVANCE Relevance #-}
+  {-# BUILTIN RELEVANT relevant #-}
+  {-# BUILTIN IRRELEVANT irrelevant #-}
+  {-# BUILTIN QUANTITY Quantity #-}
+  {-# BUILTIN QUANTITY-0 quantity-0 #-}
+  {-# BUILTIN QUANTITY-ω quantity-ω #-}
+  {-# BUILTIN MODALITY Modality #-}
+  {-# BUILTIN MODALITY-CONSTRUCTOR modality #-}
+  {-# BUILTIN ARGINFO ArgInfo #-}
+  {-# BUILTIN ARGARGINFO arg-info #-}
+  {-# BUILTIN ARG Arg #-}
+  {-# BUILTIN ARGARG arg #-}
+
+  data Abs {a} (A : Set a) : Set a where
+    abs : String → A → Abs A
+
+  {-# BUILTIN ABS Abs #-}
+  {-# BUILTIN ABSABS abs #-}
+
+  data Literal : Set where
+    nat : ℕ → Literal
+    word64 : Word64 → Literal
+    float : Float → Literal
+    char : Char → Literal
+    string : String → Literal
+    name : Name → Literal
+    meta : Meta → Literal
+
+  {-# BUILTIN AGDALITERAL Literal #-}
+  {-# BUILTIN AGDALITNAT nat #-}
+  {-# BUILTIN AGDALITWORD64 word64 #-}
+  {-# BUILTIN AGDALITFLOAT float #-}
+  {-# BUILTIN AGDALITCHAR char #-}
+  {-# BUILTIN AGDALITSTRING string #-}
+  {-# BUILTIN AGDALITQNAME name #-}
+  {-# BUILTIN AGDALITMETA meta #-}
+
+  data Term : Set
+  data Sort : Set
+  data Pattern : Set
+  data Clause : Set
+
+  Type = Term
+  Telescope = List (Σ String (λ _ → Arg Type))
+
+  data Term where
+    var : ℕ → List (Arg Term) → Term
+    con : Name → List (Arg Term) → Term
+    def : Name → List (Arg Term) → Term
+    lam : Visibility → Abs Term → Term
+    pat-lam : List Clause → List (Arg Term) → Term
+    pi : Arg Type → Abs Type → Term
+    agda-sort : Sort → Term
+    lit : Literal → Term
+    meta : Name → List (Arg Term) → Term
+    unknown : Term
+
+  data Sort where
+    set : Term → Sort
+    lit : ℕ → Sort
+    prop : Term → Sort
+    propLit : ℕ → Sort
+    inf : ℕ → Sort
+    unknown : Sort
+
+  data Pattern where
+    con : Name → List (Arg Pattern) → Pattern
+    dot : Term → Pattern
+    var : ℕ → Pattern
+    lit : Literal → Pattern
+    proj : Name → Pattern
+    absurd : ℕ → Pattern
+
+  data Clause where
+    clause : Telescope → List (Arg Pattern) → Term → Clause
+    absurd-clause : Telescope → List (Arg Pattern) → Clause
+
+  {-# BUILTIN AGDATERM Term #-}
+  {-# BUILTIN AGDASORT Sort #-}
+  {-# BUILTIN AGDAPATTERN Pattern #-}
+  {-# BUILTIN AGDACLAUSE Clause #-}
+  {-# BUILTIN AGDATERMVAR var #-}
+  {-# BUILTIN AGDATERMCON con #-}
+  {-# BUILTIN AGDATERMDEF def #-}
+  {-# BUILTIN AGDATERMMETA meta #-}
+  {-# BUILTIN AGDATERMLAM lam #-}
+  {-# BUILTIN AGDATERMEXTLAM pat-lam #-}
+  {-# BUILTIN AGDATERMPI pi #-}
+  {-# BUILTIN AGDATERMSORT agda-sort #-}
+  {-# BUILTIN AGDATERMLIT lit #-}
+  {-# BUILTIN AGDATERMUNSUPPORTED unknown #-}
+  {-# BUILTIN AGDASORTSET set #-}
+  {-# BUILTIN AGDASORTLIT lit #-}
+  {-# BUILTIN AGDASORTPROP prop #-}
+  {-# BUILTIN AGDASORTPROPLIT propLit #-}
+  {-# BUILTIN AGDASORTINF inf #-}
+  {-# BUILTIN AGDASORTUNSUPPORTED unknown #-}
+  {-# BUILTIN AGDAPATCON con #-}
+  {-# BUILTIN AGDAPATDOT dot #-}
+  {-# BUILTIN AGDAPATVAR var #-}
+  {-# BUILTIN AGDAPATLIT lit #-}
+  {-# BUILTIN AGDAPATPROJ proj #-}
+  {-# BUILTIN AGDAPATABSURD absurd #-}
+  {-# BUILTIN AGDACLAUSECLAUSE clause #-}
+  {-# BUILTIN AGDACLAUSEABSURD absurd-clause #-}
+
+  data ErrorPart : Set where
+    strErr : String → ErrorPart
+    termErr : Term → ErrorPart
+    pattErr : Pattern → ErrorPart
+    nameErr : Name → ErrorPart
+
+  {-# BUILTIN AGDAERRORPART ErrorPart #-}
+  {-# BUILTIN AGDAERRORPARTSTRING strErr #-}
+  {-# BUILTIN AGDAERRORPARTTERM termErr #-}
+  {-# BUILTIN AGDAERRORPARTPATT pattErr #-}
+  {-# BUILTIN AGDAERRORPARTNAME nameErr #-}
+
+  postulate
+    TC : ∀ {a} → Set a → Set a
+    returnTC : ∀ {a} {A : Set a} → A → TC A
+    bindTC : ∀ {a b} {A : Set a} {B : Set b} → TC A → (A → TC B) → TC B
+    unify : Term → Term → TC ⊤
+    typeError : ∀ {a} {A : Set a} → List ErrorPart → TC A
+    inferType : Term → TC Type
+    catchTC : ∀ {a} {A : Set a} → TC A → TC A → TC A
+    quoteTC : ∀ {a} {A : Set a} → A → TC Term
+
+  {-# BUILTIN AGDATCM TC #-}
+  {-# BUILTIN AGDATCMRETURN returnTC #-}
+  {-# BUILTIN AGDATCMBIND bindTC #-}
+  {-# BUILTIN AGDATCMUNIFY unify #-}
+  {-# BUILTIN AGDATCMTYPEERROR typeError #-}
+  {-# BUILTIN AGDATCMINFERTYPE inferType #-}
+  {-# BUILTIN AGDATCMCATCHERROR catchTC #-}
+  {-# BUILTIN AGDATCMQUOTETERM quoteTC #-}
+
+open ReflectionCompat public
+
+try-fun : ∀ {a} {A : Set a} → TC A → TC A → TC A
+try-fun = catchTC
+
+syntax try-fun t f = try t or-else f
 
 
 -- BEGIN MIRTH-SYNC CANONICAL COMMAND
