@@ -7,12 +7,6 @@ module FullCoupled.Agda2HsSemanticSearch where
 
 -- BEGIN MIRTH-SYNC COMMON IMPORTS
 open import Haskell.Prelude
-import Unsafe.Haskell as Unsafe
-open import Equality
-open import Naturals
-open import Naturals.Properties
-open import MLTT.Two-Properties
-open import UF.FunExt
 -- END MIRTH-SYNC COMMON IMPORTS
 
 open import FullCoupled.Agda2HsSemanticExtractor as Extractor
@@ -22,22 +16,6 @@ open import FullCoupled.Agda2HsTheoremGraphEGraph using
   )
 
 open import FullCoupled.Agda2HsTheoremGraphEGraph as EGraph
-
-module ExactRealSearchSurface (fe : FunExt) where
-
-  open import TWA.Thesis.Chapter3.ClosenessSpaces fe
-    using (ClosenessSpace)
-
-  open import TWA.Thesis.Chapter3.SearchableTypes fe
-    using (searchable; csearchable; searchable→csearchable)
-
-  exactSearchPreservesSearchability :
-    ∀ {X : ClosenessSpace 𝓤₀} →
-    searchable 𝓤₀ ⟨ X ⟩ →
-    csearchable 𝓤₀ X
-  exactSearchPreservesSearchability {X} =
-    searchable→csearchable X
-
 
 -- BEGIN MIRTH-SYNC CANONICAL COMMAND
 -- "$AGDA_COMMAND" -i .
