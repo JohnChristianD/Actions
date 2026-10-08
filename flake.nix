@@ -3,17 +3,8 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/0439f75413ace6c42e4c722cafd4d6e5401de648";
-    # GHC 9.2.4 is required by the pinned inversion plugin; keep it isolated here.
-    nixpkgs-ghc924.url = "github:NixOS/nixpkgs/a62e6edd6d5e1fa0329b8653c801147986f8d446";
     typetopology = {
       url = "github:martinescardo/TypeTopology/8761920fdaec20c9dada7ff1d6628c09491245c5";
-      flake = false;
-    };
-    agda2hs = {
-      url = "github:agda/agda2hs/4e6de7ec2109b3bed6a820728b57d31ad7ffd698";
-    };
-    inversion-plugin-src = {
-      url = "github:cau-placc/inversion-plugin/aad4886742bed127b63f8378b1ec5fe8987f8e4d";
       flake = false;
     };
   };
@@ -21,10 +12,7 @@
   outputs = {
     self,
     nixpkgs,
-    nixpkgs-ghc924,
-    typetopology,
-    agda2hs,
-    inversion-plugin-src
+    typetopology
   }:
     let
       systems = [
@@ -39,32 +27,13 @@
       pkgsFor = system:
         import nixpkgs {
           inherit system;
-          config.allowBroken = true;
         };
 
-      canonicalHaskellPackages = system:
-        let
-          pkgs = import nixpkgs-ghc924 {
-            inherit system;
-            config.allowBroken = true;
-          };
-        in
-        pkgs.haskell.packages.ghc924.extend (final: prev: {
-          tree-monad = pkgs.haskell.lib.doJailbreak prev.tree-monad;
-          parallel-tree-search =
-            pkgs.haskell.lib.doJailbreak
-              (prev.parallel-tree-search.override {
-                tree-monad = final.tree-monad;
-              });
-          # smtlib-backends-process executes z3 during its test suite.
-          smtlib-backends-process =
-            prev.smtlib-backends-process.overrideAttrs (old: {
-              nativeCheckInputs = (old.nativeCheckInputs or []) ++ [ pkgs.z3 ];
-            });
-        });
+      agda2hsTool = system:
+        (pkgsFor system).haskellPackages.agda2hs;
 
       agda2hsBaseLib = system:
-        agda2hs.packages.${system}.base-lib;
+        (pkgsFor system).agdaPackages.agda2hs-base;
 
       agdaEmacs = system:
         let
@@ -74,8 +43,7 @@
           epkgs.agda2-mode
         ]);
 
-      # Exact consumer-side extensions required by the pinned Curry inversion plugin.
-      # Keep this list aligned with Plugin.InversionPlugin.requiredExtensions.
+      # Explicit extensions needed by the generated Haskell surface.
       ghcLanguageFlags = [
         "-XFlexibleInstances"
         "-XFlexibleContexts"
@@ -91,44 +59,13 @@
         "-XNoMonomorphismRestriction"
       ];
 
-      ghcPluginFlags = [
-        "-fplugin=Plugin.InversionPlugin"
-        "-fplugin=LiquidHaskell"
-      ];
-
-      ghcGlobalFlags =
-        ghcLanguageFlags ++ ghcPluginFlags;
-
-      ghcGlobalFlagsText =
-        builtins.concatStringsSep " " ghcGlobalFlags;
-
       canonicalGhc = system:
         let
-          hp = canonicalHaskellPackages system;
-        in
-        hp.ghcWithPackages (p: [
-          p.rio
-          p.liquidhaskell
-          (inversionPlugin system)
-        ]);
-
-      inversionPlugin = system:
-        let
           pkgs = pkgsFor system;
-          hp = canonicalHaskellPackages system;
-          drv = pkgs.haskell.lib.enableCabalFlag
-            (pkgs.haskell.lib.disableCabalFlag
-              (pkgs.haskell.lib.doJailbreak
-                (hp.callCabal2nix
-                  "inversion-plugin"
-                  inversion-plugin-src
-                  {}))
-              "use-bfs")
-            "use-cs";
         in
-        drv.overrideAttrs (_: {
-          doCheck = false;
-        });
+        pkgs.haskellPackages.ghcWithPackages (p: [
+          p.rio
+        ]);
 
       typeTopologyAgda = system:
         let
@@ -159,13 +96,7 @@
         };
 
       agda2hsWithCanonicalGhc = system:
-        agda2hs.packages.${system}.agda2hs.withPackages {
-          pkgs = [
-            (typeTopologyAgda system)
-            (agda2hsBaseLib system)
-          ];
-          ghc = canonicalGhc system;
-        };
+        agda2hsTool system;
 
 
 
@@ -179,9 +110,8 @@
           agda = agdaWithPackages system;
           agda2hs = agda2hsWithCanonicalGhc system;
           typetopology = typeTopologyAgda system;
-          ci = (canonicalHaskellPackages system).dhall;
-          yamlscript = pkgs.yamlscript;
-          default = (canonicalHaskellPackages system).dhall;
+          ci = pkgs.dhall;
+          default = pkgs.dhall;
         });
 
       apps = forAllSystems (system:
@@ -191,7 +121,7 @@
         {
           ci = {
             type = "app";
-            program = "${(canonicalHaskellPackages system).dhall}/bin/dhall";
+            program = "${pkgs.dhall}/bin/dhall";
           };
           mirth-fast-dirty-source = let
             script = pkgs.writeShellApplication {
@@ -353,10 +283,10 @@
                 grep -E "^semantic-laws=[1-9][0-9]* nonreflexive=[1-9][0-9]* composite=[1-9][0-9]*$" "$out/report.txt"
                 grep -E "^required-plan-count=[1-9][0-9]* required-plan-total=[1-9][0-9]* required-plan-regression=True$" "$out/report.txt"
                 grep -Fq "egraph-regression=True egraph-associativity-regression=True" "$out/report.txt"
+                compiler_version=$("${canonicalGhc system}/bin/ghc" --numeric-version)
                 printf '%s\n' \
-                  "compiler=ghc-9.2.4" \
-                  "plugins=Plugin.InversionPlugin,LiquidHaskell" \
-                  "inversionCheck=not-run" \
+                  "compiler=ghc-$compiler_version" \
+                  "plugins=none" \
                   "proofKernel=Agda" \
                   "searchKernel=Agda2Hs" \
                   "semanticCompletenessCheck=pass" \
@@ -413,7 +343,7 @@
                 "${agda2hsWithCanonicalGhc system}/bin/agda2hs" -i . FullCoupled/Agda2HsSurface.agda -o "$out"
                 test -s "$out/FullCoupled/Agda2HsSurface.hs"
                 mkdir -p "$out/ghc"
-                "${canonicalGhc system}/bin/ghc" ${ghcGlobalFlagsText} -O0 -dcore-lint -package rio -i "$out" -odir "$out/ghc" -hidir "$out/ghc" -c "$out/FullCoupled/Agda2HsSurface.hs"
+                "${canonicalGhc system}/bin/ghc" -O0 -dcore-lint -package rio -i "$out" -odir "$out/ghc" -hidir "$out/ghc" -c "$out/FullCoupled/Agda2HsSurface.hs"
                 printf '%s\n' \
                   "source=FullCoupled/Agda2HsSurface.agda generated=build/agda-haskell/FullCoupled/Agda2HsSurface.hs ghc:pass" \
                   > "$out/agda2hs-manifest.tsv"
@@ -427,7 +357,7 @@
 
           default = {
             type = "app";
-            program = "${(canonicalHaskellPackages system).dhall}/bin/dhall";
+            program = "${pkgs.dhall}/bin/dhall";
           };
         });
 
@@ -495,7 +425,7 @@
 
           ci = pkgs.mkShell {
             packages = [
-              (canonicalHaskellPackages system).dhall
+              pkgs.dhall
               agdaWithPackages system
               pkgs.z3
               pkgs.coreutils
@@ -513,7 +443,7 @@
           default-versions = pkgs.mkShell {
             packages = [
               (canonicalGhc system)
-              (canonicalHaskellPackages system).dhall
+              pkgs.dhall
               pkgs.z3
               pkgs.mirth
               pkgs.gh
@@ -522,28 +452,25 @@
             ];
             shellHook = ''
               export AGDA_COMMAND="$PWD/.ci/agda-with-libraries.sh"
-              export LIQUID_SOLVER=z3
             '';
           };
 
           default = pkgs.mkShell {
             packages = [
-              (canonicalHaskellPackages system).dhall
+              pkgs.dhall
               (canonicalGhc system)
-              (canonicalHaskellPackages system).cabal-install
+              pkgs.haskellPackages.cabal-install
               pkgs.z3
-              (canonicalHaskellPackages system).dhall-json
+              pkgs.dhall-json
               pkgs.mirth
               pkgs.gh
               agdaWithPackages system
               (agdaEmacs system)
               pkgs.stdenv.cc
-              pkgs.yamlscript
               pkgs.elmPackages.elm
             ];
             shellHook = ''
               export AGDA_COMMAND="$PWD/.ci/agda-with-libraries.sh"
-              export LIQUID_SOLVER=z3
             '';
           };
         });
