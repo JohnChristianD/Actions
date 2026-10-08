@@ -256,6 +256,7 @@
             script = pkgs.writeShellApplication {
               name = "agda2hs-semantic-search";
               runtimeInputs = [
+                (agdaProofCommand system)
                 (agdaCommand system)
                 (agda2hsCommand system)
                 pkgs.haskellPackages.liquidhaskell
