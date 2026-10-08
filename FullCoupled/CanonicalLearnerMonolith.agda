@@ -288,32 +288,39 @@ ScoreEntry = Int8 × Nat
 int8-code-injective : ∀ {x y : Int8} → code x ≡ code y → x ≡ y
 int8-code-injective refl = refl
 
-instance
-  OrdInt8 : Ord Int8
-  OrdInt8 = OrdBy int8-code-injective
-
-ScoreEntryLess : ScoreEntry → ScoreEntry → Set
-ScoreEntryLess (s₁ , a₁) (s₂ , a₂) =
-  Either (s₁ > s₂) (s₁ ≡ s₂ × a₁ > a₂)
-
-scoreEntryCompare : ∀ x y → Comparison ScoreEntryLess x y
-scoreEntryCompare (s₁ , a₁) (s₂ , a₂) with compare s₁ s₂
-... | less p = greater p
-... | greater p = less p
-... | equal refl with compare a₁ a₂
-... | less p = greater p
-... | greater p = less p
-... | equal refl = equal refl
-
-instance
-  OrdScoreEntry : Ord ScoreEntry
-  OrdScoreEntry = defaultOrd scoreEntryCompare
-
 scoreList : ∀ {A : Set} → ActionSpace A → QFunction {A} → CountFunction {A} → List ScoreEntry
 scoreList {A} K q c = map (λ a → (scoreA {A = A} q c a , a)) (candidates K)
 
+compareInt8 : Int8 → Int8 → FullCoupled.TypeTopologyCompat.ComparisonResult
+compareInt8 x y with ℤ-trichotomous (code x) (code y)
+... | inl _ = less
+... | inr (inl _) = equal
+... | inr (inr _) = greater
+
+compareNat : Nat → Nat → FullCoupled.TypeTopologyCompat.ComparisonResult
+compareNat zero zero = equal
+compareNat zero (suc _) = less
+compareNat (suc _) zero = greater
+compareNat (suc m) (suc n) = compareNat m n
+
+scoreBefore : ScoreEntry → ScoreEntry → Bool
+scoreBefore (s₁ , a₁) (s₂ , a₂) with compareInt8 s₁ s₂
+... | less = false
+... | greater = true
+... | equal with compareNat a₁ a₂
+... | less = false
+... | equal = true
+... | greater = true
+
+insertScore : ScoreEntry → List ScoreEntry → List ScoreEntry
+insertScore x [] = x ∷ []
+insertScore x (y ∷ ys) with scoreBefore x y
+... | true = x ∷ y ∷ ys
+... | false = y ∷ insertScore x ys
+
 sortScores : List ScoreEntry → List ScoreEntry
-sortScores = sort
+sortScores [] = []
+sortScores (x ∷ xs) = insertScore x (sortScores xs)
 
 natAt : Nat → List Nat → Nat
 natAt k [] = zero
