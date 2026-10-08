@@ -112,17 +112,6 @@
           (inversionPlugin system)
         ]);
 
-      lightGhc = system:
-        let
-          hp = canonicalHaskellPackages system;
-        in
-        hp.ghcWithPackages (p: [
-          p.rio
-        ]);
-
-      ghc924 = system:
-        (canonicalHaskellPackages system).ghc;
-
       inversionPlugin = system:
         let
           pkgs = pkgsFor system;
@@ -141,12 +130,12 @@
           doCheck = false;
         });
 
-      agda2hsWithBase = system:
+      agda2hsWithCanonicalGhc = system:
         agda2hs.packages.${system}.agda2hs.withPackages {
           pkgs = [
             agda2hs.packages.${system}.base-lib
           ];
-          ghc = null;
+          ghc = canonicalGhc system;
         };
 
 
@@ -159,7 +148,7 @@
         in
         {
           agda = pkgs.agdaPackages.agda;
-          agda2hs = agda2hsWithBase system;
+          agda2hs = agda2hsWithCanonicalGhc system;
           typetopology = typetopology;
           ci = (canonicalHaskellPackages system).dhall;
           yamlscript = pkgs.yamlscript;
@@ -281,7 +270,7 @@
               name = "agda2hs-semantic-search";
               runtimeInputs = [
                 pkgs.agdaPackages.agda
-                (agda2hsWithBase system)
+                (agda2hsWithCanonicalGhc system)
                 (lightGhc system)
                   pkgs.z3
                 pkgs.coreutils
@@ -294,8 +283,9 @@
                 mkdir -p "$out"
                 libroot="$out/agda-libs"
                 mkdir -p "$libroot/typetopology" "$libroot/agda2hs-base"
-                cp -a "${typetopology}/source/." "$libroot/typetopology/"
-                cp -a "${agda2hsBaseLib system}/." "$libroot/agda2hs-base/"
+                cp -R "${typetopology}/source/." "$libroot/typetopology/"
+                cp -R "${agda2hsBaseLib system}/." "$libroot/agda2hs-base/"
+                chmod -R u+rwX "$libroot"
                 bash .ci/mirth/agda_command_sync.sh --check
                 "${pkgs.agdaPackages.agda}/bin/agda" -i "$libroot/typetopology" -i "$libroot/agda2hs-base" --dependency-graph="$out/theorems-monolith.dot" -i . FullCoupled/TheoremsMonolith.agda
                 test -s "$out/theorems-monolith.dot"
@@ -309,9 +299,9 @@
                 "${pkgs.agdaPackages.agda}/bin/agda" -i "$libroot/typetopology" -i "$libroot/agda2hs-base" -i . FullCoupled/Agda2HsSemanticExtractor.agda
                 "${pkgs.agdaPackages.agda}/bin/agda" -i "$libroot/typetopology" -i "$libroot/agda2hs-base" -i . FullCoupled/Agda2HsSemanticSearch.agda
                 "${pkgs.agdaPackages.agda}/bin/agda" -i "$libroot/typetopology" -i "$libroot/agda2hs-base" -i . FullCoupled/Agda2HsTheoremGraphEGraph.agda
-                "${agda2hsWithBase system}/bin/agda2hs" -i . FullCoupled/Agda2HsSemanticExtractor.agda -o "$out"
-                "${agda2hsWithBase system}/bin/agda2hs" -i . FullCoupled/Agda2HsSemanticSearch.agda -o "$out"
-                "${agda2hsWithBase system}/bin/agda2hs" -i . FullCoupled/Agda2HsTheoremGraphEGraph.agda -o "$out"
+                "${agda2hsWithCanonicalGhc system}/bin/agda2hs" -i . FullCoupled/Agda2HsSemanticExtractor.agda -o "$out"
+                "${agda2hsWithCanonicalGhc system}/bin/agda2hs" -i . FullCoupled/Agda2HsSemanticSearch.agda -o "$out"
+                "${agda2hsWithCanonicalGhc system}/bin/agda2hs" -i . FullCoupled/Agda2HsTheoremGraphEGraph.agda -o "$out"
                 test -s "$out/FullCoupled/Agda2HsSemanticExtractor.hs"
                 test -s "$out/FullCoupled/Agda2HsSemanticSearch.hs"
                 test -s "$out/FullCoupled/Agda2HsTheoremGraphEGraph.hs"
@@ -323,7 +313,7 @@
                 grep -Fq "inverse-csearchable" FullCoupled/TheoremsMonolith.agda
                 grep -Fq "inverse-preserves-csearchability" FullCoupled/TheoremsMonolith.agda
                 grep -Fq "SearchableEquivalence" FullCoupled/TheoremsMonolith.agda
-                ${lightGhc system}/bin/ghc \
+                ${canonicalGhc system}/bin/ghc \
                   -O0 \
                   -dcore-lint \
                   -i "$out" \
@@ -342,7 +332,7 @@
                 grep -Fq "egraph-regression=True egraph-associativity-regression=True" "$out/report.txt"
                 printf '%s\n' \
                   "compiler=ghc-9.2.4" \
-                  "plugins=none" \
+                  "plugins=Plugin.InversionPlugin,LiquidHaskell" \
                   "inversionCheck=not-run" \
                   "proofKernel=Agda" \
                   "searchKernel=Agda2Hs" \
@@ -361,7 +351,7 @@
             script = pkgs.writeShellApplication {
               name = "agda2hs-extract";
               runtimeInputs = [
-                (agda2hsWithBase system)
+                (agda2hsWithCanonicalGhc system)
                 pkgs.coreutils
               ];
               text = ''
@@ -369,7 +359,7 @@
                 out="build/agda2hs"
                 rm -rf "$out"
                 mkdir -p "$out"
-                "${agda2hsWithBase system}/bin/agda2hs" -i . FullCoupled/Agda2HsSurface.agda -o "$out"
+                "${agda2hsWithCanonicalGhc system}/bin/agda2hs" -i . FullCoupled/Agda2HsSurface.agda -o "$out"
                 test -s "$out/FullCoupled/Agda2HsSurface.hs"
                 echo "agda2hs-extract=pass"
               '';
@@ -384,7 +374,7 @@
               name = "agda-haskell-pipeline";
               runtimeInputs = [
                 pkgs.agdaPackages.agda
-                (agda2hsWithBase system)
+                (agda2hsWithCanonicalGhc system)
                 (lightGhc system)
                 pkgs.z3
                 pkgs.coreutils
@@ -398,10 +388,10 @@
                 out="build/agda-haskell"
                 rm -rf "$out"
                 mkdir -p "$out"
-                "${agda2hsWithBase system}/bin/agda2hs" -i . FullCoupled/Agda2HsSurface.agda -o "$out"
+                "${agda2hsWithCanonicalGhc system}/bin/agda2hs" -i . FullCoupled/Agda2HsSurface.agda -o "$out"
                 test -s "$out/FullCoupled/Agda2HsSurface.hs"
                 mkdir -p "$out/ghc"
-                "${lightGhc system}/bin/ghc" -O0 -dcore-lint -package rio -i "$out" -odir "$out/ghc" -hidir "$out/ghc" -c "$out/FullCoupled/Agda2HsSurface.hs"
+                "${canonicalGhc system}/bin/ghc" ${ghcGlobalFlagsText} -O0 -dcore-lint -package rio -i "$out" -odir "$out/ghc" -hidir "$out/ghc" -c "$out/FullCoupled/Agda2HsSurface.hs"
                 printf '%s\n' \
                   "source=FullCoupled/Agda2HsSurface.agda generated=build/agda-haskell/FullCoupled/Agda2HsSurface.hs ghc:pass" \
                   > "$out/agda2hs-manifest.tsv"
@@ -465,11 +455,12 @@
               set -euo pipefail
               export TYPE_TOPOLOGY_SOURCE="${typetopology}/source"
               export AGDA2HS_BASE_LIB="${agda2hsBaseLib system}"
-              export AGDA_LIBRARY_CACHE="$PWD/build/agda-library-cache"
+              export AGDA_LIBRARY_CACHE="$PWD/build/agda-library-worktree"
               rm -rf "$AGDA_LIBRARY_CACHE"
               mkdir -p "$AGDA_LIBRARY_CACHE/typetopology" "$AGDA_LIBRARY_CACHE/agda2hs-base"
-              cp -a "${typetopology}/source/." "$AGDA_LIBRARY_CACHE/typetopology/"
-              cp -a "${agda2hsBaseLib system}/." "$AGDA_LIBRARY_CACHE/agda2hs-base/"
+              cp -R "${typetopology}/source/." "$AGDA_LIBRARY_CACHE/typetopology/"
+              cp -R "${agda2hsBaseLib system}/." "$AGDA_LIBRARY_CACHE/agda2hs-base/"
+              chmod -R u+rwX "$AGDA_LIBRARY_CACHE"
               export TYPE_TOPOLOGY_SOURCE_WRITABLE="$AGDA_LIBRARY_CACHE/typetopology"
               export AGDA2HS_BASE_LIB_WRITABLE="$AGDA_LIBRARY_CACHE/agda2hs-base"
               export AGDA_COMMAND="$PWD/.ci/agda-with-libraries.sh"
@@ -478,7 +469,7 @@
 
           agda-versions = pkgs.mkShellNoCC {
             packages = [
-              (ghc924 system)
+              (canonicalGhc system)
               pkgs.dhall
               pkgs.z3
               pkgs.mirth
