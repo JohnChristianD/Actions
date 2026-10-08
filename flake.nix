@@ -55,6 +55,7 @@
         in
         pkgs.haskellPackages.ghcWithPackages (p: [
           p.rio
+          p.liquidhaskell
         ]);
 
       agdaWithPackages = system:
