@@ -48,7 +48,7 @@ collect_imports() {
         line=$0
         if (line ~ /FullCoupled[.]/) next
         if (line ~ /TWA[.]Thesis[.]Chapter3[.](ClosenessSpaces|SearchableTypes)[[:space:]]+fe([[:space:]]|$)/) next
-        if (line ~ /^open import (Agda[.]Builtin[.]Reflection|Haskell[.]Law[.]Num[.]Def|Haskell[.]Law[.]Num[.]Int|Haskell[.]Prelude[.]Nat[.]Properties)([[:space:]]|$)/) next
+        if (line ~ /^open import (Agda[.]Builtin[.]Reflection|Haskell[.]Law[.]Num[.]Def|Haskell[.]Law[.]Num[.]Int|Haskell[.]Prelude[.]Nat[.]Properties|Unsafe[.]Haskell)([[:space:]]|$)/) next
         if (line ~ /^open import InfinitePigeon[.]FinitePigeon([[:space:]]|$)/) next
         print line
       }
@@ -92,7 +92,8 @@ external_drift() {
           mod !~ /^Agda[.]Builtin[.]Reflection([[:space:]]|$)/ &&
           mod !~ /^Haskell[.]Law[.]Num[.](Def|Int)([[:space:]]|$)/ &&
           mod !~ /^Haskell[.]Prelude[.]Nat[.]Properties([[:space:]]|$)/ &&
-          mod !~ /^InfinitePigeon[.]FinitePigeon([[:space:]]|$)/)
+          mod !~ /^InfinitePigeon[.]FinitePigeon([[:space:]]|$)/ &&
+          mod !~ /^Unsafe[.]Haskell([[:space:]]|$)/)
         print FILENAME ": " $0
     }
   ' "$file"
