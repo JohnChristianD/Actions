@@ -1252,9 +1252,9 @@ hybridInverseExactRealPlan =
 
 hybridInverseExactRealSearchReport : String
 hybridInverseExactRealSearchReport =
-  "hybrid-search="
-    ++ show (length hybridInverseExactRealPlan)
-    ++ " inverse laws; ExactRealSearchSurface preserves searchability"
+  "haskell-minus-one-A*="
+    ++ show (length haskellMinusOneAStarPlan)
+    ++ " proof-backed laws; TypeTopology extension is separate"
 
 agdaSemanticPortReport :
   List Extractor.SemanticLaw ->
