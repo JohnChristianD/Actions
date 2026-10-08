@@ -1202,12 +1202,53 @@ requiredPlanEGraphComplete :
 requiredPlanEGraphComplete names laws =
   requiredPlanEGraphCount names laws == length names
 
+haskellMinusOneTargetCapabilities : List Capability
+haskellMinusOneTargetCapabilities =
+  inversion ∷ exact-search ∷ []
+
+haskellMinusOneLaws : List SemanticLaw
+haskellMinusOneLaws =
+  semanticLaw
+    "inverse-correct"
+    (inversion ∷ [])
+    []
+    (suc (suc (suc zero)))
+  ∷ semanticLaw
+      "inverse-csearchable"
+      (exact-search ∷ [])
+      ("inverse-correct" ∷ [])
+      (suc (suc zero))
+  ∷ []
+
+haskellMinusOneAStar : Maybe SearchNode
+haskellMinusOneAStar =
+  astar
+    haskellMinusOneTargetCapabilities
+    haskellMinusOneLaws
+    (searchNode [] [] zero ∷ [])
+
+haskellMinusOneAStarPlan : List String
+haskellMinusOneAStarPlan =
+  case haskellMinusOneAStar of λ where
+    Nothing → []
+    Just node → plan node
+
+haskellMinusOneAStarComplete : Bool
+haskellMinusOneAStarComplete =
+  allRequiredCovered
+    haskellMinusOneTargetCapabilities
+    (case haskellMinusOneAStar of λ where
+      Nothing → []
+      Just node → covered node)
+
+haskellMinusOneAStarIsComplete :
+  haskellMinusOneAStarComplete ≡ True
+haskellMinusOneAStarIsComplete = refl
+
 hybridInverseExactRealPlan : List String
 hybridInverseExactRealPlan =
-  "inverse-correct" ∷
-  "inverse-csearchable" ∷
-  "inverse-preserves-csearchability" ∷
-  []
+  haskellMinusOneAStarPlan
+  ++ "inverse-preserves-csearchability" ∷ []
 
 hybridInverseExactRealSearchReport : String
 hybridInverseExactRealSearchReport =
