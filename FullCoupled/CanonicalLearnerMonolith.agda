@@ -1281,8 +1281,7 @@ hardSparse-to-softSparse-zero :
   HardSparse K s →
   SoftSparseBounded K s zero
 hardSparse-to-softSparse-zero K s h {a} distinct =
-  subst
-    (λ n → n ≤ zero)
+  transport (λ n → n ≤ zero)
     (sym (h distinct))
     z≤n
 
