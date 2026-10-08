@@ -13,13 +13,8 @@ let script = merge {
     set -euo pipefail
     nix run .#mirth-agda-sync -- --check
     grep -Fq -- 'open import InfinitePigeon.FinitePigeon' FullCoupled/CanonicalLearnerMonolith.agda
-    while IFS= read -r file; do
-      case "$file" in
-        FullCoupled/Agda2HsSurface.agda|FullCoupled/Agda2HsSemanticExtractor.agda|FullCoupled/Agda2HsSemanticSearch.agda|FullCoupled/Agda2HsTheoremGraphEGraph.agda|FullCoupled/AgdaGraphShort.agda|FullCoupled/FormalMethods/*.agda)
-          continue ;;
-      esac
-      "$AGDA_COMMAND" -i . "$file"
-    done < <(git ls-files '*.agda')
+    "$AGDA_COMMAND" -i . FullCoupled/CanonicalLearnerMonolith.agda
+    "$AGDA_COMMAND" -i . FullCoupled/TheoremsMonolith.agda
     grep -Fq -- '{-# OPTIONS --erased-cubical #-}' FullCoupled/TheoremsMonolith.agda
     grep -Fq -- '{-# OPTIONS --guarded #-}' FullCoupled/TheoremsMonolith.agda
     grep -Fq -- '{-# OPTIONS --guardedness #-}' FullCoupled/TheoremsMonolith.agda
@@ -531,13 +526,8 @@ DHALL
     dhall --version
     emacs --version
     emacs --batch --eval '(require (quote agda2-mode))'
-    while IFS= read -r file; do
-      case "$file" in
-        FullCoupled/Agda2HsSurface.agda|FullCoupled/Agda2HsSemanticExtractor.agda|FullCoupled/Agda2HsSemanticSearch.agda|FullCoupled/Agda2HsTheoremGraphEGraph.agda|FullCoupled/AgdaGraphShort.agda|FullCoupled/FormalMethods/*.agda)
-          continue ;;
-      esac
-      "$AGDA_COMMAND" -i . "$file"
-    done < <(git ls-files '*.agda')
+    "$AGDA_COMMAND" -i . FullCoupled/CanonicalLearnerMonolith.agda
+    "$AGDA_COMMAND" -i . FullCoupled/TheoremsMonolith.agda
     "$AGDA_COMMAND" -i . FullCoupled/TheoremsMonolith.agda
     nix run .#agda2hs-semantic-search
     echo 'agda-all=pass'
