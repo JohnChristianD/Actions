@@ -77,15 +77,20 @@ let script = merge {
       END { exit(found ? 0 : 1) }
     ' FullCoupled/TheoremsMonolith.agda
     grep -Fq 'open import Haskell.Prelude' FullCoupled/Agda2HsSemanticSearch.agda
-    grep -Fq 'import Unsafe.Haskell as Unsafe' FullCoupled/Agda2HsSemanticSearch.agda
-    grep -Fq 'open import Equality' FullCoupled/Agda2HsSemanticSearch.agda
-    grep -Fq 'open import Naturals' FullCoupled/Agda2HsSemanticSearch.agda
-    grep -Fq 'open import Naturals.Properties' FullCoupled/Agda2HsSemanticSearch.agda
-    grep -Fq 'open import MLTT.Two-Properties' FullCoupled/Agda2HsSemanticSearch.agda
-    grep -Fq 'open import TWA.Thesis.Chapter3.SearchableTypes' FullCoupled/Agda2HsSemanticSearch.agda
-    grep -Fq 'open import TWA.Thesis.Chapter3.ClosenessSpaces' FullCoupled/Agda2HsSemanticSearch.agda
+    ! grep -Fq 'import Unsafe.Haskell' FullCoupled/Agda2HsSemanticSearch.agda
+    ! grep -Fq 'open import Equality' FullCoupled/Agda2HsSemanticSearch.agda
+    ! grep -Fq 'open import Naturals' FullCoupled/Agda2HsSemanticSearch.agda
+    ! grep -Fq 'open import MLTT.' FullCoupled/Agda2HsSemanticSearch.agda
+    ! grep -Fq 'open import UF.' FullCoupled/Agda2HsSemanticSearch.agda
+    ! grep -Fq 'open import TWA.' FullCoupled/Agda2HsSemanticSearch.agda
     ! grep -Fq 'open import Unsafe.Type-in-Type-False' FullCoupled/Agda2HsSemanticSearch.agda
     test -f FullCoupled/Agda2HsTheoremGraphEGraph.agda
+    grep -Fq 'open import Haskell.Prelude' FullCoupled/Agda2HsSemanticExtractor.agda
+    ! grep -Fq 'import Unsafe.Haskell' FullCoupled/Agda2HsSemanticExtractor.agda
+    ! grep -Fq 'open import Naturals' FullCoupled/Agda2HsSemanticExtractor.agda
+    grep -Fq 'open import Haskell.Prelude' FullCoupled/Agda2HsTheoremGraphEGraph.agda
+    ! grep -Fq 'import Unsafe.Haskell' FullCoupled/Agda2HsTheoremGraphEGraph.agda
+    ! grep -Fq 'open import Naturals' FullCoupled/Agda2HsTheoremGraphEGraph.agda
     grep -Fq 'symbolicEGraphRegression' FullCoupled/Agda2HsTheoremGraphEGraph.agda
     grep -Fq 'eGraphAssociativityRegression' FullCoupled/Agda2HsTheoremGraphEGraph.agda
     grep -Fq 'requiredPlanComplete' FullCoupled/Agda2HsSemanticSearch.agda
