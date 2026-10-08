@@ -165,7 +165,7 @@ data Signed : Set where
 signedCode : Int8 → Signed
 signedCode (int8 (pos 0)) = signedZer
 signedCode (int8 (pos (succ n))) = signedPos (succ n)
-signedCode (int8 (-[1+ n ])) = signedNeg (succ n)
+signedCode (int8 (negsucc n)) = signedNeg (succ n)
 
 data BoolLike : Set where
   enabled disabled : BoolLike
