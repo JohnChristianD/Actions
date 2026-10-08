@@ -116,7 +116,7 @@ int8Neg x = int8 (- code x)
 int8Sub : Int8 → Int8 → Int8
 int8Sub x y = int8 (code x +Int (- code y))
 
-int8Roundtrip : ∀ n → code (int8OfNat n) ≡ + n
+int8Roundtrip : ∀ n → code (int8OfNat n) ≡ pos n
 int8Roundtrip n = refl
 
 le-refl : ∀ n → n ≤ n
