@@ -69,7 +69,7 @@ open import Rationals.Multiplication
 open import Rationals.Negation
 open import Rationals.Order
 open import Rationals.Type
-open import UF.Base
+open import UF.Base hiding (Nat)
 open import UF.FunExt
 open import UF.PropTrunc
 open import UF.Size
