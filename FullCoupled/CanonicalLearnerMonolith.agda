@@ -4,13 +4,15 @@
   --lossy-unification
   --experimental-lazy-instances
   --confluence-check
-  --auto-inline
   --guarded
   --exact-split
   --no-infer-absurd-clauses
   --no-projection-like
   --erased-matches
   --erase-record-parameters
+  --without-K
+  --level-universe
+  --no-universe-polymorphism
 #-}
 -- END MIRTH-SYNC GLOBAL OPTIONS
 
