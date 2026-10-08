@@ -79,11 +79,8 @@ let script = merge {
     grep -Fq 'open import Haskell.Prelude' FullCoupled/Agda2HsSemanticSearch.agda
     ! grep -Eiq '^import Unsafe[.]Haskell|^open import (Naturals|MLTT[.]|UF[.]|TWA[.])' FullCoupled/Agda2HsSemanticSearch.agda
     grep -Fq 'open import Haskell.Prelude' FullCoupled/Agda2HsSemanticExtractor.agda
-    grep -Fq 'open import Agda.Builtin.Char' FullCoupled/Agda2HsSemanticExtractor.agda
-    grep -Fq 'open import Agda.Builtin.String' FullCoupled/Agda2HsSemanticExtractor.agda
     ! grep -Eiq '^import Unsafe[.]Haskell|^open import (Naturals|MLTT[.]|UF[.]|TWA[.])' FullCoupled/Agda2HsSemanticExtractor.agda
     grep -Fq 'open import Haskell.Prelude' FullCoupled/Agda2HsTheoremGraphEGraph.agda
-    grep -Fq 'open import Agda.Builtin.String' FullCoupled/Agda2HsTheoremGraphEGraph.agda
     ! grep -Eiq '^import Unsafe[.]Haskell|^open import (Naturals|MLTT[.]|UF[.]|TWA[.])' FullCoupled/Agda2HsTheoremGraphEGraph.agda
     grep -Fq 'requiredPlanComplete' FullCoupled/Agda2HsSemanticSearch.agda
     grep -Fq 'open import FullCoupled.Agda2HsSemanticExtractor as Extractor' FullCoupled/Agda2HsSemanticSearch.agda
