@@ -115,8 +115,7 @@ int8Roundtrip : ∀ n → code (int8OfNat n) ＝ pos n
 int8Roundtrip n = refl
 
 le-refl : ∀ n → n ≤ n
-le-refl zero = z≤n
-le-refl (succ n) = s≤s (le-refl n)
+le-refl = ≤-refl
 
 lt-irrefl : ∀ n → (n < n) → ⊥
 lt-irrefl zero ()
