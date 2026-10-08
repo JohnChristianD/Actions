@@ -12,7 +12,6 @@
   --erase-record-parameters
   --without-K
   --level-universe
-  --no-universe-polymorphism
 #-}
 -- END MIRTH-SYNC GLOBAL OPTIONS
 
