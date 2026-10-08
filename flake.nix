@@ -140,7 +140,6 @@
           src = typetopology;
           libraryName = "TypeTopology";
           libraryFile = "typetopology.agda-lib";
-          buildInputs = [ ];
           meta = {
             description = "Constructive univalent mathematics in Agda";
             homepage = "https://github.com/martinescardo/TypeTopology";
@@ -151,7 +150,7 @@
         let
           pkgs = pkgsFor system;
         in
-        pkgs.agdaPackages.agda.withPackages {
+        pkgs.agda.withPackages {
           pkgs = [
             (typeTopologyAgda system)
             (agda2hsBaseLib system)
@@ -317,8 +316,8 @@
                   "$out/theorems-monolith.dot" \
                   "$out/.semantic-source-files" \
                   "$PWD/FullCoupled/TheoremsMonolith.agda" \
-                  "$libroot/typetopology" \
-                  "$libroot/agda2hs-base"
+                  "${typeTopologyAgda system}" \
+                  "${agda2hsBaseLib system}"
                 test -s "$out/.semantic-source-files"
                 "${agdaWithCanonicalGhc system}/bin/agda" -i . FullCoupled/Agda2HsSemanticExtractor.agda
                 "${agdaWithCanonicalGhc system}/bin/agda" -i . FullCoupled/Agda2HsSemanticSearch.agda
