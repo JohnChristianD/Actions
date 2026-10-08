@@ -146,10 +146,10 @@ module ReflectionCompat where
   {-# BUILTIN ARGARG arg #-}
 
   data Abs {a} (A : Set a) : Set a where
-    abs : String → A → Abs A
+    abs-arg : String → A → Abs A
 
   {-# BUILTIN ABS Abs #-}
-  {-# BUILTIN ABSABS abs #-}
+  {-# BUILTIN ABSABS abs-arg #-}
 
   data Literal : Set where
     nat : ℕ → Literal
