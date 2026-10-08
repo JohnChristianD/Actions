@@ -271,8 +271,7 @@
               runtimeInputs = [
                 pkgs.agdaPackages.agda
                 (agda2hsWithCanonicalGhc system)
-                (lightGhc system)
-                  pkgs.z3
+                pkgs.z3
                 pkgs.coreutils
                 pkgs.git
               ];
@@ -375,7 +374,6 @@
               runtimeInputs = [
                 pkgs.agdaPackages.agda
                 (agda2hsWithCanonicalGhc system)
-                (lightGhc system)
                 pkgs.z3
                 pkgs.coreutils
                 pkgs.findutils
