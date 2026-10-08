@@ -1532,11 +1532,11 @@ integerLayerNormAStarStrictDescent :
 integerLayerNormAStarStrictDescent
   integerLayerNormRawPhase
   _ =
-  n<1+n
+  <-succ _
 integerLayerNormAStarStrictDescent
   integerLayerNormCenteredPhase
   _ =
-  n<1+n
+  <-succ _
 integerLayerNormAStarStrictDescent
   integerLayerNormRadicandPhase
   notStable =
