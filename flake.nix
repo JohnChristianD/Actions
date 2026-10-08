@@ -412,7 +412,7 @@
           ci = pkgs.mkShell {
             packages = [
               pkgs.dhall
-              (agdaWithPackages system)
+              (agdaCommand system)
               pkgs.z3
               pkgs.coreutils
               pkgs.findutils
