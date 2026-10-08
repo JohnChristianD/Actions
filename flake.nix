@@ -228,7 +228,7 @@
             script = pkgs.writeShellApplication {
               name = "agda2hs-semantic-search";
               runtimeInputs = [
-                agdaWithPackages system
+                (agdaWithPackages system)
                 (agda2hsWithCanonicalGhc system)
                 pkgs.z3
                 pkgs.coreutils
@@ -326,7 +326,7 @@
             script = pkgs.writeShellApplication {
               name = "agda-haskell-pipeline";
               runtimeInputs = [
-                agdaWithPackages system
+                (agdaWithPackages system)
                 (agda2hsWithCanonicalGhc system)
                 pkgs.z3
                 pkgs.coreutils
@@ -394,7 +394,7 @@
           agda-ci = pkgs.mkShellNoCC {
             packages = [
               pkgs.dhall
-              agdaWithPackages system
+              (agdaWithPackages system)
               pkgs.z3
               pkgs.coreutils
               pkgs.findutils
@@ -415,7 +415,7 @@
               pkgs.dhall
               pkgs.z3
               pkgs.mirth
-              agdaWithPackages system
+              (agdaWithPackages system)
               (agdaEmacs system)
             ];
             shellHook = ''
@@ -426,7 +426,7 @@
           ci = pkgs.mkShell {
             packages = [
               pkgs.dhall
-              agdaWithPackages system
+              (agdaWithPackages system)
               pkgs.z3
               pkgs.coreutils
               pkgs.findutils
@@ -447,7 +447,7 @@
               pkgs.z3
               pkgs.mirth
               pkgs.gh
-              agdaWithPackages system
+              (agdaWithPackages system)
               (agdaEmacs system)
             ];
             shellHook = ''
@@ -464,7 +464,7 @@
               pkgs.dhall-json
               pkgs.mirth
               pkgs.gh
-              agdaWithPackages system
+              (agdaWithPackages system)
               (agdaEmacs system)
               pkgs.stdenv.cc
               pkgs.elmPackages.elm
