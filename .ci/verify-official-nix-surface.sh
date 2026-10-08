@@ -20,7 +20,6 @@ done
 }
 
 grep -Fq 'github:NixOS/nixpkgs/' flake.nix
-grep -Fq 'github:agda/agda2hs/' flake.nix
 grep -Fq 'github:martinescardo/TypeTopology/' flake.nix
 
 inputs=$(awk '
@@ -30,7 +29,6 @@ inputs=$(awk '
 ' flake.nix)
 
 printf '%s\n' "$inputs" | grep -Eq '^    nixpkgs[[:space:]]*='
-printf '%s\n' "$inputs" | grep -Eq '^    agda2hs[[:space:]]*='
 printf '%s\n' "$inputs" | grep -Eq '^    typetopology[[:space:]]*='
 ! printf '%s\n' "$inputs" | grep -Eq 'nixpkgs-ghc924|inversion-plugin|DeterminateSystems|nix-community|cachix'
 
