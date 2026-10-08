@@ -119,8 +119,8 @@ le-refl zero = ⋆
 le-refl (succ n) = le-refl n
 
 lt-irrefl : ∀ n → (n < n) → 𝟘
-lt-irrefl zero ()
-lt-irrefl (succ n) (s≤s p) = lt-irrefl n p
+lt-irrefl zero p = p
+lt-irrefl (succ n) p = lt-irrefl n p
 
 plus-zero : ∀ n → n + zero ＝ n
 plus-zero zero = refl
