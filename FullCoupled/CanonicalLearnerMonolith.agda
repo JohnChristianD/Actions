@@ -83,6 +83,9 @@ open import UF.UA-FunExt
 cong₂ : ∀ {A B C : Set} (f : A → B → C) {x y : A} {u v : B} → x ＝ y → u ＝ v → f x u ＝ f y v
 cong₂ f refl refl = refl
 
+trans : ∀ {A : Set} {x y z : A} → x ＝ y → y ＝ z → x ＝ z
+trans refl q = q
+
 open import InfinitePigeon.FinitePigeon
 
 -- BEGIN MIRTH-SYNC CANONICAL COMMAND
