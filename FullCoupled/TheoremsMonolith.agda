@@ -34,7 +34,6 @@ module FullCoupled.TheoremsMonolith where
 -- Merged external import surface; internal FullCoupled imports remain module-local.
 open import MLTT.Spartan hiding (J)
 open import MLTT.Athenian
-open import Unsafe.Haskell
 open import Integers.Type
 open import Integers.Addition
 open import Integers.Multiplication
@@ -45,12 +44,6 @@ Nat = ℕ
 Int : Set
 Int = ℤ
 
-Bool : Set
-Bool = 𝟚
-
-false = ₀
-true = ₁
-
 infixl 31 _+Int_
 _+Int_ : Int → Int → Int
 _+Int_ = _+_
@@ -58,24 +51,6 @@ _+Int_ = _+_
 infixl 31 _*Int_
 _*Int_ : Int → Int → Int
 _*Int_ = _*_
-open import Naturals
-open import Naturals.Exponentiation
-open import Naturals.Division
-open import Naturals.Properties
-open import Notation.Order
-open import Order
-open import Rationals.Addition
-open import Rationals.Multiplication
-open import Rationals.Negation
-open import Rationals.Order
-open import Rationals.Type
-open import UF.Base
-open import UF.FunExt
-open import UF.PropTrunc
-open import UF.Size
-open import UF.Subsingletons
-open import UF.Subsingletons-FunExt
-open import UF.UA-FunExt
 -- END MIRTH-SYNC COMMON IMPORTS
 
 open import Agda.Builtin.Reflection as Builtin
@@ -7519,7 +7494,7 @@ record F4UpperBoundedTrajectory
     bound : Nat
     bounded :
       ∀ n →
-      C.code (C.thetaQ (f4Orbit K g n s)) ≤Int + bound
+      C.code (C.thetaQ (f4Orbit K g n s)) ≤ pos bound
 
 nat-plus-one :
   ∀ n → n + suc zero ≡ suc n
@@ -7613,17 +7588,17 @@ f4-unit-forcing-no-upper-bound thetaZero boundedWitness =
             (suc B)
             _))
       ≡
-      + (suc B)
+      pos (suc B)
     growthFromZero =
       trans
         growth
         (trans
           (cong
-            (λ z → z +Int (+ suc B))
+            (λ z → z +Int (pos (suc B)))
             (cong C.code thetaZero))
-          (ℤ-zero-left-neutral (+ suc B)))
+          (ℤ-zero-left-neutral (pos (suc B))))
     impossibleOrder :
-      + (suc B) ≤Int + B
+      pos (suc B) ≤ pos B
     impossibleOrder =
       subst
         (λ z → z ≤Int + B)
@@ -7631,7 +7606,8 @@ f4-unit-forcing-no-upper-bound thetaZero boundedWitness =
         horizonBound
   in
     nat-suc-not-le B
-      (IntegerProperties.drop‿+≤+ impossibleOrder)
+      (ℤ-bigger-or-equal-not-less (pos (suc B)) (pos B) impossibleOrder
+       (ℕ-order-respects-ℤ-order B (suc B) (<-succ B)))
 
 record CanonicalPureNonOrangeBypassCompletionTheorem : Set₁ where
   constructor canonicalPureNonOrangeBypassCompletionTheorem
