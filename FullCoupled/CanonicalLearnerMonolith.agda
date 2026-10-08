@@ -125,11 +125,11 @@ lt-irrefl (succ n) p = lt-irrefl n p
 
 plus-zero : ∀ n → n + zero ＝ n
 plus-zero zero = refl
-plus-zero (succ n) = cong succ (plus-zero n)
+plus-zero (succ n) = ap succ (plus-zero n)
 
 plus-succ : ∀ (m n : ℕ) → m + succ n ＝ succ (m + n)
 plus-succ zero n = refl
-plus-succ (succ m) n = cong succ (plus-succ m n)
+plus-succ (succ m) n = ap succ (plus-succ m n)
 
 plus-succ-lt : ∀ (m n : ℕ) → m < m + succ n
 plus-succ-lt zero n = s≤s z≤n
@@ -628,7 +628,7 @@ monoidAffine-assoc (a₁ , b₁) (a₂ , b₂) (a₃ , b₃) =
           (int8Mul a₁ (int8Mul a₂ b₃))
           (int8Mul a₁ b₂)
           b₁))
-        (cong
+        (ap
           (λ z → int8Add z b₁)
           (sym (int8*-distribˡ
             a₁
@@ -640,7 +640,7 @@ monoidAffine-idˡ (a , b) =
   cong₂ _,_
     (int8*-idˡ a)
     (trans
-      (cong (λ z → int8Add z zero8) (int8*-idˡ b))
+      (ap (λ z → int8Add z zero8) (int8*-idˡ b))
       (int8+-idʳ b))
 
 monoidAffine-idʳ : ∀ a → a ∘ₘ monoidAffine-id ＝ a
@@ -648,7 +648,7 @@ monoidAffine-idʳ (a , b) =
   cong₂ _,_
     (int8*-idʳ a)
     (trans
-      (cong (λ z → int8Add z b) (int8*-zeroʳ a))
+      (ap (λ z → int8Add z b) (int8*-zeroʳ a))
       (int8+-idˡ b))
 
 applyMonoidAffine : MonoidAffine → Int8 → Int8
@@ -1012,7 +1012,7 @@ recurrentPrefix-correct :
   recurrentPrefixState R xs n s
 recurrentPrefix-correct R xs zero s = refl
 recurrentPrefix-correct R xs (succ n) s =
-  cong
+  ap
     (λ z → runNetwork R z (xs n))
     (recurrentPrefix-correct R xs n s)
 
@@ -1039,7 +1039,7 @@ recurrentPrefix-split :
     (recurrentPrefixState R xs m s)
 recurrentPrefix-split R xs m zero s rewrite +-identityʳ m = refl
 recurrentPrefix-split R xs m (succ n) s rewrite +-succ m n =
-  cong
+  ap
     (λ z → runNetwork R z (xs (m + n)))
     (recurrentPrefix-split R xs m n s)
 
@@ -1473,9 +1473,9 @@ canonicalNoFixedPoint :
 canonicalNoFixedPoint K s eq =
   plus-succ-not-self (totalCount (lcbCounts s)) zero
     (trans (plus-succ (totalCount (lcbCounts s)) zero)
-      (trans (cong succ (plus-zero (totalCount (lcbCounts s))))
+      (trans (ap succ (plus-zero (totalCount (lcbCounts s))))
         (trans (sym (canonicalTotalCountStep K s))
-          (cong (λ t → totalCount (lcbCounts t)) eq))))
+          (ap (λ t → totalCount (lcbCounts t)) eq))))
 
 iterateCanonical : ∀ {A} → FullLearnerKernel A → ℕ → FullLearnerState A → FullLearnerState A
 iterateCanonical K zero s = s
@@ -1490,14 +1490,14 @@ canonicalTotalCountAfter K (succ n) s =
   trans
     (canonicalTotalCountStep K (iterateCanonical K n s))
     (trans
-      (cong succ (canonicalTotalCountAfter K n s))
+      (ap succ (canonicalTotalCountAfter K n s))
       (sym (plus-succ (totalCount (lcbCounts s)) n)))
 
 canonicalAperiodic : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) (n : ℕ) → iterateCanonical K (succ n) s ≢ s
 canonicalAperiodic K s n cyc = plus-succ-not-self (totalCount (lcbCounts s)) n
   (trans
     (sym (canonicalTotalCountAfter K (succ n) s))
-    (cong (λ t → totalCount (lcbCounts t)) cyc))
+    (ap (λ t → totalCount (lcbCounts t)) cyc))
 
 canonicalOrbitNonFixed : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) (n : ℕ) → iterateCanonical K n s ≢ canonicalFullStep K (iterateCanonical K n s)
 canonicalOrbitNonFixed K s n eq =
@@ -1512,7 +1512,7 @@ canonicalTotalCountIterate2 K s = refl
 canonicalNoCountedTwoCycle : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) → iterateCanonical K 2 s ＝ s → ⊥
 canonicalNoCountedTwoCycle K s cyc = succ-succ-not-self (totalCount (lcbCounts s))
   (trans (sym (canonicalTotalCountIterate2 K s))
-    (cong (λ t → totalCount (lcbCounts t)) cyc))
+    (ap (λ t → totalCount (lcbCounts t)) cyc))
 
 temperatureCodeLaw : sparsemaxTemperature ＝ 16
 temperatureCodeLaw = refl
@@ -1693,8 +1693,8 @@ canonicalHaarFeatureInjective {x} {y} eq =
     (trans
       (cong₂
         (λ a b → int8Sub a b)
-        (cong proj₁ eq)
-        (cong proj₂ eq))
+        (ap proj₁ eq)
+        (ap proj₂ eq))
       (canonicalHaarFeatureReconstruct y))
 
 record HaarFeaturedLinearTransformer : Set where
