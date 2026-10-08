@@ -32,7 +32,7 @@ module FullCoupled.TheoremsMonolith where
 
 -- BEGIN MIRTH-SYNC COMMON IMPORTS
 -- Merged external import surface; internal FullCoupled imports remain module-local.
-open import MLTT.Spartan hiding (J)
+open import MLTT.Spartan hiding (J; _+_)
 open import MLTT.Athenian
 open import Integers.Type
 open import Integers.Addition renaming (_+_ to _ℤ+_)
@@ -48,11 +48,12 @@ _+Int_ = _ℤ+_
 infixl 31 _*Int_
 _*Int_ : Int → Int → Int
 _*Int_ = _ℤ*_
+open import Naturals.Addition
 open import Naturals.Exponentiation
 open import Naturals.Division
 open import Naturals.Properties
 open import Notation.Order
-open import Rationals.Addition
+open import Rationals.Addition renaming (_+_ to _ℚ+_)
 open import Rationals.Multiplication
 open import Rationals.Negation
 open import Rationals.Order
