@@ -966,12 +966,12 @@ open AStarHaskellMonadSurface public
 aStar-frontier-monad :
   ∀ {Expression : Set} →
   Monad (State (List (List Expression)))
-aStar-frontier-monad = it
+aStar-frontier-monad = stateMonad
 
 aStar-candidate-plan-monad :
   ∀ {Expression : Set} →
   Monad List
-aStar-candidate-plan-monad = it
+aStar-candidate-plan-monad = listMonad
 
 aStar-haskell-monad-surface :
   ∀ (Expression : Set) →
