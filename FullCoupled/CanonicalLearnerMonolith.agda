@@ -344,11 +344,11 @@ sumList (x ∷ xs) = x + sumList xs
 ------------------------------------------------------------------------
 
 integerCodeSum : List Int8 → Int
-integerCodeSum [] = + 0
+integerCodeSum [] = pos 0
 integerCodeSum (x ∷ xs) = code x +Int integerCodeSum xs
 
 integerCodeSumList : List Int → Int
-integerCodeSumList [] = + 0
+integerCodeSumList [] = pos 0
 integerCodeSumList (x ∷ xs) = x +Int integerCodeSumList xs
 
 integerLayerNormCenteredNumerator :
