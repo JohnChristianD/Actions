@@ -67,29 +67,12 @@
           p.rio
         ]);
 
-      typeTopologyAgda = system:
-        let
-          pkgs = pkgsFor system;
-        in
-        pkgs.agdaPackages.mkDerivation {
-          pname = "TypeTopology";
-          version = "pinned";
-          src = typetopology;
-          libraryName = "TypeTopology";
-          libraryFile = "typetopology.agda-lib";
-          meta = {
-            description = "Constructive univalent mathematics in Agda";
-            homepage = "https://github.com/martinescardo/TypeTopology";
-          };
-        };
-
       agdaWithPackages = system:
         let
           pkgs = pkgsFor system;
         in
         pkgs.agda.withPackages {
           pkgs = [
-            (typeTopologyAgda system)
             (agda2hsBaseLib system)
           ];
           ghc = null;
@@ -109,7 +92,6 @@
         {
           agda = agdaWithPackages system;
           agda2hs = agda2hsWithCanonicalGhc system;
-          typetopology = typeTopologyAgda system;
           ci = pkgs.dhall;
           default = pkgs.dhall;
         });
@@ -246,15 +228,14 @@
                   "$out/theorems-monolith.dot" \
                   "$out/.semantic-source-files" \
                   "$PWD/FullCoupled/TheoremsMonolith.agda" \
-                  "${typeTopologyAgda system}" \
                   "${agda2hsBaseLib system}"
                 test -s "$out/.semantic-source-files"
-                "${agdaWithPackages system}/bin/agda" -i . FullCoupled/Agda2HsSemanticExtractor.agda
-                "${agdaWithPackages system}/bin/agda" -i . FullCoupled/Agda2HsSemanticSearch.agda
-                "${agdaWithPackages system}/bin/agda" -i . FullCoupled/Agda2HsTheoremGraphEGraph.agda
-                "${agda2hsWithCanonicalGhc system}/bin/agda2hs" -i . FullCoupled/Agda2HsSemanticExtractor.agda -o "$out"
-                "${agda2hsWithCanonicalGhc system}/bin/agda2hs" -i . FullCoupled/Agda2HsSemanticSearch.agda -o "$out"
-                "${agda2hsWithCanonicalGhc system}/bin/agda2hs" -i . FullCoupled/Agda2HsTheoremGraphEGraph.agda -o "$out"
+                "${agdaWithPackages system}/bin/agda" -i . -i "${typetopology}/source" FullCoupled/Agda2HsSemanticExtractor.agda
+                "${agdaWithPackages system}/bin/agda" -i . -i "${typetopology}/source" FullCoupled/Agda2HsSemanticSearch.agda
+                "${agdaWithPackages system}/bin/agda" -i . -i "${typetopology}/source" FullCoupled/Agda2HsTheoremGraphEGraph.agda
+                "${agda2hsWithCanonicalGhc system}/bin/agda2hs" -i . -i "${typetopology}/source" FullCoupled/Agda2HsSemanticExtractor.agda -o "$out"
+                "${agda2hsWithCanonicalGhc system}/bin/agda2hs" -i . -i "${typetopology}/source" FullCoupled/Agda2HsSemanticSearch.agda -o "$out"
+                "${agda2hsWithCanonicalGhc system}/bin/agda2hs" -i . -i "${typetopology}/source" FullCoupled/Agda2HsTheoremGraphEGraph.agda -o "$out"
                 test -s "$out/FullCoupled/Agda2HsSemanticExtractor.hs"
                 test -s "$out/FullCoupled/Agda2HsSemanticSearch.hs"
                 test -s "$out/FullCoupled/Agda2HsTheoremGraphEGraph.hs"
@@ -312,7 +293,7 @@
                 out="build/agda2hs"
                 rm -rf "$out"
                 mkdir -p "$out"
-                "${agda2hsWithCanonicalGhc system}/bin/agda2hs" -i . FullCoupled/Agda2HsSurface.agda -o "$out"
+                "${agda2hsWithCanonicalGhc system}/bin/agda2hs" -i . -i "${typetopology}/source" FullCoupled/Agda2HsSurface.agda -o "$out"
                 test -s "$out/FullCoupled/Agda2HsSurface.hs"
                 echo "agda2hs-extract=pass"
               '';
@@ -340,10 +321,10 @@
                 out="build/agda-haskell"
                 rm -rf "$out"
                 mkdir -p "$out"
-                "${agda2hsWithCanonicalGhc system}/bin/agda2hs" -i . FullCoupled/Agda2HsSurface.agda -o "$out"
+                "${agda2hsWithCanonicalGhc system}/bin/agda2hs" -i . -i "${typetopology}/source" FullCoupled/Agda2HsSurface.agda -o "$out"
                 test -s "$out/FullCoupled/Agda2HsSurface.hs"
                 mkdir -p "$out/ghc"
-                "${canonicalGhc system}/bin/ghc" -O0 -dcore-lint -package rio -i "$out" -odir "$out/ghc" -hidir "$out/ghc" -c "$out/FullCoupled/Agda2HsSurface.hs"
+                "${canonicalGhc system}/bin/ghc" ${builtins.concatStringsSep " " ghcLanguageFlags} -O0 -dcore-lint -package rio -i "$out" -odir "$out/ghc" -hidir "$out/ghc" -c "$out/FullCoupled/Agda2HsSurface.hs"
                 printf '%s\n' \
                   "source=FullCoupled/Agda2HsSurface.agda generated=build/agda-haskell/FullCoupled/Agda2HsSurface.hs ghc:pass" \
                   > "$out/agda2hs-manifest.tsv"
