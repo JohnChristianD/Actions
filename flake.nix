@@ -43,19 +43,9 @@
           epkgs.agda2-mode
         ]);
 
-      # Explicit extensions needed by the generated Haskell surface.
+      # Keep only the two consumer-side GHC extensions required by this project.
       ghcLanguageFlags = [
-        "-XFlexibleInstances"
-        "-XFlexibleContexts"
-        "-XKindSignatures"
         "-XMonoLocalBinds"
-        "-XScopedTypeVariables"
-        "-XTypeFamilies"
-        "-XUndecidableInstances"
-        "-XIncoherentInstances"
-        "-XEmptyCase"
-        "-XMultiParamTypeClasses"
-        # Restore the consumer-side monomorphism behavior used by the Curry build.
         "-XNoMonomorphismRestriction"
       ];
 
@@ -81,6 +71,21 @@
       agda2hsWithCanonicalGhc = system:
         agda2hsTool system;
 
+      agdaCommand = system:
+        let
+          pkgs = pkgsFor system;
+        in
+        pkgs.writeShellApplication {
+          name = "agda2hs-agda";
+          runtimeInputs = [
+            (agdaWithPackages system)
+          ];
+          text = ''
+            set -euo pipefail
+            exec agda -l agda2hs-base "$@"
+          ''';
+        };
+
 
 
     in
@@ -90,7 +95,7 @@
           pkgs = pkgsFor system;
         in
         {
-          agda = agdaWithPackages system;
+          agda = agdaCommand system;
           agda2hs = agda2hsWithCanonicalGhc system;
           ci = pkgs.dhall;
           default = pkgs.dhall;
@@ -222,7 +227,7 @@
                 rm -rf "$out"
                 mkdir -p "$out"
                 bash .ci/mirth/agda_command_sync.sh --check
-                "${agdaWithPackages system}/bin/agda" --dependency-graph="$out/theorems-monolith.dot" -i . FullCoupled/TheoremsMonolith.agda
+                "${agdaWithPackages system}/bin/agda" -l agda2hs-base --dependency-graph="$out/theorems-monolith.dot" -i . FullCoupled/TheoremsMonolith.agda
                 test -s "$out/theorems-monolith.dot"
                 bash .ci/discovery/agda_semantic_source_closure.sh \
                   "$out/theorems-monolith.dot" \
@@ -230,12 +235,12 @@
                   "$PWD/FullCoupled/TheoremsMonolith.agda" \
                   "${agda2hsBaseLib system}"
                 test -s "$out/.semantic-source-files"
-                "${agdaWithPackages system}/bin/agda" -i . -i "${typetopology}/source" FullCoupled/Agda2HsSemanticExtractor.agda
-                "${agdaWithPackages system}/bin/agda" -i . -i "${typetopology}/source" FullCoupled/Agda2HsSemanticSearch.agda
-                "${agdaWithPackages system}/bin/agda" -i . -i "${typetopology}/source" FullCoupled/Agda2HsTheoremGraphEGraph.agda
-                "${agda2hsWithCanonicalGhc system}/bin/agda2hs" -i . -i "${typetopology}/source" FullCoupled/Agda2HsSemanticExtractor.agda -o "$out"
-                "${agda2hsWithCanonicalGhc system}/bin/agda2hs" -i . -i "${typetopology}/source" FullCoupled/Agda2HsSemanticSearch.agda -o "$out"
-                "${agda2hsWithCanonicalGhc system}/bin/agda2hs" -i . -i "${typetopology}/source" FullCoupled/Agda2HsTheoremGraphEGraph.agda -o "$out"
+                "${agdaWithPackages system}/bin/agda" -l agda2hs-base -i . -i "${typetopology}/source" FullCoupled/Agda2HsSemanticExtractor.agda
+                "${agdaWithPackages system}/bin/agda" -l agda2hs-base -i . -i "${typetopology}/source" FullCoupled/Agda2HsSemanticSearch.agda
+                "${agdaWithPackages system}/bin/agda" -l agda2hs-base -i . -i "${typetopology}/source" FullCoupled/Agda2HsTheoremGraphEGraph.agda
+                "${agda2hsWithCanonicalGhc system}/bin/agda2hs" -l agda2hs-base -i . -i "${typetopology}/source" FullCoupled/Agda2HsSemanticExtractor.agda -o "$out"
+                "${agda2hsWithCanonicalGhc system}/bin/agda2hs" -l agda2hs-base -i . -i "${typetopology}/source" FullCoupled/Agda2HsSemanticSearch.agda -o "$out"
+                "${agda2hsWithCanonicalGhc system}/bin/agda2hs" -l agda2hs-base -i . -i "${typetopology}/source" FullCoupled/Agda2HsTheoremGraphEGraph.agda -o "$out"
                 test -s "$out/FullCoupled/Agda2HsSemanticExtractor.hs"
                 test -s "$out/FullCoupled/Agda2HsSemanticSearch.hs"
                 test -s "$out/FullCoupled/Agda2HsTheoremGraphEGraph.hs"
@@ -293,7 +298,7 @@
                 out="build/agda2hs"
                 rm -rf "$out"
                 mkdir -p "$out"
-                "${agda2hsWithCanonicalGhc system}/bin/agda2hs" -i . -i "${typetopology}/source" FullCoupled/Agda2HsSurface.agda -o "$out"
+                "${agda2hsWithCanonicalGhc system}/bin/agda2hs" -l agda2hs-base -i . -i "${typetopology}/source" FullCoupled/Agda2HsSurface.agda -o "$out"
                 test -s "$out/FullCoupled/Agda2HsSurface.hs"
                 echo "agda2hs-extract=pass"
               '';
@@ -321,7 +326,7 @@
                 out="build/agda-haskell"
                 rm -rf "$out"
                 mkdir -p "$out"
-                "${agda2hsWithCanonicalGhc system}/bin/agda2hs" -i . -i "${typetopology}/source" FullCoupled/Agda2HsSurface.agda -o "$out"
+                "${agda2hsWithCanonicalGhc system}/bin/agda2hs" -l agda2hs-base -i . -i "${typetopology}/source" FullCoupled/Agda2HsSurface.agda -o "$out"
                 test -s "$out/FullCoupled/Agda2HsSurface.hs"
                 mkdir -p "$out/ghc"
                 "${canonicalGhc system}/bin/ghc" ${builtins.concatStringsSep " " ghcLanguageFlags} -O0 -dcore-lint -package rio -i "$out" -odir "$out/ghc" -hidir "$out/ghc" -c "$out/FullCoupled/Agda2HsSurface.hs"
@@ -386,7 +391,7 @@
             ];
             shellHook = ''
               set -euo pipefail
-              export AGDA_COMMAND="agda"
+              export AGDA_COMMAND="agda2hs-agda"
             '';
           };
 
@@ -396,11 +401,11 @@
               pkgs.dhall
               pkgs.z3
               pkgs.mirth
-              (agdaWithPackages system)
+              (agdaCommand system)
               (agdaEmacs system)
             ];
             shellHook = ''
-              export AGDA_COMMAND="agda"
+              export AGDA_COMMAND="agda2hs-agda"
             '';
           };
 
@@ -417,7 +422,7 @@
               pkgs.gnused
             ];
             shellHook = ''
-              export AGDA_COMMAND="$PWD/.ci/agda-with-libraries.sh"
+              export AGDA_COMMAND="agda2hs-agda"
             '';
           };
 
@@ -428,11 +433,11 @@
               pkgs.z3
               pkgs.mirth
               pkgs.gh
-              (agdaWithPackages system)
+              (agdaCommand system)
               (agdaEmacs system)
             ];
             shellHook = ''
-              export AGDA_COMMAND="$PWD/.ci/agda-with-libraries.sh"
+              export AGDA_COMMAND="agda2hs-agda"
             '';
           };
 
@@ -445,13 +450,13 @@
               pkgs.dhall-json
               pkgs.mirth
               pkgs.gh
-              (agdaWithPackages system)
+              (agdaCommand system)
               (agdaEmacs system)
               pkgs.stdenv.cc
               pkgs.elmPackages.elm
             ];
             shellHook = ''
-              export AGDA_COMMAND="$PWD/.ci/agda-with-libraries.sh"
+              export AGDA_COMMAND="agda2hs-agda"
             '';
           };
         });
