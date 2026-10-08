@@ -82,7 +82,7 @@
           ];
           text = ''
             set -euo pipefail
-            exec agda -l agda2hs-base "$@"
+            exec agda -l agda2hs-base -i . -i "${typetopology}/source" "$@"
           '';
         };
 
