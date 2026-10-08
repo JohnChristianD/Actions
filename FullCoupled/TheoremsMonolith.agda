@@ -51,7 +51,6 @@ _+Int_ = _ℤ+_
 infixl 31 _*Int_
 _*Int_ : Int → Int → Int
 _*Int_ = _ℤ*_
-open import Naturals
 open import Naturals.Exponentiation
 open import Naturals.Division
 open import Naturals.Properties
