@@ -110,6 +110,7 @@
             (agda2hsWithCanonicalGhc system)
           ];
           text = ''
+            set -euo pipefail
             exec agda2hs -l agda2hs-base -i . "$@"
           '';
         };
