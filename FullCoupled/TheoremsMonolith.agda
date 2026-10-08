@@ -1,5 +1,6 @@
 -- BEGIN MIRTH-SYNC GLOBAL OPTIONS
 {-# OPTIONS
+  --erasure
   --no-fast-reduce
   --lossy-unification
   --experimental-lazy-instances
@@ -38,9 +39,6 @@ open import Integers.Type
 open import Integers.Addition renaming (_+_ to _ℤ+_)
 open import Integers.Multiplication renaming (_*_ to _ℤ*_)
 
-Nat : Set
-Nat = ℕ
-
 Int : Set
 Int = ℤ
 
@@ -60,7 +58,7 @@ open import Rationals.Multiplication
 open import Rationals.Negation
 open import Rationals.Order
 open import Rationals.Type
-open import UF.Base hiding (Nat)
+open import UF.Base hiding (ℕ)
 open import UF.FunExt
 open import UF.PropTrunc
 open import UF.Size
@@ -68,6 +66,8 @@ open import UF.Subsingletons
 open import UF.Subsingletons-FunExt
 open import UF.UA-FunExt
 -- END MIRTH-SYNC COMMON IMPORTS
+
+open import Agda.Builtin.Reflection as Builtin
 
 
 -- BEGIN MIRTH-SYNC CANONICAL COMMAND
@@ -259,12 +259,12 @@ record NatRingSolverNormalizationTheorem : Set₁ where
   constructor natRingSolverNormalizationTheorem
   field
     normalization :
-      ∀ (epsilon scale : Nat) →
+      ∀ (epsilon scale : ℕ) →
       (epsilon + suc zero) * scale ≡
       (epsilon * scale) + scale
 
 nat-ring-solver-layernorm-step :
-  ∀ (epsilon scale : Nat) →
+  ∀ (epsilon scale : ℕ) →
   (epsilon + suc zero) * scale ≡
   (epsilon * scale) + scale
 nat-ring-solver-layernorm-step epsilon scale =
@@ -338,7 +338,7 @@ record CanonicalSafeTacticNormalizationTheorem : Set₁ where
     algebraicBackend :
       CanonicalAlgebraicTacticBackendTheorem
     natSemiringNormalization :
-      ∀ (epsilon scale : Nat) →
+      ∀ (epsilon scale : ℕ) →
       (epsilon + suc zero) * scale ≡
       (epsilon * scale) + scale
     integerRingNormalization :
@@ -788,7 +788,7 @@ eGraph-rewrite-context R step h =
 -- Cost-guided e-graph paths.
 --
 -- A* is a search strategy, not a proof rule.  The semantic proof is the
--- path of sound e-graph edges; the Nat cost is carried separately so an
+-- path of sound e-graph edges; the ℕ cost is carried separately so an
 -- A*-style selector can optimize traversal without changing the proof.
 ------------------------------------------------------------------------
 
@@ -796,8 +796,8 @@ eGraph-rewrite-context R step h =
 record AStarCostModel (Expression : Set) : Set₁ where
   constructor aStarCostModel
   field
-    edgeCost : Expression → Expression → Nat
-    heuristic : Expression → Nat
+    edgeCost : Expression → Expression → ℕ
+    heuristic : Expression → ℕ
 
 open AStarCostModel public
 
@@ -1064,7 +1064,7 @@ unconditional-agda-egraph-astar-closure =
 -- Conditional convergence closure for e-graph/A* search.
 --
 -- The witness deliberately separates three obligations:
---   * rank/descent: a finite Nat measure for search-state progress,
+--   * rank/descent: a finite ℕ measure for search-state progress,
 --   * eventualStable/stableNext: the actual termination/stabilization fact,
 --   * stablePath: semantic equality supplied by the e-graph.
 --
@@ -1075,7 +1075,7 @@ unconditional-agda-egraph-astar-closure =
 eGraphAStarIterate :
   ∀ {State : Set} →
   (State → State) →
-  Nat →
+  ℕ →
   State →
   State
 eGraphAStarIterate step zero s = s
@@ -1097,7 +1097,7 @@ record EGraphAStarFiniteRankConvergenceWitness
     stable :
       State → Set
     rank :
-      State → Nat
+      State → ℕ
     rankZero :
       ∀ s → rank s ≡ zero → stable s
     strictDescent :
@@ -1107,7 +1107,7 @@ record EGraphAStarFiniteRankConvergenceWitness
       ∀ s → stable s → stable (step s)
     eventualStable :
       ∀ s →
-      Σ Nat
+      Σ ℕ
         (λ n →
           stable
             (eGraphAStarIterate
@@ -1128,7 +1128,7 @@ eGraphAStarConvergenceSemanticClosure :
   ∀ {Expression State : Set} →
   (W : EGraphAStarFiniteRankConvergenceWitness Expression State) →
   ∀ s →
-  Σ Nat
+  Σ ℕ
     (λ n →
       interpret
         (semantics (closure W))
@@ -1151,7 +1151,7 @@ eGraphAStarConvergenceSemanticClosure W s
 
 ------------------------------------------------------------------------
 -- Rank + strict descent can now discharge eventual stability once the
--- stable predicate is decidable. The Nat measure is consumed through
+-- stable predicate is decidable. The ℕ measure is consumed through
 -- TypeTopology's well-founded accessibility structure; no search
 -- cost or heuristic is used as semantic evidence.
 ------------------------------------------------------------------------
@@ -1161,7 +1161,7 @@ eGraphAStarEventualStableFromRank :
   (W : EGraphAStarFiniteRankConvergenceWitness Expression State) →
   (∀ s → stable W s ⊎ ¬ stable W s) →
   ∀ s →
-  Σ Nat
+  Σ ℕ
     (λ n →
       stable W
         (eGraphAStarIterate
@@ -1172,10 +1172,10 @@ eGraphAStarEventualStableFromRank W stableOrNot s =
   go s (rank W s) refl (<-wellFounded (rank W s))
   where
   go :
-    ∀ (s : State) (n : Nat) →
+    ∀ (s : State) (n : ℕ) →
     rank W s ≡ n →
     Acc _<_ n →
-    Σ Nat
+    Σ ℕ
       (λ k →
         stable W
           (eGraphAStarIterate
@@ -1226,16 +1226,16 @@ eGraphAStarStablePathPersists W {s = s} stableS (suc n) =
 
 data IntegerLayerNormExpression : Set where
   rawIntegerLayerNorm :
-    Nat → List C.Int8 → IntegerLayerNormExpression
+    ℕ → List C.Int8 → IntegerLayerNormExpression
   centeredIntegerLayerNorm :
-    Nat → List C.Int8 → IntegerLayerNormExpression
+    ℕ → List C.Int8 → IntegerLayerNormExpression
   radicandIntegerLayerNorm :
-    Nat → List C.Int8 → IntegerLayerNormExpression
+    ℕ → List C.Int8 → IntegerLayerNormExpression
 
 record IntegerLayerNormSemanticState : Set where
   constructor integerLayerNormSemanticState
   field
-    epsilon : Nat
+    epsilon : ℕ
     input : List C.Int8
     centered : List Int
     radicand : Int
@@ -1327,7 +1327,7 @@ integerLayerNormAStarClosure =
     integerLayerNormAStarCostModel
 
 integerLayerNorm-raw-centered-edge :
-  ∀ (epsilon : Nat) (xs : List C.Int8) →
+  ∀ (epsilon : ℕ) (xs : List C.Int8) →
   CertifiedEGraphEdge
     integerLayerNormEGraphSemantics
     (rawIntegerLayerNorm epsilon xs)
@@ -1346,7 +1346,7 @@ integerLayerNorm-raw-centered-edge epsilon xs =
       (centeredIntegerLayerNorm epsilon xs)))
 
 integerLayerNorm-centered-radicand-edge :
-  ∀ (epsilon : Nat) (xs : List C.Int8) →
+  ∀ (epsilon : ℕ) (xs : List C.Int8) →
   CertifiedEGraphEdge
     integerLayerNormEGraphSemantics
     (centeredIntegerLayerNorm epsilon xs)
@@ -1365,7 +1365,7 @@ integerLayerNorm-centered-radicand-edge epsilon xs =
       (radicandIntegerLayerNorm epsilon xs)))
 
 integerLayerNorm-raw-radicand-path :
-  ∀ (epsilon : Nat) (xs : List C.Int8) →
+  ∀ (epsilon : ℕ) (xs : List C.Int8) →
   EGraphSemanticPath
     (semantics integerLayerNormAStarClosure)
     (rawIntegerLayerNorm epsilon xs)
@@ -1376,7 +1376,7 @@ integerLayerNorm-raw-radicand-path epsilon xs =
     (path (integerLayerNorm-centered-radicand-edge epsilon xs))
 
 integerLayerNorm-a-star-semantic-closure :
-  ∀ (epsilon : Nat) (xs : List C.Int8) →
+  ∀ (epsilon : ℕ) (xs : List C.Int8) →
   interpret (semantics integerLayerNormAStarClosure)
     (rawIntegerLayerNorm epsilon xs)
   ≡
@@ -1398,25 +1398,25 @@ record CanonicalIntegerLayerNormEGraphAStarTheorem : Set₁ where
       AStarPlanMonoidTheorem
         IntegerLayerNormExpression
     rawCentered :
-      ∀ (epsilon : Nat) (xs : List C.Int8) →
+      ∀ (epsilon : ℕ) (xs : List C.Int8) →
       CertifiedEGraphEdge
         integerLayerNormEGraphSemantics
         (rawIntegerLayerNorm epsilon xs)
         (centeredIntegerLayerNorm epsilon xs)
     centeredRadicand :
-      ∀ (epsilon : Nat) (xs : List C.Int8) →
+      ∀ (epsilon : ℕ) (xs : List C.Int8) →
       CertifiedEGraphEdge
         integerLayerNormEGraphSemantics
         (centeredIntegerLayerNorm epsilon xs)
         (radicandIntegerLayerNorm epsilon xs)
     rawRadicand :
-      ∀ (epsilon : Nat) (xs : List C.Int8) →
+      ∀ (epsilon : ℕ) (xs : List C.Int8) →
       EGraphSemanticPath
         (semantics integerLayerNormAStarClosure)
         (rawIntegerLayerNorm epsilon xs)
         (radicandIntegerLayerNorm epsilon xs)
     soundPath :
-      ∀ (epsilon : Nat) (xs : List C.Int8) →
+      ∀ (epsilon : ℕ) (xs : List C.Int8) →
       interpret (semantics integerLayerNormAStarClosure)
         (rawIntegerLayerNorm epsilon xs)
       ≡
@@ -1443,7 +1443,7 @@ canonical-integer-layernorm-egraph-astar-theorem =
 --
 --   raw -> centered -> radicand
 --
--- The Nat rank counts the remaining normalization phases. A* remains the
+-- The ℕ rank counts the remaining normalization phases. A* remains the
 -- cost-guidance carrier; semantic equality still comes from the e-graph
 -- interpretation. The resulting stable phase is persistent for every
 -- horizon, giving an explicit infinite stable tail.
@@ -1468,7 +1468,7 @@ integerLayerNormAStarStep integerLayerNormRadicandPhase =
   integerLayerNormRadicandPhase
 
 integerLayerNormAStarCandidate :
-  ∀ (epsilon : Nat) (xs : List C.Int8) →
+  ∀ (epsilon : ℕ) (xs : List C.Int8) →
   IntegerLayerNormAStarPhase →
   IntegerLayerNormExpression
 integerLayerNormAStarCandidate epsilon xs
@@ -1483,7 +1483,7 @@ integerLayerNormAStarCandidate epsilon xs
 
 integerLayerNormAStarRank :
   IntegerLayerNormAStarPhase →
-  Nat
+  ℕ
 integerLayerNormAStarRank integerLayerNormRawPhase =
   suc (suc zero)
 integerLayerNormAStarRank integerLayerNormCenteredPhase =
@@ -1551,7 +1551,7 @@ integerLayerNormAStarStableNext
 
 integerLayerNormAStarEventualStable :
   ∀ phase →
-  Σ Nat
+  Σ ℕ
     (λ n →
       integerLayerNormAStarStable
         (eGraphAStarIterate
@@ -1569,7 +1569,7 @@ integerLayerNormAStarEventualStable
   zero , refl
 
 integerLayerNormAStarStablePath :
-  ∀ {epsilon : Nat} {xs : List C.Int8} {phase} →
+  ∀ {epsilon : ℕ} {xs : List C.Int8} {phase} →
   integerLayerNormAStarStable phase →
   EGraphSemanticPath
     (semantics integerLayerNormAStarClosure)
@@ -1588,7 +1588,7 @@ integerLayerNormAStarStablePath
     (radicandIntegerLayerNorm _ _)
 
 integerLayerNorm-egraph-astar-finite-rank-witness :
-  ∀ (epsilon : Nat) (xs : List C.Int8) →
+  ∀ (epsilon : ℕ) (xs : List C.Int8) →
   EGraphAStarFiniteRankConvergenceWitness
     IntegerLayerNormExpression
     IntegerLayerNormAStarPhase
@@ -1607,9 +1607,9 @@ integerLayerNorm-egraph-astar-finite-rank-witness epsilon xs =
     integerLayerNormAStarStablePath
 
 integerLayerNorm-egraph-astar-eventual-semantic-closure :
-  ∀ (epsilon : Nat) (xs : List C.Int8)
+  ∀ (epsilon : ℕ) (xs : List C.Int8)
   (phase : IntegerLayerNormAStarPhase) →
-  Σ Nat
+  Σ ℕ
     (λ n →
       interpret
         (semantics integerLayerNormAStarClosure)
@@ -1629,9 +1629,9 @@ integerLayerNorm-egraph-astar-eventual-semantic-closure
     phase
 
 integerLayerNorm-egraph-astar-infinite-stable-tail :
-  ∀ (epsilon : Nat) (xs : List C.Int8)
+  ∀ (epsilon : ℕ) (xs : List C.Int8)
   (phase : IntegerLayerNormAStarPhase) →
-  Σ Nat
+  Σ ℕ
     (λ n →
       ∀ k →
       integerLayerNormAStarStable
@@ -1655,14 +1655,14 @@ record CanonicalIntegerLayerNormEGraphAStarInfiniteHorizonStabilityTheorem : Set
   constructor canonicalIntegerLayerNormEGraphAStarInfiniteHorizonStabilityTheorem
   field
     finiteRankWitness :
-      ∀ (epsilon : Nat) (xs : List C.Int8) →
+      ∀ (epsilon : ℕ) (xs : List C.Int8) →
       EGraphAStarFiniteRankConvergenceWitness
         IntegerLayerNormExpression
         IntegerLayerNormAStarPhase
     eventualSemanticClosure :
-      ∀ (epsilon : Nat) (xs : List C.Int8)
+      ∀ (epsilon : ℕ) (xs : List C.Int8)
       (phase : IntegerLayerNormAStarPhase) →
-      Σ Nat
+      Σ ℕ
         (λ n →
           interpret
             (semantics integerLayerNormAStarClosure)
@@ -1676,9 +1676,9 @@ record CanonicalIntegerLayerNormEGraphAStarInfiniteHorizonStabilityTheorem : Set
             (semantics integerLayerNormAStarClosure)
             (radicandIntegerLayerNorm epsilon xs))
     infiniteStableTail :
-      ∀ (epsilon : Nat) (xs : List C.Int8)
+      ∀ (epsilon : ℕ) (xs : List C.Int8)
       (phase : IntegerLayerNormAStarPhase) →
-      Σ Nat
+      Σ ℕ
         (λ n →
           ∀ k →
           integerLayerNormAStarStable
@@ -1713,9 +1713,9 @@ record CanonicalIntegerLayerNormAStarExecutionBridgeTheorem : Set₁ where
   constructor canonicalIntegerLayerNormAStarExecutionBridgeTheorem
   field
     stableSemanticTail :
-      ∀ (epsilon : Nat) (xs : List C.Int8)
+      ∀ (epsilon : ℕ) (xs : List C.Int8)
       (phase : IntegerLayerNormAStarPhase) →
-      Σ Nat
+      Σ ℕ
         (λ n →
           ∀ k →
           interpret
@@ -1746,9 +1746,9 @@ canonical-integer-layernorm-astar-execution-bridge-theorem =
     (aStar-haskell-monad-surface IntegerLayerNormExpression)
   where
   stableSemanticTail :
-    ∀ (epsilon : Nat) (xs : List C.Int8)
+    ∀ (epsilon : ℕ) (xs : List C.Int8)
     (phase : IntegerLayerNormAStarPhase) →
-    Σ Nat
+    Σ ℕ
       (λ n →
         ∀ k →
         interpret
@@ -1787,7 +1787,7 @@ canonical-integer-layernorm-astar-execution-bridge-theorem =
 ------------------------------------------------------------------------
 
 nat-ring-solver-layernorm-contribution :
-  ∀ (xs : List C.Int8) (epsilon : Nat) →
+  ∀ (xs : List C.Int8) (epsilon : ℕ) →
   (suc epsilon * length xs * length xs)
   ≡
   (epsilon * length xs * length xs)
@@ -1796,7 +1796,7 @@ nat-ring-solver-layernorm-contribution =
   NatRingSolver.solve-∀
 
 integerLayerNorm-epsilon-contribution-suc :
-  ∀ (xs : List C.Int8) (epsilon : Nat) →
+  ∀ (xs : List C.Int8) (epsilon : ℕ) →
   (suc epsilon * length xs * length xs)
   ≡
   (epsilon * length xs * length xs)
@@ -1812,7 +1812,7 @@ integerLayerNorm-radicand-epsilon-zero :
 integerLayerNorm-radicand-epsilon-zero xs = refl
 
 integerLayerNorm-radicand-epsilon-suc :
-  ∀ (xs : List C.Int8) (epsilon : Nat) →
+  ∀ (xs : List C.Int8) (epsilon : ℕ) →
   C.integerLayerNormRadicand xs (suc epsilon)
   ≡
   C.integerLayerNormRadicand xs epsilon
@@ -1838,7 +1838,7 @@ record IntegerLayerNormConfigurationStabilityTheorem : Set₁ where
     eGraphAStar :
       CanonicalIntegerLayerNormEGraphAStarTheorem
     centeredStatisticsIndependentOfEpsilon :
-      ∀ (xs : List C.Int8) (epsilon delta : Nat) →
+      ∀ (xs : List C.Int8) (epsilon delta : ℕ) →
       centered
         (integerLayerNormSemanticInterpret
           (rawIntegerLayerNorm epsilon xs))
@@ -1860,7 +1860,7 @@ record IntegerLayerNormConfigurationStabilityTheorem : Set₁ where
 open IntegerLayerNormConfigurationStabilityTheorem public
 
 integer-layernorm-centered-statistics-independent-of-epsilon :
-  ∀ (xs : List C.Int8) (epsilon delta : Nat) →
+  ∀ (xs : List C.Int8) (epsilon delta : ℕ) →
   centered
     (integerLayerNormSemanticInterpret
       (rawIntegerLayerNorm epsilon xs))
@@ -1892,7 +1892,7 @@ integer-layernorm-configuration-stability-theorem =
     integer-layernorm-denominator-configuration-stable
 
 integerLayerNorm-radicand-epsilon-linear :
-  ∀ (xs : List C.Int8) (epsilon : Nat) →
+  ∀ (xs : List C.Int8) (epsilon : ℕ) →
   C.integerLayerNormRadicand xs epsilon
   ≡
   C.integerLayerNormVarianceNumerator xs
@@ -1938,14 +1938,14 @@ record IntegerLayerNormEpsilonRayGrowthTheorem : Set₁ where
       ≡
       C.integerLayerNormVarianceNumerator xs
     successorRay :
-      ∀ (xs : List C.Int8) (epsilon : Nat) →
+      ∀ (xs : List C.Int8) (epsilon : ℕ) →
       C.integerLayerNormRadicand xs (suc epsilon)
       ≡
       C.integerLayerNormRadicand xs epsilon
       +Int
       (pos (length xs * length xs))
     linearRay :
-      ∀ (xs : List C.Int8) (epsilon : Nat) →
+      ∀ (xs : List C.Int8) (epsilon : ℕ) →
       C.integerLayerNormRadicand xs epsilon
       ≡
       C.integerLayerNormVarianceNumerator xs
@@ -2470,7 +2470,7 @@ fractalTransportedEncodeInjective F {upper = upper} r eq =
 ------------------------------------------------------------------------
 -- Canonical GRU instantiation of the fractal injective-composition kernel.
 --
--- Nat indexes scale. The relation m ≤ n records refinement from a lower
+-- ℕ indexes scale. The relation m ≤ n records refinement from a lower
 -- level to an upper level. The canonical statistical observation is reused
 -- unchanged at every scale, and the inter-level transport is the identity.
 -- This is therefore an explicit scale-invariant self-similar instance,
@@ -2479,7 +2479,7 @@ fractalTransportedEncodeInjective F {upper = upper} r eq =
 ------------------------------------------------------------------------
 
 GRUFractalLevel : Set
-GRUFractalLevel = Nat
+GRUFractalLevel = ℕ
 
 GRUFractalRefines : GRUFractalLevel → GRUFractalLevel → Set
 GRUFractalRefines lower upper = lower ≤ upper
@@ -2887,13 +2887,13 @@ record GRUFractalLimitConvergenceWitness
   (Refines : Level → Level → Set)
   (encode : Level → State → Observation)
   (limitEncode : State → LimitObservation)
-  (rank : Nat → Level)
-  (Converges : (Nat → Observation) → LimitObservation → Set)
+  (rank : ℕ → Level)
+  (Converges : (ℕ → Observation) → LimitObservation → Set)
   : Set₁ where
   constructor gruFractalLimitConvergenceWitness
   field
     approximationSequence :
-      State → Nat → Observation
+      State → ℕ → Observation
     rankEncoding :
       ∀ n state →
       approximationSequence state n ≡
@@ -2929,8 +2929,8 @@ gruFractalLimitConvergence-limitLeftInverse :
   {Refines : Level → Level → Set}
   {encode : Level → State → Observation}
   {limitEncode : State → LimitObservation}
-  {rank : Nat → Level}
-  {Converges : (Nat → Observation) → LimitObservation → Set}
+  {rank : ℕ → Level}
+  {Converges : (ℕ → Observation) → LimitObservation → Set}
   (W :
     GRUFractalLimitConvergenceWitness
       Level State Observation LimitObservation
@@ -2950,8 +2950,8 @@ gruFractalLimitConvergence-fractalLimitClosure :
   {Refines : Level → Level → Set}
   {encode : Level → State → Observation}
   {limitEncode : State → LimitObservation}
-  {rank : Nat → Level}
-  {Converges : (Nat → Observation) → LimitObservation → Set}
+  {rank : ℕ → Level}
+  {Converges : (ℕ → Observation) → LimitObservation → Set}
   (W :
     GRUFractalLimitConvergenceWitness
       Level State Observation LimitObservation
@@ -2971,8 +2971,8 @@ gruFractalLimitConvergence-limitInjective :
   {Refines : Level → Level → Set}
   {encode : Level → State → Observation}
   {limitEncode : State → LimitObservation}
-  {rank : Nat → Level}
-  {Converges : (Nat → Observation) → LimitObservation → Set}
+  {rank : ℕ → Level}
+  {Converges : (ℕ → Observation) → LimitObservation → Set}
   (W :
     GRUFractalLimitConvergenceWitness
       Level State Observation LimitObservation
@@ -3114,7 +3114,7 @@ record StateIsomorphism (A B : Set) : Set where
 open StateIsomorphism public
 
 iterateIsomorphism :
-  ∀ {A : Set} → (A → A) → Nat → A → A
+  ∀ {A : Set} → (A → A) → ℕ → A → A
 iterateIsomorphism f zero a = a
 iterateIsomorphism f (suc n) a = iterateIsomorphism f n (f a)
 
@@ -3137,7 +3137,7 @@ stepConjugacy-iterate :
   {sourceStep : A → A}
   {targetStep : B → B}
   (W : StepConjugacyWitness A B sourceStep targetStep)
-  (n : Nat)
+  (n : ℕ)
   (a : A) →
   to (isomorphism W) (iterateIsomorphism sourceStep n a) ≡
   iterateIsomorphism targetStep n (to (isomorphism W) a)
@@ -3272,8 +3272,8 @@ record RecurrentAssociativeScanTheorem
 
     prefixCorrect :
       ∀ (R : C.RecurrentNetwork State Input)
-        (xs : Nat → Input)
-        (n : Nat)
+        (xs : ℕ → Input)
+        (n : ℕ)
         (s : State) →
       C.applyEndomorphism
         (C.recurrentPrefixEndomorphism R xs n)
@@ -3283,8 +3283,8 @@ record RecurrentAssociativeScanTheorem
 
     prefixSplit :
       ∀ (R : C.RecurrentNetwork State Input)
-        (xs : Nat → Input)
-        (m n : Nat)
+        (xs : ℕ → Input)
+        (m n : ℕ)
         (s : State) →
       C.recurrentPrefixState R xs (m + n) s
       ≡
@@ -3554,7 +3554,7 @@ canonical-gruf4-watkins-prefix-composition-theorem =
 
 commutingIterate :
   ∀ {S : Set} →
-  (S → S) → Nat → S → S
+  (S → S) → ℕ → S → S
 commutingIterate step zero s = s
 commutingIterate step (suc n) s =
   step (commutingIterate step n s)
@@ -3626,7 +3626,7 @@ canonicalCount-freeMonoidActionHomomorphism :
   ∀ (K : C.CanonicalFullLearnerKernel) →
   FreeMonoidActionHomomorphism
     C.CanonicalFullLearnerState
-    Nat
+    ℕ
     (C.canonicalFullStep K)
     suc
     (λ s → C.totalCount (C.lcbCounts s))
@@ -3654,7 +3654,7 @@ recurrentPrefix-scan-lifts-conjugacy :
   (h :
     ∀ (s : State) (x : Input) →
     replace (step s x) ≡ step (replace s) x) →
-  ∀ (xs : List Input) (n : Nat) (s : State) →
+  ∀ (xs : List Input) (n : ℕ) (s : State) →
     replace
       (C.recurrentPrefixState
         (C.recurrentNetwork step)
@@ -3700,7 +3700,7 @@ record RecurrentScanConjugacyTheorem
           ∀ (s : State) (x : Input) →
           replace (step s x) ≡ step (replace s) x) →
         (xs : List Input) →
-        (n : Nat) →
+        (n : ℕ) →
         (s : State) →
         replace
           (C.recurrentPrefixState
@@ -3842,8 +3842,8 @@ productRecurrentPrefix-correct :
   ∀ {StateA StateB Input : Set}
   (RA : C.RecurrentNetwork StateA Input)
   (RB : C.RecurrentNetwork StateB Input)
-  (xs : Nat → Input)
-  (n : Nat)
+  (xs : ℕ → Input)
+  (n : ℕ)
   (s : StateA)
   (t : StateB) →
   C.recurrentPrefixState
@@ -4093,17 +4093,17 @@ canonicalWatkinsTarget-endogenous-leftInverse K observe inverse leftInverse s =
       (leftInverse s))
 
 suc-injective :
-  ∀ {m n : Nat} → suc m ≡ suc n → m ≡ n
+  ∀ {m n : ℕ} → suc m ≡ suc n → m ≡ n
 suc-injective refl = refl
 
 natPlus-left-cancel :
-  ∀ (k m n : Nat) → k + m ≡ k + n → m ≡ n
+  ∀ (k m n : ℕ) → k + m ≡ k + n → m ≡ n
 natPlus-left-cancel zero m n eq = eq
 natPlus-left-cancel (suc k) m n eq =
   natPlus-left-cancel k m n (suc-injective eq)
 
 canonicalOrbit-state-injective :
-  ∀ K s {m n : Nat} →
+  ∀ K s {m n : ℕ} →
   C.iterateCanonical K m s ≡ C.iterateCanonical K n s →
   m ≡ n
 canonicalOrbit-state-injective K s {m} {n} eq =
@@ -4196,7 +4196,7 @@ collision-implies-no-leftInverse-via-injectivity
 canonicalWatkinsTargetSignalStream :
   C.CanonicalFullLearnerKernel →
   C.CanonicalFullLearnerState →
-  Nat →
+  ℕ →
   C.Int8
 canonicalWatkinsTargetSignalStream K s n =
   C.canonicalWatkinsTarget K
@@ -4205,7 +4205,7 @@ canonicalWatkinsTargetSignalStream K s n =
 canonicalWatkinsTarget-recurrent-prefix-correct :
   ∀ (K : C.CanonicalFullLearnerKernel)
   (s : C.CanonicalFullLearnerState)
-  (n : Nat)
+  (n : ℕ)
   (h : C.GRUState) →
   C.applyEndomorphism
     (C.recurrentPrefixEndomorphism
@@ -4229,9 +4229,9 @@ canonicalWatkinsTarget-recurrent-prefix-correct K s n h =
 record ExactTwoCounterConfiguration : Set where
   constructor exactTwoCounterConfiguration
   field
-    control : Nat
-    counter₁ : Nat
-    counter₂ : Nat
+    control : ℕ
+    counter₁ : ℕ
+    counter₂ : ℕ
 
 record ExactTwoCounterMachine : Set₁ where
   constructor exactTwoCounterMachine
@@ -4316,7 +4316,7 @@ open ContinuousLeftInverseTheorem public
 record RingStateInjectivityTheorem (State : Set) : Set₁ where
   constructor ringStateInjectivityTheorem
   field
-    ringState : Nat → State
+    ringState : ℕ → State
     ringStateInjective :
       ∀ {m n} → ringState m ≡ ringState n → m ≡ n
 
@@ -4324,7 +4324,7 @@ open RingStateInjectivityTheorem public
 
 record DenseNeighborhoodSeparationTheorem
   (State Feature : Set)
-  (embed : Nat → State)
+  (embed : ℕ → State)
   (observe : State → Feature) : Set₁ where
   constructor denseNeighborhoodSeparationTheorem
   field
@@ -4419,7 +4419,7 @@ record CanonicalEndogenousMinimaxBellmanShapleyUAPTheorem : Set₁ where
     targetScan :
       ∀ (K : C.CanonicalFullLearnerKernel)
       (s : C.CanonicalFullLearnerState)
-      (n : Nat)
+      (n : ℕ)
       (h : C.GRUState) →
       C.applyEndomorphism
         (C.recurrentPrefixEndomorphism
@@ -4457,7 +4457,7 @@ record CanonicalEndogenousMinimaxBellmanShapleyUAPTheorem : Set₁ where
     infiniteStateOrbit :
       ∀ (K : C.CanonicalFullLearnerKernel)
       (s : C.CanonicalFullLearnerState) →
-      ∀ {m n : Nat} →
+      ∀ {m n : ℕ} →
       C.iterateCanonical K m s ≡ C.iterateCanonical K n s →
       m ≡ n
 
@@ -4477,7 +4477,7 @@ canonicalDeterministicFiniteStepDivergenceInevitability :
   ∀ {A}
   (K : C.CanonicalFullLearnerKernel)
   (s : C.CanonicalFullLearnerState)
-  (n : Nat) →
+  (n : ℕ) →
   C.iterateCanonical K (suc n) s ≢ s
 canonicalDeterministicFiniteStepDivergenceInevitability =
   C.canonicalAperiodic
@@ -4487,13 +4487,13 @@ canonicalNoFiniteStepConvergenceToFixedPoint :
   (K : C.CanonicalFullLearnerKernel)
   (s equilibrium : C.CanonicalFullLearnerState) →
   C.canonicalFullStep K equilibrium ≡ equilibrium →
-  ¬ (Σ Nat (λ n → C.iterateCanonical K n s ≡ equilibrium))
+  ¬ (Σ ℕ (λ n → C.iterateCanonical K n s ≡ equilibrium))
 canonicalNoFiniteStepConvergenceToFixedPoint K s equilibrium fixedPoint reached =
   C.canonicalNoFixedPoint K equilibrium fixedPoint
 
 canonicalIterateComposition :
   ∀ (K : C.CanonicalFullLearnerKernel)
-  (m n : Nat)
+  (m n : ℕ)
   (s : C.CanonicalFullLearnerState) →
   C.iterateCanonical K (m + n) s ≡
   C.iterateCanonical K n (C.iterateCanonical K m s)
@@ -4504,7 +4504,7 @@ canonicalIterateComposition K m (suc n) s
   cong (C.canonicalFullStep K)
     (canonicalIterateComposition K m n s)
 
-recurrentPrefixStepWork : Nat → Nat
+recurrentPrefixStepWork : ℕ → ℕ
 recurrentPrefixStepWork zero = zero
 recurrentPrefixStepWork (suc n) = suc (recurrentPrefixStepWork n)
 
@@ -4546,7 +4546,7 @@ hardSignGate-idempotent x with C.hardSign x
 ... | C.zeroSign = refl
 ... | C.positiveSign = refl
 
-iterateState : ∀ {State : Set} → (State → State) → Nat → State → State
+iterateState : ∀ {State : Set} → (State → State) → ℕ → State → State
 iterateState step zero s = s
 iterateState step (suc n) s = step (iterateState step n s)
 
@@ -4557,7 +4557,7 @@ record FiniteRankStabilityCertificate
   (equilibrium : State) : Set₁ where
   constructor finiteRankStabilityCertificate
   field
-    rank : State → Nat
+    rank : State → ℕ
     equilibriumFixed :
       step equilibrium ≡ equilibrium
     rankZero :
@@ -4566,7 +4566,7 @@ record FiniteRankStabilityCertificate
       ∀ s → s ≢ equilibrium →
       rank (step s) < rank s
     eventualExact :
-      ∀ s → Σ Nat (λ n → iterateState step n s ≡ equilibrium)
+      ∀ s → Σ ℕ (λ n → iterateState step n s ≡ equilibrium)
 
 open FiniteRankStabilityCertificate public
 
@@ -4585,25 +4585,25 @@ canonicalFullLearner-no-finite-rank-stability K equilibrium certificate =
     (FiniteRankStabilityCertificate.equilibriumFixed certificate)
 
 sumNat :
-  List Nat → Nat
+  List ℕ → ℕ
 sumNat [] = zero
 sumNat (x ∷ xs) = x + sumNat xs
 
 bundleCost :
   ∀ {Good : Set} →
   List Good →
-  (Good → Nat) →
-  (Good → Nat) →
-  Nat
+  (Good → ℕ) →
+  (Good → ℕ) →
+  ℕ
 bundleCost goods price bundle =
   sumNat (map (λ g → price g * bundle g) goods)
 
 BudgetFeasible :
   ∀ {Good : Set} →
   List Good →
-  (Good → Nat) →
-  (Good → Nat) →
-  (Good → Nat) →
+  (Good → ℕ) →
+  (Good → ℕ) →
+  (Good → ℕ) →
   Set
 BudgetFeasible goods price endowment bundle =
   bundleCost goods price bundle ≤
@@ -4613,12 +4613,12 @@ record FiniteNonIIDWalrasianEquilibrium
   (Agent Good : Set)
   (agents : List Agent)
   (goods : List Good)
-  (utility : Agent → (Good → Nat) → Nat)
-  (endowment : Agent → Good → Nat) : Set₁ where
+  (utility : Agent → (Good → ℕ) → ℕ)
+  (endowment : Agent → Good → ℕ) : Set₁ where
   constructor finiteNonIIDWalrasianEquilibrium
   field
-    price : Good → Nat
-    allocation : Agent → Good → Nat
+    price : Good → ℕ
+    allocation : Agent → Good → ℕ
     budgetOptimal :
       ∀ i bundle →
       BudgetFeasible
@@ -4640,10 +4640,10 @@ record FiniteTUShapleyAllocationEquilibrium
   (players : List Player) : Set₁ where
   constructor finiteTUShapleyAllocationEquilibrium
   field
-    coalitionWorth : List Player → Nat
-    payoff : Player → Nat
-    scaledShapley : Player → Nat
-    scaledValue : Nat
+    coalitionWorth : List Player → ℕ
+    payoff : Player → ℕ
+    scaledShapley : Player → ℕ
+    scaledValue : ℕ
     scaledShapleyCorrect :
       ∀ p →
       scaledValue * payoff p ≡
@@ -4780,7 +4780,7 @@ data TrivialContinuity : Set where
 
 iterateUpdate :
   ∀ {State : Set} →
-  (State → State) → Nat → State → State
+  (State → State) → ℕ → State → State
 iterateUpdate update zero state = state
 iterateUpdate update (suc n) state =
   update (iterateUpdate update n state)
@@ -4789,7 +4789,7 @@ GloballyEventuallyFixed :
   ∀ {State : Set} →
   (State → State) → State → Set
 GloballyEventuallyFixed update fixed =
-  ∀ state → Σ Nat (λ n → iterateUpdate update n state ≡ fixed)
+  ∀ state → Σ ℕ (λ n → iterateUpdate update n state ≡ fixed)
 
 ------------------------------------------------------------------------
 -- Guarded Cubical (no-Glue) dense-separation kernel.
@@ -4812,7 +4812,7 @@ record GuardedCubicalTrace (Feature : Set) : Set where
 
 guardedCubicalTraceStage :
   ∀ {Feature : Set} →
-  Nat →
+  ℕ →
   GuardedCubicalTrace Feature →
   Feature
 guardedCubicalTraceStage zero trace = GuardedCubicalTrace.head trace
@@ -4838,7 +4838,7 @@ record GuardedCubicalDenseRepresentation
     denseSeparation :
       ∀ {s t} →
       s ≢ t →
-      Σ Nat
+      Σ ℕ
         (λ n →
           guardedCubicalTraceStage n (observe s) ≢
           guardedCubicalTraceStage n (observe t))
@@ -4880,7 +4880,7 @@ record GuardedCubicalConjugacy
 iterateGuardedFeature :
   ∀ {Feature : Set} →
   (GuardedCubicalTrace Feature → GuardedCubicalTrace Feature) →
-  Nat →
+  ℕ →
   GuardedCubicalTrace Feature →
   GuardedCubicalTrace Feature
 iterateGuardedFeature step zero s = s
@@ -4948,7 +4948,7 @@ record GuardedCubicalDenseSeparationEmergentCompositionTheorem
     denseStageSeparation :
       ∀ {s t} →
       s ≢ t →
-      Σ Nat
+      Σ ℕ
         (λ n →
           guardedCubicalTraceStage n
             (GuardedCubicalDenseRepresentation.observe R s) ≢
@@ -5020,7 +5020,7 @@ record GRUInjectiveTailStabilityConvergenceIdentifiabilityTheorem
       featureStep (encode s)
     featureTailStable :
       ∀ s →
-      Σ Nat
+      Σ ℕ
         (λ n →
           featureStep
             (iterateStep
@@ -5038,7 +5038,7 @@ open GRUInjectiveTailStabilityConvergenceIdentifiabilityTheorem public
 iterateStep-add :
   ∀ {State : Set}
   (step : State → State)
-  (m n : Nat)
+  (m n : ℕ)
   (s : State) →
   iterateStep step (m + n) s
   ≡
@@ -5076,7 +5076,7 @@ gruInjectiveTailStability-tailFixedPoint :
       featureStep
       encode) →
   ∀ s →
-  Σ Nat
+  Σ ℕ
     (λ n →
       stateStep
         (iterateStep stateStep n s)
@@ -5123,7 +5123,7 @@ gruInjectiveTailStability-eventualStationarity :
       featureStep
       encode) →
   ∀ s →
-  Σ Nat
+  Σ ℕ
     (λ n →
       ∀ k →
       iterateStep stateStep (n + k) s
@@ -5182,7 +5182,7 @@ successor-never-globally-eventually-fixed-at-zero h =
     iterateUpdate-suc (suc n) =
       cong suc (iterateUpdate-suc n)
 
-    no-suc-zero : ∀ {n : Nat} → suc n ≢ 0
+    no-suc-zero : ∀ {n : ℕ} → suc n ≢ 0
     no-suc-zero ()
 
 exact-injective-continuous-leftInverse-does-not-imply-update-stability :
@@ -5252,32 +5252,32 @@ canonical-hard-sparsity-degeneracy-theorem =
 ------------------------------------------------------------------------
 
 ActionWeights : Set
-ActionWeights = List Nat
+ActionWeights = List ℕ
 
-nonzeroWeight : Nat → Nat
+nonzeroWeight : ℕ → ℕ
 nonzeroWeight zero = zero
 nonzeroWeight (suc _) = suc zero
 
-actionSupportCount : ActionWeights → Nat
+actionSupportCount : ActionWeights → ℕ
 actionSupportCount [] = zero
 actionSupportCount (x ∷ xs) =
   nonzeroWeight x + actionSupportCount xs
 
-actionWeightSum : ActionWeights → Nat
+actionWeightSum : ActionWeights → ℕ
 actionWeightSum [] = zero
 actionWeightSum (x ∷ xs) =
   x + actionWeightSum xs
 
-actionWeightSquareSum : ActionWeights → Nat
+actionWeightSquareSum : ActionWeights → ℕ
 actionWeightSquareSum [] = zero
 actionWeightSquareSum (x ∷ xs) =
   (x * x) + actionWeightSquareSum xs
 
-generalTsallis2Denominator : ActionWeights → Nat
+generalTsallis2Denominator : ActionWeights → ℕ
 generalTsallis2Denominator xs =
   length xs * actionWeightSquareSum xs
 
-generalTsallis2Numerator : ActionWeights → Nat
+generalTsallis2Numerator : ActionWeights → ℕ
 generalTsallis2Numerator xs =
   generalTsallis2Denominator xs ∸
   (actionWeightSum xs * actionWeightSum xs)
@@ -5346,7 +5346,7 @@ record UniformSupportTsallisBoundary
   (weights : ActionWeights) : Set₁ where
   constructor uniformSupportTsallisBoundary
   field
-    support : Nat
+    support : ℕ
     supportLaw :
       support ≡ actionSupportCount weights
     uniformSquareLaw :
@@ -5355,7 +5355,7 @@ record UniformSupportTsallisBoundary
 
 ------------------------------------------------------------------------
 -- The continuous Shannon near-sparsity and Lipschitz conclusions from the
--- Hidden-Synergy paper are not reclassified as exact Nat equalities here.
+-- Hidden-Synergy paper are not reclassified as exact ℕ equalities here.
 -- The finite L1/path-norm definitions and the finite Tsallis-2 extension are
 -- exact; analytic regularity remains an explicit boundary.
 ------------------------------------------------------------------------
@@ -5446,7 +5446,7 @@ jaxRecurrentScan-step-law step state x xs with step state x
 
 jaxLexicographicScoreOrder :
   List C.ScoreEntry →
-  List Nat
+  List ℕ
 jaxLexicographicScoreOrder xs =
   map proj₂ (C.sortScores xs)
 
@@ -5461,7 +5461,7 @@ jaxSparseSupportSize :
   C.ActionSpace A →
   C.QFunction {A} →
   C.CountFunction {A} →
-  Nat
+  ℕ
 jaxSparseSupportSize K q c =
   C.supportSize K q c
 
@@ -5479,8 +5479,8 @@ jaxSparseSupportTopK :
   C.ActionSpace A →
   C.QFunction {A} →
   C.CountFunction {A} →
-  Nat →
-  List Nat
+  ℕ →
+  List ℕ
 jaxSparseSupportTopK K q c k =
   C.topCodes k
     (C.sortScores
@@ -5491,7 +5491,7 @@ jaxSparseSupportTopK-law :
   (K : C.ActionSpace A)
   (q : C.QFunction {A})
   (c : C.CountFunction {A})
-  (k : Nat) →
+  (k : ℕ) →
   jaxSparseSupportTopK K q c k ≡
   C.topCodes k
     (C.sortScores
@@ -5503,7 +5503,7 @@ jaxSparsemaxPolicyIndex :
   C.ActionSpace A →
   C.QFunction {A} →
   C.CountFunction {A} →
-  Nat
+  ℕ
 jaxSparsemaxPolicyIndex K q c =
   C.sparsemaxPolicy K q c
 
@@ -5530,7 +5530,7 @@ jaxIntegerLayerNormCenteredNumerators-law xs = refl
 
 jaxIntegerLayerNormRadicand :
   List C.Int8 →
-  Nat →
+  ℕ →
   Int
 jaxIntegerLayerNormRadicand =
   C.integerLayerNormRadicand
@@ -5543,7 +5543,7 @@ jaxIntegerLayerNormRadicand-law xs epsilon = refl
 
 jaxBatchedIntegerLayerNormRadicand :
   List (List C.Int8) →
-  Nat →
+  ℕ →
   List Int
 jaxBatchedIntegerLayerNormRadicand batch epsilon =
   map
@@ -5681,7 +5681,7 @@ record JAXExecutionMirrorReproof : Set₁ where
       (K : C.ActionSpace A)
       (q : C.QFunction {A})
       (c : C.CountFunction {A})
-      (k : Nat) →
+      (k : ℕ) →
       jaxSparseSupportTopK K q c k ≡
       C.topCodes k (C.sortScores (C.scoreList K q c))
     sparsemaxPolicyIndex :
@@ -5902,7 +5902,7 @@ globalConjugacyEquivalence-iterate :
       observe
       featureStep
       inverse)
-    (n : Nat)
+    (n : ℕ)
     (s : State) →
   observe (iterateState step n s)
   ≡
@@ -6773,7 +6773,7 @@ open CanonicalFiniteCycleExclusionIsomorphismTheorem public
 
 eGraphAStarIterate-isomorphism :
   ∀ {State : Set}
-  (step : State → State) (n : Nat) (s : State) →
+  (step : State → State) (n : ℕ) (s : State) →
   eGraphAStarIterate step n s ≡
   iterateIsomorphism step n s
 eGraphAStarIterate-isomorphism step zero s = refl
@@ -6854,9 +6854,9 @@ record FiniteMixedNashBrouwerGRUEGraphAStarDistributionTheorem
   (featureStep : Profile → Profile)
   (encode : State → Profile)
   (P : Distribution → Distribution)
-  (μ : Nat → Distribution)
+  (μ : ℕ → Distribution)
   (μ∞ : Distribution)
-  (Converges : (Nat → Distribution) → Distribution → Set) : Set₁ where
+  (Converges : (ℕ → Distribution) → Distribution → Set) : Set₁ where
   constructor finiteMixedNashBrouwerGRUEGraphAStarDistributionTheorem
   field
     brouwerNash :
@@ -6903,9 +6903,9 @@ finiteMixedNash-brouwer-gru-egraph-astar-distribution-proof :
   {featureStep : Profile → Profile}
   {encode : State → Profile}
   {P : Distribution → Distribution}
-  {μ : Nat → Distribution}
+  {μ : ℕ → Distribution}
   {μ∞ : Distribution}
-  {Converges : (Nat → Distribution) → Distribution → Set}
+  {Converges : (ℕ → Distribution) → Distribution → Set}
   (N :
     BrouwerMixedNashExistence
       Profile
@@ -6975,9 +6975,9 @@ finiteMixedNash-brouwer-gru-egraph-astar-distribution-proof-nash :
   {featureStep : Profile → Profile}
   {encode : State → Profile}
   {P : Distribution → Distribution}
-  {μ : Nat → Distribution}
+  {μ : ℕ → Distribution}
   {μ∞ : Distribution}
-  {Converges : (Nat → Distribution) → Distribution → Set}
+  {Converges : (ℕ → Distribution) → Distribution → Set}
   (W :
     FiniteMixedNashBrouwerGRUEGraphAStarDistributionTheorem
       Expression
@@ -7007,9 +7007,9 @@ finiteMixedNash-brouwer-gru-egraph-astar-distribution-fixed :
   {featureStep : Profile → Profile}
   {encode : State → Profile}
   {P : Distribution → Distribution}
-  {μ : Nat → Distribution}
+  {μ : ℕ → Distribution}
   {μ∞ : Distribution}
-  {Converges : (Nat → Distribution) → Distribution → Set}
+  {Converges : (ℕ → Distribution) → Distribution → Set}
   (W :
     FiniteMixedNashBrouwerGRUEGraphAStarDistributionTheorem
       Expression
@@ -7097,7 +7097,7 @@ finiteMixedNash-brouwer-egraph-astar-proof :
     stable W s →
     step W s ≡ s) →
   ∀ s →
-  ((Σ Nat
+  ((Σ ℕ
     (λ n →
       mixedNash
         (eGraphAStarIterate
@@ -7105,7 +7105,7 @@ finiteMixedNash-brouwer-egraph-astar-proof :
           n
           s)))
    ×
-   (Σ Nat
+   (Σ ℕ
     (λ n →
       interpret
         (semantics (closure W))
@@ -7154,7 +7154,7 @@ finiteMixedNash-egraph-astar-convergence :
     stable W s →
     step W s ≡ s) →
   ∀ s →
-  Σ Nat
+  Σ ℕ
     (λ n →
       mixedNash B
         (eGraphAStarIterate
@@ -7192,7 +7192,7 @@ finiteMixedNash-egraph-astar-eventualStationarity :
     stable W s →
     step W s ≡ s) →
   ∀ s →
-  Σ Nat
+  Σ ℕ
     (λ n →
       ∀ k →
       eGraphAStarIterate
@@ -7241,7 +7241,7 @@ finiteMixedNash-egraph-astar-proof :
     stable W s →
     step W s ≡ s) →
   ∀ s →
-  (Σ Nat
+  (Σ ℕ
     (λ n →
       mixedNash B
         (eGraphAStarIterate
@@ -7249,7 +7249,7 @@ finiteMixedNash-egraph-astar-proof :
           n
           s)))
   ×
-  (Σ Nat
+  (Σ ℕ
     (λ n →
       interpret
         (semantics (closure W))
@@ -7308,7 +7308,7 @@ finiteMixedNash-cycle-transport :
     mixedNash B p →
     mixedNashB (to iso p)) →
   ∀ s →
-  (Σ Nat
+  (Σ ℕ
     (λ n →
       mixedNashB
         (eGraphAStarIterate
@@ -7423,7 +7423,7 @@ finiteMixedNash-from-GRU-tail :
     featureStep f ≡ f →
     mixedNash f) →
   ∀ s →
-  Σ Nat
+  Σ ℕ
     (λ n →
       mixedNash
         (encode
@@ -7495,7 +7495,7 @@ canonical-operator-composition-theorem =
     C.endomorphismAssociative
 
 f4Orbit :
-  C.F4IntUKernel → C.Int8 → Nat → C.F4IntUState → C.F4IntUState
+  C.F4IntUKernel → C.Int8 → ℕ → C.F4IntUState → C.F4IntUState
 f4Orbit K g zero s = s
 f4Orbit K g (suc n) s =
   C.f4ThetaStep K (f4Orbit K g n s) g
@@ -7506,7 +7506,7 @@ record F4UpperBoundedTrajectory
   (s : C.F4IntUState) : Set₁ where
   constructor f4UpperBoundedTrajectory
   field
-    bound : Nat
+    bound : ℕ
     bounded :
       ∀ n →
       C.code (C.thetaQ (f4Orbit K g n s)) ≤ pos bound
@@ -7647,9 +7647,9 @@ open CanonicalPureNonOrangeBypassCompletionTheorem public
 record StationaryLimitTheorem
   (Distribution : Set)
   (P : Distribution → Distribution)
-  (μ : Nat → Distribution)
+  (μ : ℕ → Distribution)
   (μ∞ : Distribution)
-  (Converges : (Nat → Distribution) → Distribution → Set) : Set₁ where
+  (Converges : (ℕ → Distribution) → Distribution → Set) : Set₁ where
   constructor stationaryLimitTheorem
   field
     transitionLaw :
@@ -7687,9 +7687,9 @@ record CanonicalStationarySubcompositionTheorem : Set₁ where
     stationaryLimitContract :
       ∀ {Distribution : Set}
         (P : Distribution → Distribution)
-        (μ : Nat → Distribution)
+        (μ : ℕ → Distribution)
         (π : Distribution)
-        (Converges : (Nat → Distribution) → Distribution → Set) →
+        (Converges : (ℕ → Distribution) → Distribution → Set) →
       (∀ n → μ (suc n) ≡ P (μ n)) →
       Converges μ π →
       (Converges μ π → P π ≡ π) →
@@ -7709,9 +7709,9 @@ canonical-stationary-subcomposition-theorem =
 record DistributionalStationaryAggregateTransport
   (Distribution Economic : Set)
   (P : Distribution → Distribution)
-  (μ : Nat → Distribution)
+  (μ : ℕ → Distribution)
   (μ∞ : Distribution)
-  (Converges : (Nat → Distribution) → Distribution → Set)
+  (Converges : (ℕ → Distribution) → Distribution → Set)
   (aggregate : Distribution → Economic)
   (economicStep : Economic → Economic) : Set₁ where
   constructor distributionalStationaryAggregateTransport
@@ -7733,9 +7733,9 @@ open DistributionalStationaryAggregateTransport public
 distributionalStationaryAggregate-stationary :
   ∀ {Distribution Economic : Set}
   {P : Distribution → Distribution}
-  {μ : Nat → Distribution}
+  {μ : ℕ → Distribution}
   {μ∞ : Distribution}
-  {Converges : (Nat → Distribution) → Distribution → Set}
+  {Converges : (ℕ → Distribution) → Distribution → Set}
   {aggregate : Distribution → Economic}
   {economicStep : Economic → Economic}
   (W :
@@ -7782,12 +7782,12 @@ record StrictFunctionClassSeparation
     witnessNotInBase :
       ¬ FBase witness
 
-twoPow : Nat → Nat
+twoPow : ℕ → ℕ
 twoPow zero = suc zero
 twoPow (suc k) = twoPow k + twoPow k
 
 nat-plus-right-mono :
-  ∀ {a b c : Nat} → a ≤ b → a + c ≤ b + c
+  ∀ {a b c : ℕ} → a ≤ b → a + c ≤ b + c
 nat-plus-right-mono z≤n = z≤n
 nat-plus-right-mono (s≤s p) = s≤s (nat-plus-right-mono p)
 
@@ -7810,12 +7810,12 @@ record EfficientOperatorMonoidRepresentation
           f
           (C.composeEndomorphism g h))
         s
-    representationSpan : Nat
-    decodingSpan : Nat
-    compositionSpan : Nat
-    compositionWork : Nat
-    scanSpan : Nat → Nat
-    scanWork : Nat → Nat
+    representationSpan : ℕ
+    decodingSpan : ℕ
+    compositionSpan : ℕ
+    compositionWork : ℕ
+    scanSpan : ℕ → ℕ
+    scanWork : ℕ → ℕ
     scanSpan-linear :
       ∀ h →
       scanSpan h ≤ compositionSpan + compositionSpan * h
@@ -7832,9 +7832,9 @@ record ParallelPrefixComplexityCertificate
     exactScan :
       RecurrentAssociativeScanTheorem State Input
     totalSpan :
-      Nat → Nat
+      ℕ → ℕ
     totalWork :
-      Nat → Nat
+      ℕ → ℕ
     totalSpan-definition :
       ∀ h →
       totalSpan h ≡
@@ -7854,9 +7854,9 @@ record LogarithmicScanSpanCertificate
   (State Input : Set) : Set₁ where
   constructor logarithmicScanSpanCertificate
   field
-    scanSpan : Nat → Nat
-    coefficient : Nat
-    additive : Nat
+    scanSpan : ℕ → ℕ
+    coefficient : ℕ
+    additive : ℕ
     scanSpan-bound :
       ∀ k h →
       h ≤ twoPow k →
@@ -7873,13 +7873,13 @@ record LogarithmicPrefixScanComplexityTheorem
     logarithmicSpan :
       LogarithmicScanSpanCertificate State Input
     representationOverhead :
-      Nat
+      ℕ
     decodingOverhead :
-      Nat
+      ℕ
     horizonSpan :
-      Nat → Nat
+      ℕ → ℕ
     horizonWork :
-      Nat → Nat
+      ℕ → ℕ
     horizonSpan-definition :
       ∀ h →
       horizonSpan h ≡
@@ -7892,8 +7892,8 @@ record LogarithmicPrefixScanComplexityTheorem
       EfficientOperatorMonoidRepresentation.compositionWork operatorMonoid * h
     exactness :
       ∀ (R : C.RecurrentNetwork State Input)
-        (xs : Nat → Input)
-        (h : Nat)
+        (xs : ℕ → Input)
+        (h : ℕ)
         (s : State) →
       C.applyEndomorphism
         (C.recurrentPrefixEndomorphism R xs h)
@@ -8767,7 +8767,7 @@ canonical-unconditional-agda-egraph-astar-closure =
 ------------------------------------------------------------------------
 
 f4-add-right-nonnegative :
-  ∀ (n m : Nat) → n ≤ n + m
+  ∀ (n m : ℕ) → n ≤ n + m
 f4-add-right-nonnegative n zero = ≤-refl
 f4-add-right-nonnegative n (suc m) =
   s≤s (f4-add-right-nonnegative n m)
@@ -8806,8 +8806,8 @@ open GeneralizedWalrasianData public
 
 FiniteNonIIDPreference :
   ∀ {Agent Good : Set}
-  (utility : Agent → (Good → Nat) → Nat) →
-  Agent → (Agent → Good → Nat) → (Agent → Good → Nat) → Set
+  (utility : Agent → (Good → ℕ) → ℕ) →
+  Agent → (Agent → Good → ℕ) → (Agent → Good → ℕ) → Set
 FiniteNonIIDPreference utility i x y =
   utility i (x i) ≤ utility i (y i)
 
@@ -8815,10 +8815,10 @@ record FiniteNonIIDGeneralizedEquilibrium
   (Agent Good : Set)
   (agents : List Agent)
   (goods : List Good)
-  (utility : Agent → (Good → Nat) → Nat)
-  (endowment : Agent → Good → Nat)
-  (price : Good → Nat)
-  (allocation : Agent → Good → Nat) : Set₁ where
+  (utility : Agent → (Good → ℕ) → ℕ)
+  (endowment : Agent → Good → ℕ)
+  (price : Good → ℕ)
+  (allocation : Agent → Good → ℕ) : Set₁ where
   constructor finiteNonIIDGeneralizedEquilibrium
   field
     budgetOptimal :
@@ -8893,7 +8893,7 @@ record MegaFirstWelfareTheoremConditions
 open MegaFirstWelfareTheoremConditions public
 
 megaNatNoStrictBack :
-  ∀ {n : Nat} →
+  ∀ {n : ℕ} →
   suc n ≤ n →
   ⊥
 megaNatNoStrictBack {zero} ()
@@ -8901,7 +8901,7 @@ megaNatNoStrictBack {suc n} (s≤s h) =
   megaNatNoStrictBack h
 
 megaNatStrictCostContradiction :
-  ∀ {m n : Nat} →
+  ∀ {m n : ℕ} →
   n ≤ m →
   m < n →
   ⊥
@@ -8915,7 +8915,7 @@ megaNoStrictAffordableAlternative-from-demand-cost :
   {feasible : Allocation → Set}
   {budget : Price → Agent → Allocation → Set}
   {equilibrium : Price → Allocation → Set}
-  {cost : Price → Agent → Allocation → Nat}
+  {cost : Price → Agent → Allocation → ℕ}
   {p : Price}
   {a : Allocation} →
   MegaDemandCostKernel
@@ -8941,8 +8941,8 @@ megaNoStrictAffordableAlternative-from-demand-cost kernel i b affordable =
 
 FiniteNonIIDStrictPreference :
   ∀ {Agent Good : Set}
-  (utility : Agent → (Good → Nat) → Nat) →
-  Agent → (Agent → Good → Nat) → (Agent → Good → Nat) → Set
+  (utility : Agent → (Good → ℕ) → ℕ) →
+  Agent → (Agent → Good → ℕ) → (Agent → Good → ℕ) → Set
 FiniteNonIIDStrictPreference utility i x y =
   utility i (y i) < utility i (x i)
 
@@ -8950,10 +8950,10 @@ record FiniteNonIIDDemandCostClosure
   (Agent Good : Set)
   (agents : List Agent)
   (goods : List Good)
-  (utility : Agent → (Good → Nat) → Nat)
-  (endowment : Agent → Good → Nat)
-  (price : Good → Nat)
-  (allocation : Agent → Good → Nat) : Set₁ where
+  (utility : Agent → (Good → ℕ) → ℕ)
+  (endowment : Agent → Good → ℕ)
+  (price : Good → ℕ)
+  (allocation : Agent → Good → ℕ) : Set₁ where
   constructor finiteNonIIDDemandCostClosure
   field
     equilibriumWitness :
@@ -8980,11 +8980,11 @@ record FiniteNonIIDDemandCostClosure
       bundleCost goods price (x i)
 
     paretoImprovementAffordability :
-      ∀ {b : Agent → Good → Nat} →
+      ∀ {b : Agent → Good → ℕ} →
       (improvement :
         MegaParetoImprovement
           Agent
-          (Agent → Good → Nat)
+          (Agent → Good → ℕ)
           (FiniteNonIIDPreference utility)
           (FiniteNonIIDStrictPreference utility)
           b
@@ -8999,10 +8999,10 @@ record FiniteNonIIDDemandCostClosure
 finiteNonIIDBudgetCostBound :
   ∀ {Agent Good : Set}
   {goods : List Good}
-  {price : Good → Nat}
-  {endowment : Agent → Good → Nat}
+  {price : Good → ℕ}
+  {endowment : Agent → Good → ℕ}
   {i : Agent}
-  {bundle : Good → Nat} →
+  {bundle : Good → ℕ} →
   BudgetFeasible goods price (endowment i) bundle →
   bundleCost goods price bundle ≤
   bundleCost goods price (endowment i)
@@ -9012,10 +9012,10 @@ finiteNonIIDDemandCostKernel :
   ∀ {Agent Good : Set}
   {agents : List Agent}
   {goods : List Good}
-  {utility : Agent → (Good → Nat) → Nat}
-  {endowment : Agent → Good → Nat}
-  {price : Good → Nat}
-  {allocation : Agent → Good → Nat} →
+  {utility : Agent → (Good → ℕ) → ℕ}
+  {endowment : Agent → Good → ℕ}
+  {price : Good → ℕ}
+  {allocation : Agent → Good → ℕ} →
   FiniteNonIIDDemandCostClosure
     Agent
     Good
@@ -9027,8 +9027,8 @@ finiteNonIIDDemandCostKernel :
     allocation →
   MegaDemandCostKernel
     Agent
-    (Good → Nat)
-    (Agent → Good → Nat)
+    (Good → ℕ)
+    (Agent → Good → ℕ)
     (FiniteNonIIDPreference utility)
     (FiniteNonIIDStrictPreference utility)
     (λ a →
@@ -9280,7 +9280,7 @@ factorTransitionAfterIterate :
       Factor
       step
       observe)
-  (n : Nat)
+  (n : ℕ)
   (s : State) →
   observe (iterateIsomorphism step n s) ≡
   iterateIsomorphism (factorStep W) n (observe s)
@@ -9544,7 +9544,7 @@ megaNoEquilibriumWalrasianSquare =
 iterateStep :
   ∀ {State : Set} →
   (State → State) →
-  Nat →
+  ℕ →
   State →
   State
 iterateStep step zero s = s
@@ -9615,7 +9615,7 @@ strictProgressAfterIterate :
   {step : State → State}
   {_<_ : Measure → Measure → Set}
   (W : StrictProgressWitness State Measure step _<_)
-  (n : Nat)
+  (n : ℕ)
   (s : State) →
   measure W s <
   measure W (iterateStep step (suc n) s)
@@ -9631,7 +9631,7 @@ noPositiveFiniteCycleFromStrictProgress :
   {step : State → State}
   {_<_ : Measure → Measure → Set}
   (W : StrictProgressWitness State Measure step _<_)
-  (n : Nat)
+  (n : ℕ)
   (s : State) →
   iterateStep step (suc n) s ≡ s →
   ⊥
@@ -9647,7 +9647,7 @@ noPositiveFiniteCycleFromStrictProgress W n s eq =
 record NatSuccessorProgressWitness
   (State : Set)
   (step : State → State)
-  (measure : State → Nat) : Set₁ where
+  (measure : State → ℕ) : Set₁ where
   constructor natSuccessorProgressWitness
   field
     successor :
@@ -9657,11 +9657,11 @@ record NatSuccessorProgressWitness
 open NatSuccessorProgressWitness public
 
 sucInjective :
-  ∀ {m n : Nat} → suc m ≡ suc n → m ≡ n
+  ∀ {m n : ℕ} → suc m ≡ suc n → m ≡ n
 sucInjective refl = refl
 
 natPlusLeftCancel :
-  ∀ (k m n : Nat) → k + m ≡ k + n → m ≡ n
+  ∀ (k m n : ℕ) → k + m ≡ k + n → m ≡ n
 natPlusLeftCancel zero m n eq = eq
 natPlusLeftCancel (suc k) m n eq =
   natPlusLeftCancel k m n (sucInjective eq)
@@ -9669,9 +9669,9 @@ natPlusLeftCancel (suc k) m n eq =
 successorMeasureAfterIterate :
   ∀ {State : Set}
   {step : State → State}
-  {measure : State → Nat}
+  {measure : State → ℕ}
   (W : NatSuccessorProgressWitness State step measure)
-  (n : Nat)
+  (n : ℕ)
   (s : State) →
   measure (iterateStep step n s) ≡ measure s + n
 successorMeasureAfterIterate W zero s =
@@ -9686,10 +9686,10 @@ successorMeasureAfterIterate W (suc n) s =
 successorMeasureOrbitInjective :
   ∀ {State : Set}
   {step : State → State}
-  {measure : State → Nat}
+  {measure : State → ℕ}
   (W : NatSuccessorProgressWitness State step measure)
   (s : State)
-  {m n : Nat} →
+  {m n : ℕ} →
   iterateStep step m s ≡ iterateStep step n s →
   m ≡ n
 successorMeasureOrbitInjective W s {m} {n} eq =
@@ -9724,7 +9724,7 @@ canonicalTotalCountStrictProgress :
   (K : C.FullLearnerKernel A) →
   StrictProgressWitness
     (C.FullLearnerState A)
-    Nat
+    ℕ
     (C.canonicalFullStep K)
     _<_
 canonicalTotalCountStrictProgress K =
@@ -9737,7 +9737,7 @@ canonicalTotalCountStrictProgress K =
 canonicalNoPositiveCycleFromTotalCount :
   ∀ {A : Set}
   (K : C.FullLearnerKernel A)
-  (n : Nat)
+  (n : ℕ)
   (s : C.FullLearnerState A) →
   iterateStep (C.canonicalFullStep K) (suc n) s ≡ s →
   ⊥
@@ -9789,7 +9789,7 @@ canonicalTotalCountStrictProgress-closure :
   (K : C.FullLearnerKernel A) →
   MonolithStrictProgressClosure
     (C.FullLearnerState A)
-    Nat
+    ℕ
     (C.canonicalFullStep K)
     _<_
 canonicalTotalCountStrictProgress-closure K =
@@ -9858,7 +9858,7 @@ monolithCommutingSquare-iterate :
     A B
     sourceStep
     targetStep)
-  (n : Nat)
+  (n : ℕ)
   (a : A) →
   to (isomorphism (square W))
     (iterateIsomorphism sourceStep n a)
@@ -10427,9 +10427,9 @@ eGraphEconomicAggregateExcessDemand-fixedPointClosure W =
 record MonolithStationaryLawBridge
   (Distribution Economic : Set)
   (P : Distribution → Distribution)
-  (μ : Nat → Distribution)
+  (μ : ℕ → Distribution)
   (μ∞ : Distribution)
-  (Converges : (Nat → Distribution) → Distribution → Set)
+  (Converges : (ℕ → Distribution) → Distribution → Set)
   (aggregate : Distribution → Economic)
   (economicStep : Economic → Economic) : Set₁ where
   constructor monolithStationaryLawBridge
@@ -10448,9 +10448,9 @@ record MonolithStationaryLawBridge
 monolithStationaryLawBridge-stationary :
   ∀ {Distribution Economic : Set}
   {P : Distribution → Distribution}
-  {μ : Nat → Distribution}
+  {μ : ℕ → Distribution}
   {μ∞ : Distribution}
-  {Converges : (Nat → Distribution) → Distribution → Set}
+  {Converges : (ℕ → Distribution) → Distribution → Set}
   {aggregate : Distribution → Economic}
   {economicStep : Economic → Economic}
   (W :
@@ -10584,10 +10584,10 @@ finiteCandidatePriceSearch-complete =
 record CommonsPreservationDerivation
   (World Agent Action Resource : Set)
   (sharedResource : World → Resource)
-  (resourceCapacity : Resource → Nat)
+  (resourceCapacity : Resource → ℕ)
   (action : World → Agent → Action)
-  (extraction : Action → Nat)
-  (aggregateExtraction : World → Nat)
+  (extraction : Action → ℕ)
+  (aggregateExtraction : World → ℕ)
   (localOptimal : World → Agent → Action → Set) : Set₁ where
   constructor commonsPreservationDerivation
   field
@@ -10607,10 +10607,10 @@ record CommonsNonDerivabilityCounterexample : Set₁ where
     Action : Set
     Resource : Set
     sharedResource : World → Resource
-    resourceCapacity : Resource → Nat
+    resourceCapacity : Resource → ℕ
     action : World → Agent → Action
-    extraction : Action → Nat
-    aggregateExtraction : World → Nat
+    extraction : Action → ℕ
+    aggregateExtraction : World → ℕ
     localOptimal : World → Agent → Action → Set
     commonsWorld : World
     commonResource :
@@ -10670,7 +10670,7 @@ twoAgentCommonsCounterexample =
     (⊤)
     (⊤ ⊎ ⊤)
     (⊤ ⊎ ⊤)
-    Nat
+    ℕ
     (λ _ → suc zero)
     (λ _ → suc zero)
     (λ _ _ → inj₂ tt)
@@ -11117,7 +11117,7 @@ nestedLevelRestriction D level =
 --   with preservation required at every inhabited level.
 --
 -- No Boolean encoding is involved. The propositions themselves live in Set;
--- Nat supplies the resource quantities; equality and subst transport the
+-- ℕ supplies the resource quantities; equality and subst transport the
 -- concrete countermodel into the preservation obligation.
 ------------------------------------------------------------------------
 
@@ -11141,7 +11141,7 @@ record EGraphEconomicConvergenceFixedPointWitness
   field
     eventual :
       ∀ s →
-      Σ Nat
+      Σ ℕ
         (λ n →
           iterateStep update n s ≡ fixed)
     stationary :
@@ -11457,7 +11457,7 @@ eGraphEconomicComposition-closure :
   (interpret R e ≡ interpret R f)
   ×
   ((∀ s →
-      Σ Nat
+      Σ ℕ
         (λ n →
           iterateStep update n s ≡ fixed))
    ×
