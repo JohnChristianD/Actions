@@ -62,7 +62,6 @@ _*Int_ = _ℤ*_
 open import Naturals.Addition
 open import Naturals.Exponentiation
 open import Naturals.Division
-open import Naturals.Subtraction
 open import Naturals.Properties
 open import Naturals.Order
 open import Notation.Order
@@ -432,6 +431,12 @@ integerLayerNormValue {xs} config certificate x =
 int8Magnitude : Int8 → ℕ
 int8Magnitude (int8 (pos n)) = n
 int8Magnitude (int8 (negsucc n)) = succ n
+
+infixl 6 _∸_
+_∸_ : ℕ → ℕ → ℕ
+zero ∸ n = zero
+succ m ∸ zero = succ m
+succ m ∸ succ n = m ∸ n
 
 topCodes : ℕ → List ScoreEntry → List ℕ
 topCodes zero xs = []
