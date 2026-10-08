@@ -55,7 +55,6 @@ open import Naturals.Exponentiation
 open import Naturals.Division
 open import Naturals.Properties
 open import Notation.Order
-open import Order
 open import Rationals.Addition
 open import Rationals.Multiplication
 open import Rationals.Negation
