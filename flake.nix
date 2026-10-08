@@ -258,6 +258,7 @@
               runtimeInputs = [
                 (agdaCommand system)
                 (agda2hsCommand system)
+                pkgs.haskellPackages.liquidhaskell
                 pkgs.z3
                 pkgs.coreutils
                 pkgs.git
@@ -371,6 +372,8 @@
                 test -s "$out/FullCoupled/Agda2HsSurface.hs"
                 mkdir -p "$out/ghc"
                 "${canonicalGhc system}/bin/ghc" ${builtins.concatStringsSep " " ghcLanguageFlags} -O0 -dcore-lint -package rio -i "$out" -odir "$out/ghc" -hidir "$out/ghc" -c "$out/FullCoupled/Agda2HsSurface.hs"
+                liquid --version
+                z3 --version
                 printf '%s\n' \
                   "source=FullCoupled/Agda2HsSurface.agda generated=build/agda-haskell/FullCoupled/Agda2HsSurface.hs ghc:pass" \
                   > "$out/agda2hs-manifest.tsv"
