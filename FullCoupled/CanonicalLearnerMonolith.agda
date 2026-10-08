@@ -79,6 +79,10 @@ open import UF.Subsingletons-FunExt
 open import UF.UA-FunExt
 -- END MIRTH-SYNC COMMON IMPORTS
 
+
+cong₂ : ∀ {A B C : Set} (f : A → B → C) {x y : A} {u v : B} → x ＝ y → u ＝ v → f x u ＝ f y v
+cong₂ f refl refl = refl
+
 open import InfinitePigeon.FinitePigeon
 
 -- BEGIN MIRTH-SYNC CANONICAL COMMAND
