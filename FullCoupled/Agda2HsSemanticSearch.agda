@@ -1334,6 +1334,11 @@ main = do
 {-# COMPILE AGDA2HS semanticPlanEGraphExtractable #-}
 {-# COMPILE AGDA2HS requiredPlanEGraphCount #-}
 {-# COMPILE AGDA2HS requiredPlanEGraphComplete #-}
+{-# COMPILE AGDA2HS haskellMinusOneTargetCapabilities #-}
+{-# COMPILE AGDA2HS haskellMinusOneLaws #-}
+{-# COMPILE AGDA2HS haskellMinusOneAStar #-}
+{-# COMPILE AGDA2HS haskellMinusOneAStarPlan #-}
+{-# COMPILE AGDA2HS haskellMinusOneAStarComplete #-}
 {-# COMPILE AGDA2HS hybridInverseExactRealPlan #-}
 {-# COMPILE AGDA2HS hybridInverseExactRealSearchReport #-}
 {-# COMPILE AGDA2HS agdaSemanticPortReport #}
