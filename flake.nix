@@ -107,11 +107,9 @@
           name = "agda2hs-ci";
           runtimeInputs = [
             (agda2hsWithCanonicalGhc system)
-            pkgs.coreutils
           ];
           text = ''
-            ${agdaTypeTopologySetup}
-            exec agda2hs -l agda2hs-base -i "$typetopology_dir/source" -i . "$@"
+            exec agda2hs -l agda2hs-base -i . "$@"
           '';
         };
 
