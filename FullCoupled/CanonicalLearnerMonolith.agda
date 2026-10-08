@@ -62,6 +62,7 @@ _*Int_ = _ℤ*_
 open import Naturals.Addition
 open import Naturals.Exponentiation
 open import Naturals.Division
+open import Naturals.Subtraction
 open import Naturals.Properties
 open import Naturals.Order
 open import Notation.Order
