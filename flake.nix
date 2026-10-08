@@ -356,6 +356,7 @@
               runtimeInputs = [
                 (agdaCommand system)
                 (agda2hsCommand system)
+                pkgs.haskellPackages.liquidhaskell
                 pkgs.z3
                 pkgs.coreutils
                 pkgs.findutils
