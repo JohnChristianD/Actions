@@ -66,7 +66,7 @@ jobs:
 
       - name: Run version lane
         env:
-          CI_LANE: Versions
+          CI_LANE: '(< AgdaLearner | AgdaTheorem | AgdaSafe | Agda2Hs | MirthFastDirty | Pages | Discovery | EconlibCrossrepo | EconlibEquilibriumSearch | StrictExistenceImpossibility | StationaryCycleImpossibility | IsomorphismTransport | SemanticContract | Surface | Versions | AutoMerge | All >.Versions)'
         run: |
           set -euo pipefail
           nix develop .#agda-versions -c bash -e -c '
