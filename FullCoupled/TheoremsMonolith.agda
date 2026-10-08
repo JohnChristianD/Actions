@@ -269,7 +269,32 @@ module ReflectionCompat where
   {-# BUILTIN AGDATCMCATCHERROR catchTC #-}
   {-# BUILTIN AGDATCMQUOTETERM quoteTC #-}
 
-open ReflectionCompat public
+open ReflectionCompat using
+  ( Name
+  ; Meta
+  ; Visibility
+  ; visible
+  ; Relevance
+  ; relevant
+  ; ArgInfo
+  ; arg-info
+  ; Arg
+  ; arg
+  ; Term
+  ; Type
+  ; TC
+  ; returnTC
+  ; bindTC
+  ; unify
+  ; typeError
+  ; inferType
+  ; catchTC
+  ; var
+  ; con
+  ; def
+  ; pat-lam
+  ; strErr
+  )
 
 try-fun : ∀ {a} {A : Set a} → TC A → TC A → TC A
 try-fun = catchTC
