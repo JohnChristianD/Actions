@@ -62,6 +62,7 @@ open import Naturals.Addition
 open import Naturals.Exponentiation
 open import Naturals.Division
 open import Naturals.Properties
+open import Naturals.Order
 open import Notation.Order
 open import Rationals.Addition renaming (_+_ to _ℚ+_)
 open import Rationals.Multiplication
