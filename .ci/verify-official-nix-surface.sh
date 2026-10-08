@@ -22,7 +22,7 @@ done
 grep -Fq 'github:NixOS/nixpkgs/' flake.nix
 grep -Fq 'github:martinescardo/TypeTopology/' flake.nix
 
-input_count=$(grep -Ec '^[[:space:]]+[A-Za-z0-9_-]+\.url[[:space:]]*=[[:space:]]*"github:' flake.nix)
+input_count=$(grep -Ec '^[[:space:]]+(nixpkgs\.)?url[[:space:]]*=[[:space:]]*"github:' flake.nix)
 [ "$input_count" -eq 2 ]
 grep -Fq 'nixpkgs.url = "github:NixOS/nixpkgs/' flake.nix
 grep -Fq 'url = "github:martinescardo/TypeTopology/' flake.nix
