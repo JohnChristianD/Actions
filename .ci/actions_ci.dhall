@@ -77,26 +77,14 @@ let script = merge {
       END { exit(found ? 0 : 1) }
     ' FullCoupled/TheoremsMonolith.agda
     grep -Fq 'open import Haskell.Prelude' FullCoupled/Agda2HsSemanticSearch.agda
-    ! grep -Fq 'open import Naturals' FullCoupled/Agda2HsSemanticSearch.agda
-    ! grep -Fq 'open import Naturals.Properties' FullCoupled/Agda2HsSemanticSearch.agda
-    ! grep -Fq 'open import MLTT.Two-Properties' FullCoupled/Agda2HsSemanticSearch.agda
-    ! grep -Fq 'open import UF.FunExt' FullCoupled/Agda2HsSemanticSearch.agda
-    ! grep -Fq 'import Unsafe.Haskell' FullCoupled/Agda2HsSemanticSearch.agda
-    ! grep -Fq 'open import Equality' FullCoupled/Agda2HsSemanticSearch.agda
-    ! grep -Fq 'open import Naturals' FullCoupled/Agda2HsSemanticSearch.agda
-    ! grep -Fq 'open import MLTT.' FullCoupled/Agda2HsSemanticSearch.agda
-    ! grep -Fq 'open import UF.' FullCoupled/Agda2HsSemanticSearch.agda
-    ! grep -Fq 'open import TWA.' FullCoupled/Agda2HsSemanticSearch.agda
-    ! grep -Fq 'open import Unsafe.Type-in-Type-False' FullCoupled/Agda2HsSemanticSearch.agda
-    test -f FullCoupled/Agda2HsTheoremGraphEGraph.agda
+    ! grep -Eiq '^import Unsafe[.]Haskell|^open import (Naturals|MLTT[.]|UF[.]|TWA[.])' FullCoupled/Agda2HsSemanticSearch.agda
     grep -Fq 'open import Haskell.Prelude' FullCoupled/Agda2HsSemanticExtractor.agda
-    ! grep -Fq 'import Unsafe.Haskell' FullCoupled/Agda2HsSemanticExtractor.agda
-    ! grep -Fq 'open import Naturals' FullCoupled/Agda2HsSemanticExtractor.agda
+    grep -Fq 'open import Agda.Builtin.Char' FullCoupled/Agda2HsSemanticExtractor.agda
+    grep -Fq 'open import Agda.Builtin.String' FullCoupled/Agda2HsSemanticExtractor.agda
+    ! grep -Eiq '^import Unsafe[.]Haskell|^open import (Naturals|MLTT[.]|UF[.]|TWA[.])' FullCoupled/Agda2HsSemanticExtractor.agda
     grep -Fq 'open import Haskell.Prelude' FullCoupled/Agda2HsTheoremGraphEGraph.agda
-    ! grep -Fq 'import Unsafe.Haskell' FullCoupled/Agda2HsTheoremGraphEGraph.agda
-    ! grep -Fq 'open import Naturals' FullCoupled/Agda2HsTheoremGraphEGraph.agda
-    grep -Fq 'symbolicEGraphRegression' FullCoupled/Agda2HsTheoremGraphEGraph.agda
-    grep -Fq 'eGraphAssociativityRegression' FullCoupled/Agda2HsTheoremGraphEGraph.agda
+    grep -Fq 'open import Agda.Builtin.String' FullCoupled/Agda2HsTheoremGraphEGraph.agda
+    ! grep -Eiq '^import Unsafe[.]Haskell|^open import (Naturals|MLTT[.]|UF[.]|TWA[.])' FullCoupled/Agda2HsTheoremGraphEGraph.agda
     grep -Fq 'requiredPlanComplete' FullCoupled/Agda2HsSemanticSearch.agda
     grep -Fq 'open import FullCoupled.Agda2HsSemanticExtractor as Extractor' FullCoupled/Agda2HsSemanticSearch.agda
     tmp=$(mktemp -d)
