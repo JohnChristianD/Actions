@@ -1,6 +1,5 @@
 -- BEGIN MIRTH-SYNC GLOBAL OPTIONS
 {-# OPTIONS
-  --erasure
   --no-fast-reduce
   --lossy-unification
   --experimental-lazy-instances
