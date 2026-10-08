@@ -111,45 +111,45 @@ int8Neg x = int8 (- code x)
 int8Sub : Int8 → Int8 → Int8
 int8Sub x y = int8 (code x +Int (- code y))
 
-int8Roundtrip : ∀ n → code (int8OfNat n) ≡ pos n
+int8Roundtrip : ∀ n → code (int8OfNat n) ＝ pos n
 int8Roundtrip n = refl
 
 le-refl : ∀ n → n ≤ n
 le-refl zero = z≤n
-le-refl (suc n) = s≤s (le-refl n)
+le-refl (succ n) = s≤s (le-refl n)
 
 lt-irrefl : ∀ n → (n < n) → ⊥
 lt-irrefl zero ()
-lt-irrefl (suc n) (s≤s p) = lt-irrefl n p
+lt-irrefl (succ n) (s≤s p) = lt-irrefl n p
 
-plus-zero : ∀ n → n + zero ≡ n
+plus-zero : ∀ n → n + zero ＝ n
 plus-zero zero = refl
-plus-zero (suc n) = cong suc (plus-zero n)
+plus-zero (succ n) = cong succ (plus-zero n)
 
-plus-suc : ∀ (m n : ℕ) → m + suc n ≡ suc (m + n)
-plus-suc zero n = refl
-plus-suc (suc m) n = cong suc (plus-suc m n)
+plus-succ : ∀ (m n : ℕ) → m + succ n ＝ succ (m + n)
+plus-succ zero n = refl
+plus-succ (succ m) n = cong succ (plus-succ m n)
 
-plus-suc-lt : ∀ (m n : ℕ) → m < m + suc n
-plus-suc-lt zero n = s≤s z≤n
-plus-suc-lt (suc m) n = s≤s (plus-suc-lt m n)
+plus-succ-lt : ∀ (m n : ℕ) → m < m + succ n
+plus-succ-lt zero n = s≤s z≤n
+plus-succ-lt (succ m) n = s≤s (plus-succ-lt m n)
 
-plus-suc-not-self : ∀ (m n : ℕ) → m + suc n ≢ m
-plus-suc-not-self m n eq =
-  lt-irrefl m (subst (λ z → m < z) eq (plus-suc-lt m n))
+plus-succ-not-self : ∀ (m n : ℕ) → m + succ n ≢ m
+plus-succ-not-self m n eq =
+  lt-irrefl m (subst (λ z → m < z) eq (plus-succ-lt m n))
 
-suc-suc-lt : ∀ n → n < suc (suc n)
-suc-suc-lt zero = s≤s z≤n
-suc-suc-lt (suc n) = s≤s (suc-suc-lt n)
+succ-succ-lt : ∀ n → n < succ (succ n)
+succ-succ-lt zero = s≤s z≤n
+succ-succ-lt (succ n) = s≤s (succ-succ-lt n)
 
-suc-suc-not-self : ∀ n → suc (suc n) ≢ n
-suc-suc-not-self n eq =
-  lt-irrefl (suc (suc n))
-    (subst (λ z → z < suc (suc n)) (sym eq) (suc-suc-lt n))
+succ-succ-not-self : ∀ n → succ (succ n) ≢ n
+succ-succ-not-self n eq =
+  lt-irrefl (succ (succ n))
+    (subst (λ z → z < succ (succ n)) (sym eq) (succ-succ-lt n))
 
 iterate : ∀ {S : Set} → (S → S) → ℕ → S → S
 iterate step zero s = s
-iterate step (suc n) s = step (iterate step n s)
+iterate step (succ n) s = step (iterate step n s)
 
 OrbitNonFixed : ∀ {S : Set} {step : S → S} → S → Set
 OrbitNonFixed {step = step} s = ∀ n → iterate step n s ≢ step (iterate step n s)
@@ -161,8 +161,8 @@ data Signed : Set where
 
 signedCode : Int8 → Signed
 signedCode (int8 (pos 0)) = signedZer
-signedCode (int8 (pos (suc n))) = signedPos (suc n)
-signedCode (int8 (-[1+ n ])) = signedNeg (suc n)
+signedCode (int8 (pos (succ n))) = signedPos (succ n)
+signedCode (int8 (-[1+ n ])) = signedNeg (succ n)
 
 data BoolLike : Set where
   enabled disabled : BoolLike
@@ -188,25 +188,25 @@ zeroCounts _ = zero
 
 natEq : ℕ → ℕ → BoolLike
 natEq zero zero = enabled
-natEq zero (suc n) = disabled
-natEq (suc m) zero = disabled
-natEq (suc m) (suc n) = natEq m n
+natEq zero (succ n) = disabled
+natEq (succ m) zero = disabled
+natEq (succ m) (succ n) = natEq m n
 
 natLt : ℕ → ℕ → BoolLike
 natLt zero zero = disabled
-natLt zero (suc n) = enabled
-natLt (suc m) zero = disabled
-natLt (suc m) (suc n) = natLt m n
+natLt zero (succ n) = enabled
+natLt (succ m) zero = disabled
+natLt (succ m) (succ n) = natLt m n
 
 natLE : ℕ → ℕ → BoolLike
 natLE zero n = enabled
-natLE (suc m) zero = disabled
-natLE (suc m) (suc n) = natLE m n
+natLE (succ m) zero = disabled
+natLE (succ m) (succ n) = natLE m n
 
 maxNat : ℕ → ℕ → ℕ
 maxNat zero n = n
-maxNat (suc m) zero = suc m
-maxNat (suc m) (suc n) = suc (maxNat m n)
+maxNat (succ m) zero = succ m
+maxNat (succ m) (succ n) = succ (maxNat m n)
 
 updateAt : ∀ {A : Set} → QFunction {A} → ℕ → Int8 → QFunction {A}
 updateAt q a r i with natEq i a
@@ -215,7 +215,7 @@ updateAt q a r i with natEq i a
 
 incAt : ∀ {A : Set} → CountFunction {A} → ℕ → CountFunction {A}
 incAt c a i with natEq i a
-... | enabled = suc (c i)
+... | enabled = succ (c i)
 ... | disabled = c i
 
 record CriticState (A : Set) : Set where
@@ -257,12 +257,12 @@ open LCBCountKernel public
 
 finiteLCBBonus8 : ℕ → Int8
 finiteLCBBonus8 zero = int8OfNat 127
-finiteLCBBonus8 (suc zero) = int8OfNat 63
-finiteLCBBonus8 (suc (suc zero)) = int8OfNat 31
-finiteLCBBonus8 (suc (suc (suc zero))) = int8OfNat 15
-finiteLCBBonus8 (suc (suc (suc (suc zero)))) = int8OfNat 7
-finiteLCBBonus8 (suc (suc (suc (suc (suc zero))))) = int8OfNat 3
-finiteLCBBonus8 (suc (suc (suc (suc (suc (suc zero)))))) = int8OfNat 1
+finiteLCBBonus8 (succ zero) = int8OfNat 63
+finiteLCBBonus8 (succ (succ zero)) = int8OfNat 31
+finiteLCBBonus8 (succ (succ (succ zero))) = int8OfNat 15
+finiteLCBBonus8 (succ (succ (succ (succ zero)))) = int8OfNat 7
+finiteLCBBonus8 (succ (succ (succ (succ (succ zero))))) = int8OfNat 3
+finiteLCBBonus8 (succ (succ (succ (succ (succ (succ zero)))))) = int8OfNat 1
 finiteLCBBonus8 _ = zero8
 
 lcbNegate : Int8 → Int8
@@ -280,7 +280,7 @@ sparsemaxTemperature = 16
 ScoreEntry : Set
 ScoreEntry = Int8 × ℕ
 
-int8-code-injective : ∀ {x y : Int8} → code x ≡ code y → x ≡ y
+int8-code-injective : ∀ {x y : Int8} → code x ＝ code y → x ＝ y
 int8-code-injective refl = refl
 
 scoreList : ∀ {A : Set} → ActionSpace A → QFunction {A} → CountFunction {A} → List ScoreEntry
@@ -294,9 +294,9 @@ compareInt8 x y with ℤ-trichotomous (code x) (code y)
 
 compareNat : ℕ → ℕ → FullCoupled.TypeTopologyCompat.ComparisonResult
 compareNat zero zero = equal
-compareNat zero (suc _) = less
-compareNat (suc _) zero = greater
-compareNat (suc m) (suc n) = compareNat m n
+compareNat zero (succ _) = less
+compareNat (succ _) zero = greater
+compareNat (succ m) (succ n) = compareNat m n
 
 scoreBefore : ScoreEntry → ScoreEntry → Bool
 scoreBefore (s₁ , a₁) (s₂ , a₂) with compareInt8 s₁ s₂
@@ -320,7 +320,7 @@ sortScores (x ∷ xs) = insertScore x (sortScores xs)
 natAt : ℕ → List ℕ → ℕ
 natAt k [] = zero
 natAt zero (x ∷ xs) = x
-natAt (suc k) (x ∷ xs) = natAt k xs
+natAt (succ k) (x ∷ xs) = natAt k xs
 
 sumList : List ℕ → ℕ
 sumList [] = zero
@@ -391,7 +391,7 @@ record IntegerLayerNormCertificate
     epsilon : ℕ
     root : ℕ
     rootSquared :
-      (pos (root * root)) ≡
+      (pos (root * root)) ＝
       integerLayerNormRadicand xs epsilon
     rootNonZero : root ≢ zero
 open IntegerLayerNormCertificate public
@@ -423,12 +423,12 @@ integerLayerNormValue {xs} config certificate x =
 
 int8Magnitude : Int8 → ℕ
 int8Magnitude (int8 (pos n)) = n
-int8Magnitude (int8 (-[1+ n ])) = suc n
+int8Magnitude (int8 (-[1+ n ])) = succ n
 
 topCodes : ℕ → List ScoreEntry → List ℕ
 topCodes zero xs = []
-topCodes (suc k) [] = []
-topCodes (suc k) ((x , a) ∷ xs) = int8Magnitude x ∷ topCodes k xs
+topCodes (succ k) [] = []
+topCodes (succ k) ((x , a) ∷ xs) = int8Magnitude x ∷ topCodes k xs
 
 supportValid : List ScoreEntry → ℕ → ℕ → BoolLike
 supportValid xs temperature k with natLt (sumList (topCodes k xs)) ((k * natAt (k ∸ 1) (topCodes k xs)) + temperature)
@@ -437,12 +437,12 @@ supportValid xs temperature k with natLt (sumList (topCodes k xs)) ((k * natAt (
 
 searchSupport : List ScoreEntry → ℕ → ℕ → ℕ → ℕ → ℕ
 searchSupport xs temperature zero current best = best
-searchSupport xs temperature (suc n) current best with supportValid xs temperature current
-... | enabled = searchSupport xs temperature n (suc current) (maxNat best current)
-... | disabled = searchSupport xs temperature n (suc current) best
+searchSupport xs temperature (succ n) current best with supportValid xs temperature current
+... | enabled = searchSupport xs temperature n (succ current) (maxNat best current)
+... | disabled = searchSupport xs temperature n (succ current) best
 
 supportSize : ∀ {A : Set} → ActionSpace A → QFunction {A} → CountFunction {A} → ℕ
-supportSize K q c = searchSupport (sortScores (scoreList K q c)) sparsemaxTemperature (length (candidates K)) (suc zero) (suc zero)
+supportSize K q c = searchSupport (sortScores (scoreList K q c)) sparsemaxTemperature (length (candidates K)) (succ zero) (succ zero)
 
 record SparseWeight : Set where
   constructor sparseWeight
@@ -478,7 +478,7 @@ sparsemaxPolicy K q c = selectPositive K q c (sortScores (scoreList K q c))
 
 updateLCBCount : ∀ {A : Set} → ℕ → LCBCountState A → LCBCountState A
 updateLCBCount {A} a (lcbCountState counts total) =
-  lcbCountState (incAt {A = A} counts a) (suc total)
+  lcbCountState (incAt {A = A} counts a) (succ total)
 
 ------------------------------------------------------------------------
 -- TypeTopology Rationals supplies the canonical exact rational carrier.
@@ -508,7 +508,7 @@ dyadicDivide n ((z , d) , _) =
 qLog8 : Int8 → Dyadic
 qLog8 x with int8Magnitude x
 ... | zero = fromNatDyadic 1 zero
-... | suc n = fromNatDyadic (128 ∸ suc n) (suc n)
+... | succ n = fromNatDyadic (128 ∸ succ n) (succ n)
 
 munchausenScale8 : ℕ
 munchausenScale8 = 16
@@ -516,10 +516,10 @@ munchausenScale8 = 16
 signedDyadicBias8 : Dyadic → Int8
 signedDyadicBias8 q with dyadicNumerator q
 ... | zero = zero8
-... | suc n = int8Neg
+... | succ n = int8Neg
   (int8OfNat
     (dyadicDivide
-      (munchausenScale8 * suc n)
+      (munchausenScale8 * succ n)
       q))
 
 qLog2Bias8 : Int8 → Int8
@@ -546,12 +546,12 @@ data HardSign : Set where
 
 hardSignNonnegative : Int8 → HardSign
 hardSignNonnegative (int8 (pos 0)) = zeroSign
-hardSignNonnegative (int8 (pos (suc n))) = positiveSign
+hardSignNonnegative (int8 (pos (succ n))) = positiveSign
 hardSignNonnegative (int8 (-[1+ n ])) = negativeSign
 
 hardSign : Int8 → HardSign
 hardSign (int8 (pos 0)) = zeroSign
-hardSign (int8 (pos (suc n))) = positiveSign
+hardSign (int8 (pos (succ n))) = positiveSign
 hardSign (int8 (-[1+ n ])) = negativeSign
 
 hardSignGate : Int8 → Int8
@@ -614,7 +614,7 @@ _∘ₘ_ : MonoidAffine → MonoidAffine → MonoidAffine
 monoidAffine-id : MonoidAffine
 monoidAffine-id = one8 , zero8
 
-monoidAffine-assoc : ∀ a b c → (a ∘ₘ b) ∘ₘ c ≡ a ∘ₘ (b ∘ₘ c)
+monoidAffine-assoc : ∀ a b c → (a ∘ₘ b) ∘ₘ c ＝ a ∘ₘ (b ∘ₘ c)
 monoidAffine-assoc (a₁ , b₁) (a₂ , b₂) (a₃ , b₃) =
   cong₂ _,_
     (int8*-assoc a₁ a₂ a₃)
@@ -634,7 +634,7 @@ monoidAffine-assoc (a₁ , b₁) (a₂ , b₂) (a₃ , b₃) =
             (int8Mul a₂ b₃)
             b₂)))))
 
-monoidAffine-idˡ : ∀ a → monoidAffine-id ∘ₘ a ≡ a
+monoidAffine-idˡ : ∀ a → monoidAffine-id ∘ₘ a ＝ a
 monoidAffine-idˡ (a , b) =
   cong₂ _,_
     (int8*-idˡ a)
@@ -642,7 +642,7 @@ monoidAffine-idˡ (a , b) =
       (cong (λ z → int8Add z zero8) (int8*-idˡ b))
       (int8+-idʳ b))
 
-monoidAffine-idʳ : ∀ a → a ∘ₘ monoidAffine-id ≡ a
+monoidAffine-idʳ : ∀ a → a ∘ₘ monoidAffine-id ＝ a
 monoidAffine-idʳ (a , b) =
   cong₂ _,_
     (int8*-idʳ a)
@@ -659,7 +659,7 @@ data MonoidLSTMGate : Set where
 
 monoidLSTMGateOf : Int8 → MonoidLSTMGate
 monoidLSTMGateOf (int8 (pos 0)) = monoidHold
-monoidLSTMGateOf (int8 (pos (suc n))) = monoidAccum
+monoidLSTMGateOf (int8 (pos (succ n))) = monoidAccum
 monoidLSTMGateOf (int8 (-[1+ n ])) = monoidReset
 
 monoidLSTMCellStep : MonoidLSTMGate → Int8 → Int8 → Int8
@@ -676,7 +676,7 @@ monoidLSTMAffineOf monoidAccum x = one8 , leaky2 x
 
 monoidLSTMCellStep-is-affine :
   ∀ g c x →
-  monoidLSTMCellStep g c x ≡
+  monoidLSTMCellStep g c x ＝
   applyMonoidAffine (monoidLSTMAffineOf g x) c
 monoidLSTMCellStep-is-affine monoidHold c x = refl
 monoidLSTMCellStep-is-affine monoidWrite c x = refl
@@ -690,7 +690,7 @@ scanMonoidAffine (x ∷ xs) =
 
 scanMonoidAffine-cons :
   ∀ x xs →
-  scanMonoidAffine (x ∷ xs) ≡
+  scanMonoidAffine (x ∷ xs) ＝
   scanMonoidAffine xs ∘ₘ monoidLSTMAffineOf (monoidLSTMGateOf x) x
 scanMonoidAffine-cons x xs = refl
 
@@ -736,23 +736,23 @@ persistentMonoidLSTM (monoidLSTMState h c m n g) = m , (n , g)
 
 persistentMonoidLSTM-preservation :
   ∀ (s : MonoidLSTMState) (x : Int8) →
-  persistentMonoidLSTM (monoidLSTMStep s x) ≡
+  persistentMonoidLSTM (monoidLSTMStep s x) ＝
   persistentMonoidLSTM s
 persistentMonoidLSTM-preservation
   (monoidLSTMState h c m n g) x = refl
 
 monoidLSTMParameterPersistence :
   ∀ (s : MonoidLSTMState) (x : Int8) →
-  matrixState (monoidLSTMStep s x) ≡ matrixState s ×
-  noiseState (monoidLSTMStep s x) ≡ noiseState s ×
-  controlState (monoidLSTMStep s x) ≡ controlState s
+  matrixState (monoidLSTMStep s x) ＝ matrixState s ×
+  noiseState (monoidLSTMStep s x) ＝ noiseState s ×
+  controlState (monoidLSTMStep s x) ＝ controlState s
 monoidLSTMParameterPersistence
   (monoidLSTMState h c m n g) x =
   refl , (refl , refl)
 
 MonoidLSTMEquivalent : MonoidLSTMState → MonoidLSTMState → Set
 MonoidLSTMEquivalent s t =
-  persistentMonoidLSTM s ≡ persistentMonoidLSTM t
+  persistentMonoidLSTM s ＝ persistentMonoidLSTM t
 
 monoidLSTMStep-respects-equivalence :
   ∀ (s t : MonoidLSTMState) (x : Int8) →
@@ -813,10 +813,10 @@ dyadicCode q = int8OfNat (dyadicNumerator q)
 identityActivation8 : Int8 → Int8
 identityActivation8 x = x
 
-identityActivation8-law : ∀ x → identityActivation8 x ≡ x
+identityActivation8-law : ∀ x → identityActivation8 x ＝ x
 identityActivation8-law x = refl
 
-identityActivation8-zero : identityActivation8 zero8 ≡ zero8
+identityActivation8-zero : identityActivation8 zero8 ＝ zero8
 identityActivation8-zero = refl
 
 gruCandidate8 : Int8 → Int8 → Int8
@@ -852,15 +852,15 @@ persistentGRU = persistentMonoidLSTM
 
 persistent-preservation :
   ∀ (s : GRUState) (x : Int8) →
-  persistentGRU (gruStep s x) ≡ persistentGRU s
+  persistentGRU (gruStep s x) ＝ persistentGRU s
 persistent-preservation s x =
   persistentMonoidLSTM-preservation s x
 
 gruParameterPersistence :
   ∀ (s : GRUState) (x : Int8) →
-  matrixState (gruStep s x) ≡ matrixState s ×
-  noiseState (gruStep s x) ≡ noiseState s ×
-  controlState (gruStep s x) ≡ controlState s
+  matrixState (gruStep s x) ＝ matrixState s ×
+  noiseState (gruStep s x) ＝ noiseState s ×
+  controlState (gruStep s x) ＝ controlState s
 gruParameterPersistence s x =
   monoidLSTMParameterPersistence s x
 
@@ -894,7 +894,7 @@ composeGRUAction f g =
 
 gruActionAssociativity : ∀ f g h s →
   runGRU
-    (composeGRUAction (composeGRUAction f g) h) s ≡
+    (composeGRUAction (composeGRUAction f g) h) s ＝
   runGRU
     (composeGRUAction f (composeGRUAction g h)) s
 gruActionAssociativity f g h s = refl
@@ -915,7 +915,7 @@ canonicalMonoidLSTMRecurrentNetwork =
 
 canonicalMonoidLSTMNetwork-law :
   ∀ (s : MonoidLSTMState) (x : Int8) →
-  runNetwork canonicalMonoidLSTMRecurrentNetwork s x ≡
+  runNetwork canonicalMonoidLSTMRecurrentNetwork s x ＝
   monoidLSTMStep s x
 canonicalMonoidLSTMNetwork-law s x = refl
 
@@ -925,7 +925,7 @@ canonicalGRURecurrentNetwork =
 
 canonicalGRUNetwork-law :
   ∀ (s : GRUState) (x : Int8) →
-  runNetwork canonicalGRURecurrentNetwork s x ≡
+  runNetwork canonicalGRURecurrentNetwork s x ＝
   monoidLSTMStep s x
 canonicalGRUNetwork-law s x = refl
 
@@ -956,7 +956,7 @@ endomorphismAssociative :
       (composeEndomorphism f g)
       h)
     s
-  ≡
+  ＝
   applyEndomorphism
     (composeEndomorphism
       f
@@ -980,7 +980,7 @@ recurrentPrefixState :
   State →
   State
 recurrentPrefixState R xs zero s = s
-recurrentPrefixState R xs (suc n) s =
+recurrentPrefixState R xs (succ n) s =
   runNetwork R
     (recurrentPrefixState R xs n s)
     (xs n)
@@ -993,7 +993,7 @@ recurrentPrefixEndomorphism :
   Endomorphism State
 recurrentPrefixEndomorphism R xs zero =
   identityEndomorphism
-recurrentPrefixEndomorphism R xs (suc n) =
+recurrentPrefixEndomorphism R xs (succ n) =
   composeEndomorphism
     (recurrentInputEndomorphism R (xs n))
     (recurrentPrefixEndomorphism R xs n)
@@ -1007,10 +1007,10 @@ recurrentPrefix-correct :
   applyEndomorphism
     (recurrentPrefixEndomorphism R xs n)
     s
-  ≡
+  ＝
   recurrentPrefixState R xs n s
 recurrentPrefix-correct R xs zero s = refl
-recurrentPrefix-correct R xs (suc n) s =
+recurrentPrefix-correct R xs (succ n) s =
   cong
     (λ z → runNetwork R z (xs n))
     (recurrentPrefix-correct R xs n s)
@@ -1030,14 +1030,14 @@ recurrentPrefix-split :
   (m n : ℕ)
   (s : State) →
   recurrentPrefixState R xs (m + n) s
-  ≡
+  ＝
   recurrentPrefixState
     R
     (shiftInput xs m)
     n
     (recurrentPrefixState R xs m s)
 recurrentPrefix-split R xs m zero s rewrite +-identityʳ m = refl
-recurrentPrefix-split R xs m (suc n) s rewrite +-suc m n =
+recurrentPrefix-split R xs m (succ n) s rewrite +-succ m n =
   cong
     (λ z → runNetwork R z (xs (m + n)))
     (recurrentPrefix-split R xs m n s)
@@ -1050,7 +1050,7 @@ canonicalMonoidLSTM-recurrent-prefix-correct :
       xs
       n)
     s
-  ≡
+  ＝
   recurrentPrefixState
     canonicalMonoidLSTMRecurrentNetwork
     xs
@@ -1066,7 +1066,7 @@ canonicalMonoidLSTM-recurrent-prefix-split :
     xs
     (m + n)
     s
-  ≡
+  ＝
   recurrentPrefixState
     canonicalMonoidLSTMRecurrentNetwork
     (shiftInput xs m)
@@ -1087,7 +1087,7 @@ canonicalGRU-recurrent-prefix-correct :
       xs
       n)
     s
-  ≡
+  ＝
   recurrentPrefixState
     canonicalGRURecurrentNetwork
     xs
@@ -1103,7 +1103,7 @@ canonicalGRU-recurrent-prefix-split :
     xs
     (m + n)
     s
-  ≡
+  ＝
   recurrentPrefixState
     canonicalGRURecurrentNetwork
     (shiftInput xs m)
@@ -1125,7 +1125,7 @@ gruInputActionAssociativity :
         (inputGRUAction y))
       (inputGRUAction z))
     s
-  ≡
+  ＝
   runGRU
     (composeGRUAction
       (inputGRUAction x)
@@ -1148,7 +1148,7 @@ gruPersistentQuotientCoordinateCount = 8
 fullLearnerInt8CoordinateCount : ℕ
 fullLearnerInt8CoordinateCount = 24
 
-fullLearnerInt8CoordinateCount-law : fullLearnerInt8CoordinateCount ≡ 24
+fullLearnerInt8CoordinateCount-law : fullLearnerInt8CoordinateCount ＝ 24
 fullLearnerInt8CoordinateCount-law = refl
 
 record F4IntUState : Set where
@@ -1164,7 +1164,7 @@ open F4IntUKernel public
 f4ThetaFull : F4IntUState → Int8
 f4ThetaFull s = thetaQ s
 
-f4ThetaFull-law : ∀ s → f4ThetaFull s ≡ thetaQ s
+f4ThetaFull-law : ∀ s → f4ThetaFull s ＝ thetaQ s
 f4ThetaFull-law s = refl
 
 l2Correction : Int8 → Int8
@@ -1177,7 +1177,7 @@ f4ThetaStep K s g =
     zero8 (eQ s) (rE s) (rL s)
 
 f4ParameterInvariant : ∀ (K : F4IntUKernel) (s : F4IntUState) (g : Int8) →
-  thetaQ (f4ThetaStep K s g) ≡
+  thetaQ (f4ThetaStep K s g) ＝
   int8Add (int8Add (thetaQ s) g) (l2Correction (globalL2 K))
 f4ParameterInvariant K s g = refl
 
@@ -1245,7 +1245,7 @@ canonicalBehaviorAction-law :
   ∀ {A : Set}
   (K : FullLearnerKernel A)
   (s : FullLearnerState A) →
-  canonicalBehaviorAction K s ≡ canonicalPolicy K s
+  canonicalBehaviorAction K s ＝ canonicalPolicy K s
 canonicalBehaviorAction-law K s = refl
 
 canonicalPolicyWeightCode K s = int8OfNat (numerator (canonicalPolicyWeight K s))
@@ -1254,7 +1254,7 @@ HardSparse : ∀ {A : Set} → FullLearnerKernel A → FullLearnerState A → Se
 HardSparse {A} K s =
   ∀ {a : ℕ} →
   a ≢ canonicalPolicy K s →
-  numerator (sparsemaxWeight (actionSpaceK K) (lcbScore (lcbKernel K) (lcbCounts s) (critic (watkins s))) (valuesCount (lcbCounts s)) a) ≡ zero
+  numerator (sparsemaxWeight (actionSpaceK K) (lcbScore (lcbKernel K) (lcbCounts s) (critic (watkins s))) (valuesCount (lcbCounts s)) a) ＝ zero
 
 SoftSparseBounded : ∀ {A : Set} →
   FullLearnerKernel A →
@@ -1299,7 +1299,7 @@ replaceOptimizer s o = fullLearnerState (watkins s) (gru s) o
 
 canonicalPolicy-optimizer-invariant :
   ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) (o : F4IntUState) →
-  canonicalPolicy K (replaceOptimizer s o) ≡ canonicalPolicy K s
+  canonicalPolicy K (replaceOptimizer s o) ＝ canonicalPolicy K s
 canonicalPolicy-optimizer-invariant K s o = refl
 
 maxCriticValueList : List Int8 → Int8
@@ -1354,7 +1354,7 @@ canonicalWatkinsTarget K s =
     (canonicalEndogenousFeedback K s)
 
 canonicalWatkinsTarget-law : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) →
-  canonicalWatkinsTarget K s ≡
+  canonicalWatkinsTarget K s ＝
   int8Add
     (int8Add
       (int8Add (canonicalReward8 K s) (canonicalQLogBias K s))
@@ -1370,7 +1370,7 @@ canonicalSignal : ∀ {A} → FullLearnerKernel A → FullLearnerState A → Int
 canonicalSignal = canonicalWatkinsTarget
 
 canonicalSignal-watkins-target : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) →
-  canonicalSignal K s ≡ canonicalWatkinsTarget K s
+  canonicalSignal K s ＝ canonicalWatkinsTarget K s
 canonicalSignal-watkins-target K s = refl
 
 canonicalWatkinsStep : ∀ {A} → FullLearnerKernel A → FullLearnerState A → WatkinsState A
@@ -1407,13 +1407,13 @@ canonicalGRUStep K s =
     (canonicalHaarRecurrentInput K s)
 
 canonicalPersistentGRUPreservation : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) →
-  persistentGRU (canonicalGRUStep K s) ≡ persistentGRU (gru s)
+  persistentGRU (canonicalGRUStep K s) ＝ persistentGRU (gru s)
 canonicalPersistentGRUPreservation K s =
   persistent-preservation (gru s)
     (canonicalSignal K s)
 
 canonicalRecurrentInput-law : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) →
-  canonicalGRUStep K s ≡
+  canonicalGRUStep K s ＝
   gruStep (gru s)
     (canonicalSignal K s)
 canonicalRecurrentInput-law K s = refl
@@ -1422,7 +1422,7 @@ canonicalOptimizerStep : ∀ {A} → FullLearnerKernel A → FullLearnerState A 
 canonicalOptimizerStep K s = f4ThetaStep (optimizerKernel K) (optimizer s) (canonicalSignal K s)
 
 canonicalOptimizerStep-qMunchausen-L2 : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) →
-  canonicalOptimizerStep K s ≡
+  canonicalOptimizerStep K s ＝
   f4ThetaStep
     (optimizerKernel K)
     (optimizer s)
@@ -1445,75 +1445,75 @@ canonicalFullStep K s =
   (canonicalQLogStep K s)
   (canonicalHaarAccumulatorStep K s)
 
-canonicalFullStep-watkins : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) → watkins (canonicalFullStep K s) ≡ canonicalWatkinsStep K s
+canonicalFullStep-watkins : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) → watkins (canonicalFullStep K s) ＝ canonicalWatkinsStep K s
 canonicalFullStep-watkins K s = refl
 
-canonicalFullStep-gru : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) → gru (canonicalFullStep K s) ≡ canonicalGRUStep K s
+canonicalFullStep-gru : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) → gru (canonicalFullStep K s) ＝ canonicalGRUStep K s
 canonicalFullStep-gru K s = refl
 
-canonicalFullStep-optimizer : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) → optimizer (canonicalFullStep K s) ≡ canonicalOptimizerStep K s
+canonicalFullStep-optimizer : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) → optimizer (canonicalFullStep K s) ＝ canonicalOptimizerStep K s
 canonicalFullStep-optimizer K s = refl
 
-canonicalFullStep-counts : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) → lcbCounts (canonicalFullStep K s) ≡ canonicalCountStep K s
+canonicalFullStep-counts : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) → lcbCounts (canonicalFullStep K s) ＝ canonicalCountStep K s
 canonicalFullStep-counts K s = refl
 
-canonicalFullStep-qLog : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) → qLogValue (canonicalFullStep K s) ≡ canonicalQLogStep K s
+canonicalFullStep-qLog : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) → qLogValue (canonicalFullStep K s) ＝ canonicalQLogStep K s
 canonicalFullStep-qLog K s = refl
 
-canonicalFullStep-qLogControl : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) → qLogControl (canonicalFullStep K s) ≡ canonicalQLogControlStep K s
+canonicalFullStep-qLogControl : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) → qLogControl (canonicalFullStep K s) ＝ canonicalQLogControlStep K s
 canonicalFullStep-qLogControl K s = refl
 
-canonicalTotalCountStep : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) → totalCount (lcbCounts (canonicalFullStep K s)) ≡ suc (totalCount (lcbCounts s))
+canonicalTotalCountStep : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) → totalCount (lcbCounts (canonicalFullStep K s)) ＝ succ (totalCount (lcbCounts s))
 canonicalTotalCountStep K s = refl
 
 canonicalNoFixedPoint :
   ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) →
   canonicalFullStep K s ≢ s
 canonicalNoFixedPoint K s eq =
-  plus-suc-not-self (totalCount (lcbCounts s)) zero
-    (trans (plus-suc (totalCount (lcbCounts s)) zero)
-      (trans (cong suc (plus-zero (totalCount (lcbCounts s))))
+  plus-succ-not-self (totalCount (lcbCounts s)) zero
+    (trans (plus-succ (totalCount (lcbCounts s)) zero)
+      (trans (cong succ (plus-zero (totalCount (lcbCounts s))))
         (trans (sym (canonicalTotalCountStep K s))
           (cong (λ t → totalCount (lcbCounts t)) eq))))
 
 iterateCanonical : ∀ {A} → FullLearnerKernel A → ℕ → FullLearnerState A → FullLearnerState A
 iterateCanonical K zero s = s
-iterateCanonical K (suc n) s = canonicalFullStep K (iterateCanonical K n s)
+iterateCanonical K (succ n) s = canonicalFullStep K (iterateCanonical K n s)
 
 canonicalTotalCountAfter :
   ∀ {A} (K : FullLearnerKernel A) (n : ℕ) (s : FullLearnerState A) →
-  totalCount (lcbCounts (iterateCanonical K n s)) ≡
+  totalCount (lcbCounts (iterateCanonical K n s)) ＝
   totalCount (lcbCounts s) + n
 canonicalTotalCountAfter K zero s = sym (plus-zero (totalCount (lcbCounts s)))
-canonicalTotalCountAfter K (suc n) s =
+canonicalTotalCountAfter K (succ n) s =
   trans
     (canonicalTotalCountStep K (iterateCanonical K n s))
     (trans
-      (cong suc (canonicalTotalCountAfter K n s))
-      (sym (plus-suc (totalCount (lcbCounts s)) n)))
+      (cong succ (canonicalTotalCountAfter K n s))
+      (sym (plus-succ (totalCount (lcbCounts s)) n)))
 
-canonicalAperiodic : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) (n : ℕ) → iterateCanonical K (suc n) s ≢ s
-canonicalAperiodic K s n cyc = plus-suc-not-self (totalCount (lcbCounts s)) n
+canonicalAperiodic : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) (n : ℕ) → iterateCanonical K (succ n) s ≢ s
+canonicalAperiodic K s n cyc = plus-succ-not-self (totalCount (lcbCounts s)) n
   (trans
-    (sym (canonicalTotalCountAfter K (suc n) s))
+    (sym (canonicalTotalCountAfter K (succ n) s))
     (cong (λ t → totalCount (lcbCounts t)) cyc))
 
 canonicalOrbitNonFixed : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) (n : ℕ) → iterateCanonical K n s ≢ canonicalFullStep K (iterateCanonical K n s)
 canonicalOrbitNonFixed K s n eq =
   canonicalNoFixedPoint K (iterateCanonical K n s) (sym eq)
 
-canonicalNoNontrivialFiniteCycle : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) (n : ℕ) → iterateCanonical K (suc n) s ≡ s → ⊥
+canonicalNoNontrivialFiniteCycle : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) (n : ℕ) → iterateCanonical K (succ n) s ＝ s → ⊥
 canonicalNoNontrivialFiniteCycle K s n cyc = canonicalAperiodic K s n cyc
 
-canonicalTotalCountIterate2 : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) → totalCount (lcbCounts (iterateCanonical K 2 s)) ≡ suc (suc (totalCount (lcbCounts s)))
+canonicalTotalCountIterate2 : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) → totalCount (lcbCounts (iterateCanonical K 2 s)) ＝ succ (succ (totalCount (lcbCounts s)))
 canonicalTotalCountIterate2 K s = refl
 
-canonicalNoCountedTwoCycle : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) → iterateCanonical K 2 s ≡ s → ⊥
-canonicalNoCountedTwoCycle K s cyc = suc-suc-not-self (totalCount (lcbCounts s))
+canonicalNoCountedTwoCycle : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) → iterateCanonical K 2 s ＝ s → ⊥
+canonicalNoCountedTwoCycle K s cyc = succ-succ-not-self (totalCount (lcbCounts s))
   (trans (sym (canonicalTotalCountIterate2 K s))
     (cong (λ t → totalCount (lcbCounts t)) cyc))
 
-temperatureCodeLaw : sparsemaxTemperature ≡ 16
+temperatureCodeLaw : sparsemaxTemperature ＝ 16
 temperatureCodeLaw = refl
 
 pessimisticInit : Int8
@@ -1522,10 +1522,10 @@ pessimisticInit = int8OfNat 128
 pessimisticCritic : ∀ {A} → CriticState A
 pessimisticCritic {A} = criticState (λ _ → pessimisticInit)
 
-pessimisticCritic-law : ∀ {A} (i : ℕ) → values (pessimisticCritic {A = A}) i ≡ pessimisticInit
+pessimisticCritic-law : ∀ {A} (i : ℕ) → values (pessimisticCritic {A = A}) i ＝ pessimisticInit
 pessimisticCritic-law {A = A} i = refl
 
-canonicalPersistent : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) → persistentGRU (canonicalGRUStep K s) ≡ persistentGRU (gru s)
+canonicalPersistent : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) → persistentGRU (canonicalGRUStep K s) ＝ persistentGRU (gru s)
 canonicalPersistent = canonicalPersistentGRUPreservation
 
 CanonicalToken : Set
@@ -1602,16 +1602,16 @@ canonicalHaarMix x y =
   int8Add x y , int8Sub x y
 
 canonicalHaarMix-left : ∀ x y →
-  proj₁ (canonicalHaarMix x y) ≡ int8Add x y
+  proj₁ (canonicalHaarMix x y) ＝ int8Add x y
 canonicalHaarMix-left x y = refl
 
 canonicalHaarMix-right : ∀ x y →
-  proj₂ (canonicalHaarMix x y) ≡ int8Sub x y
+  proj₂ (canonicalHaarMix x y) ＝ int8Sub x y
 canonicalHaarMix-right x y = refl
 
 canonicalHaarMix-linear-form :
   ∀ x y →
-  canonicalHaarMix x y ≡
+  canonicalHaarMix x y ＝
   (int8Add x y , int8Sub x y)
 canonicalHaarMix-linear-form x y = refl
 
@@ -1650,14 +1650,14 @@ canonicalHaarFeature x =
     (proj₂ (canonicalCReLU8 x))
 
 canonicalHaarFeature-left : ∀ x →
-  proj₁ (canonicalHaarFeature x) ≡
+  proj₁ (canonicalHaarFeature x) ＝
   int8Add
     (proj₁ (canonicalCReLU8 x))
     (proj₂ (canonicalCReLU8 x))
 canonicalHaarFeature-left x = refl
 
 canonicalHaarFeature-right : ∀ x →
-  proj₂ (canonicalHaarFeature x) ≡
+  proj₂ (canonicalHaarFeature x) ＝
   int8Sub
     (proj₁ (canonicalCReLU8 x))
     (proj₂ (canonicalCReLU8 x))
@@ -1667,25 +1667,25 @@ canonicalHaarOrthogonalCross :
   int8Add
     (int8Mul one8 one8)
     (int8Mul one8 (int8Neg one8))
-  ≡ zero8
+  ＝ zero8
 canonicalHaarOrthogonalCross = refl
 
 canonicalHaarFeatureReconstruct :
   ∀ x →
   let p = proj₁ (canonicalCReLU8 x)
       n = proj₂ (canonicalCReLU8 x)
-  in int8Sub p n ≡ x
+  in int8Sub p n ＝ x
 canonicalHaarFeatureReconstruct
   (int8 (pos 0)) = refl
 canonicalHaarFeatureReconstruct
-  (int8 (pos (suc n))) = refl
+  (int8 (pos (succ n))) = refl
 canonicalHaarFeatureReconstruct
   (int8 (-[1+ n ])) = refl
 
 canonicalHaarFeatureInjective :
   ∀ {x y} →
-  canonicalCReLU8 x ≡ canonicalCReLU8 y →
-  x ≡ y
+  canonicalCReLU8 x ＝ canonicalCReLU8 y →
+  x ＝ y
 canonicalHaarFeatureInjective {x} {y} eq =
   trans
     (sym (canonicalHaarFeatureReconstruct x))
@@ -1718,7 +1718,7 @@ haarAccumulator-op-assoc :
   haarAccumulator-op
     (haarAccumulator-op x y)
     z
-  ≡
+  ＝
   haarAccumulator-op
     x
     (haarAccumulator-op y z)
@@ -1732,7 +1732,7 @@ haarAccumulator-op-assoc
 
 haarAccumulator-op-idˡ :
   ∀ x →
-  haarAccumulator-op haarAccumulator-id x ≡ x
+  haarAccumulator-op haarAccumulator-id x ＝ x
 haarAccumulator-op-idˡ (a , b) =
   cong₂ _,_
     (int8+-idˡ a)
@@ -1740,7 +1740,7 @@ haarAccumulator-op-idˡ (a , b) =
 
 haarAccumulator-op-idʳ :
   ∀ x →
-  haarAccumulator-op x haarAccumulator-id ≡ x
+  haarAccumulator-op x haarAccumulator-id ＝ x
 haarAccumulator-op-idʳ (a , b) =
   cong₂ _,_
     (int8+-idʳ a)
@@ -1792,7 +1792,7 @@ haarLinearTransform T s₀ (x ∷ xs) =
 
 haarLinearTransform-step-law :
   ∀ T s x →
-  haarAccumulatorStep T s x ≡
+  haarAccumulatorStep T s x ＝
   haarAccumulator-op s
     (haarKeyValueContribution T x)
 haarLinearTransform-step-law T s x = refl
@@ -1802,7 +1802,7 @@ haarLinearTransform-associative-prefix :
   haarAccumulatorStep T
     (haarAccumulatorStep T s x)
     y
-  ≡
+  ＝
   haarAccumulator-op
     (haarAccumulatorStep T s x)
     (haarKeyValueContribution T y)
