@@ -44,8 +44,8 @@ module FullCoupled.CanonicalLearnerMonolith where
 open import MLTT.Spartan hiding (J)
 open import MLTT.Athenian
 open import Integers.Type
-open import Integers.Addition
-open import Integers.Multiplication
+open import Integers.Addition renaming (_+_ to _ℤ+_)
+open import Integers.Multiplication renaming (_*_ to _ℤ*_)
 
 Nat : Set
 Nat = ℕ
@@ -55,11 +55,11 @@ Int = ℤ
 
 infixl 31 _+Int_
 _+Int_ : Int → Int → Int
-_+Int_ = _+_
+_+Int_ = _ℤ+_
 
 infixl 31 _*Int_
 _*Int_ : Int → Int → Int
-_*Int_ = _*_
+_*Int_ = _ℤ*_
 open import Naturals
 open import Naturals.Exponentiation
 open import Naturals.Division
