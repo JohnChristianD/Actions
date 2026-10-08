@@ -95,7 +95,7 @@
           pkgs = pkgsFor system;
         in
         {
-          agda = agdaCommand system;
+          agda = agdaWithPackages system;
           agda2hs = agda2hsWithCanonicalGhc system;
           ci = pkgs.dhall;
           default = pkgs.dhall;
@@ -380,7 +380,7 @@
           agda-ci = pkgs.mkShellNoCC {
             packages = [
               pkgs.dhall
-              (agdaWithPackages system)
+              (agdaCommand system)
               pkgs.z3
               pkgs.coreutils
               pkgs.findutils
