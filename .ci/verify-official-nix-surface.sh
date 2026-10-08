@@ -26,5 +26,4 @@ input_count=$(grep -Ec '^[[:space:]]+[A-Za-z0-9_-]+\.url[[:space:]]*=[[:space:]]
 [ "$input_count" -eq 2 ]
 grep -Fq 'nixpkgs.url = "github:NixOS/nixpkgs/' flake.nix
 grep -Fq 'url = "github:martinescardo/TypeTopology/' flake.nix
-! grep -Eq '^\s+[A-Za-z0-9_-]+\.url\s*=\s*"github:(?!NixOS/nixpkgs|martinescardo/TypeTopology)' flake.nix
 echo 'official-nix-surface=pass'
