@@ -1309,9 +1309,9 @@ canonicalPolicy-optimizer-invariant K s o = refl
 
 maxCriticValueList : List Int8 → Int8
 maxCriticValueList [] = zero8
-maxCriticValueList (x ∷ xs) with code x <= code (maxCriticValueList xs)
-... | True = maxCriticValueList xs
-... | False = x
+maxCriticValueList (x ∷ xs) with leIntBool (code x) (code (maxCriticValueList xs))
+... | true = maxCriticValueList xs
+... | false = x
 
 maxCriticValue8 : ∀ {A : Set} → ActionSpace A → CriticState A → Int8
 maxCriticValue8 K q = maxCriticValueList (map (λ a → values q a) (candidates K))
