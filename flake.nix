@@ -162,7 +162,8 @@
       agda2hsWithCanonicalGhc = system:
         agda2hs.packages.${system}.agda2hs.withPackages {
           pkgs = [
-            agda2hs.packages.${system}.base-lib
+            (typeTopologyAgda system)
+            (agda2hsBaseLib system)
           ];
           ghc = canonicalGhc system;
         };
@@ -464,7 +465,7 @@
           agda-ci = pkgs.mkShellNoCC {
             packages = [
               pkgs.dhall
-              pkgs.agdaPackages.agda
+              agdaWithCanonicalGhc system
               pkgs.z3
               pkgs.coreutils
               pkgs.findutils
@@ -475,17 +476,7 @@
             ];
             shellHook = ''
               set -euo pipefail
-              export TYPE_TOPOLOGY_SOURCE="${typetopology}/source"
-              export AGDA2HS_BASE_LIB="${agda2hsBaseLib system}"
-              export AGDA_LIBRARY_CACHE="$PWD/build/agda-library-worktree"
-              rm -rf "$AGDA_LIBRARY_CACHE"
-              mkdir -p "$AGDA_LIBRARY_CACHE/typetopology" "$AGDA_LIBRARY_CACHE/agda2hs-base"
-              cp -R "${typetopology}/source/." "$AGDA_LIBRARY_CACHE/typetopology/"
-              cp -R "${agda2hsBaseLib system}/." "$AGDA_LIBRARY_CACHE/agda2hs-base/"
-              chmod -R u+rwX "$AGDA_LIBRARY_CACHE"
-              export TYPE_TOPOLOGY_SOURCE_WRITABLE="$AGDA_LIBRARY_CACHE/typetopology"
-              export AGDA2HS_BASE_LIB_WRITABLE="$AGDA_LIBRARY_CACHE/agda2hs-base"
-              export AGDA_COMMAND="$PWD/.ci/agda-with-libraries.sh"
+              export AGDA_COMMAND="agda"
             '';
           };
 
@@ -495,7 +486,7 @@
               pkgs.dhall
               pkgs.z3
               pkgs.mirth
-              pkgs.agdaPackages.agda
+              agdaWithCanonicalGhc system
               (agdaEmacs system)
             ];
             shellHook = ''
@@ -506,7 +497,7 @@
           ci = pkgs.mkShell {
             packages = [
               (canonicalHaskellPackages system).dhall
-              pkgs.agdaPackages.agda
+              agdaWithCanonicalGhc system
               pkgs.z3
               pkgs.coreutils
               pkgs.findutils
@@ -516,8 +507,6 @@
               pkgs.gnused
             ];
             shellHook = ''
-              export TYPE_TOPOLOGY_SOURCE="${typetopology}/source"
-              export AGDA2HS_BASE_LIB="${agda2hsBaseLib system}"
               export AGDA_COMMAND="$PWD/.ci/agda-with-libraries.sh"
             '';
           };
@@ -529,12 +518,10 @@
               pkgs.z3
               pkgs.mirth
               pkgs.gh
-              pkgs.agdaPackages.agda
+              agdaWithCanonicalGhc system
               (agdaEmacs system)
             ];
             shellHook = ''
-              export TYPE_TOPOLOGY_SOURCE="${typetopology}/source"
-              export AGDA2HS_BASE_LIB="${agda2hsBaseLib system}"
               export AGDA_COMMAND="$PWD/.ci/agda-with-libraries.sh"
               export LIQUID_SOLVER=z3
             '';
@@ -549,15 +536,13 @@
               (canonicalHaskellPackages system).dhall-json
               pkgs.mirth
               pkgs.gh
-              pkgs.agdaPackages.agda
+              agdaWithCanonicalGhc system
               (agdaEmacs system)
               pkgs.stdenv.cc
               pkgs.yamlscript
               pkgs.elmPackages.elm
             ];
             shellHook = ''
-              export TYPE_TOPOLOGY_SOURCE="${typetopology}/source"
-              export AGDA2HS_BASE_LIB="${agda2hsBaseLib system}"
               export AGDA_COMMAND="$PWD/.ci/agda-with-libraries.sh"
               export LIQUID_SOLVER=z3
             '';
