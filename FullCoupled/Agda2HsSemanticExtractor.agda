@@ -7,14 +7,16 @@ module FullCoupled.Agda2HsSemanticExtractor where
 
 -- BEGIN MIRTH-SYNC COMMON IMPORTS
 open import Haskell.Prelude
- -- END MIRTH-SYNC COMMON IMPORTS
+open import Agda.Builtin.Char using (Char; primIsAlpha; primIsDigit; primIsSpace; primCharEquality)
+open import Agda.Builtin.String using (primStringFromList; primStringToList)
+-- END MIRTH-SYNC COMMON IMPORTS
 
 -- BEGIN MIRTH-SYNC CANONICAL COMMAND
 -- "$AGDA_COMMAND" -i .
 -- END MIRTH-SYNC CANONICAL COMMAND
 
 CharList : Type
-CharList = String
+CharList = List Char
 
 data SemanticKind : Type where
   semantic-top-level : SemanticKind
