@@ -138,7 +138,7 @@ plus-succ-lt (succ m) n = plus-succ-lt m n
 
 plus-succ-not-self : ∀ (m n : ℕ) → m + succ n ≠ m
 plus-succ-not-self m n eq =
-  lt-irrefl m (subst (λ z → m < z) eq (plus-succ-lt m n))
+  lt-irrefl m (transport (λ z → m < z) eq (plus-succ-lt m n))
 
 succ-succ-lt : ∀ n → n < succ (succ n)
 succ-succ-lt zero = s≤s z≤n
@@ -147,7 +147,7 @@ succ-succ-lt (succ n) = s≤s (succ-succ-lt n)
 succ-succ-not-self : ∀ n → succ (succ n) ≠ n
 succ-succ-not-self n eq =
   lt-irrefl (succ (succ n))
-    (subst (λ z → z < succ (succ n)) (sym eq) (succ-succ-lt n))
+    (transport (λ z → z < succ (succ n)) (sym eq) (succ-succ-lt n))
 
 iterate : ∀ {S : Set} → (S → S) → ℕ → S → S
 iterate step zero s = s
