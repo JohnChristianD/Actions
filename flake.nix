@@ -146,17 +146,14 @@
           };
         };
 
-      agdaWithCanonicalGhc = system:
+      agdaWithPackages = system:
         let
           pkgs = pkgsFor system;
         in
-        pkgs.agda.withPackages {
-          pkgs = [
-            (typeTopologyAgda system)
-            (agda2hsBaseLib system)
-          ];
-          ghc = canonicalGhc system;
-        };
+        pkgs.agda.withPackages [
+          (typeTopologyAgda system)
+          (agda2hsBaseLib system)
+        ];
 
       agda2hsWithCanonicalGhc = system:
         agda2hs.packages.${system}.agda2hs.withPackages {
@@ -176,7 +173,7 @@
           pkgs = pkgsFor system;
         in
         {
-          agda = agdaWithCanonicalGhc system;
+          agda = agdaWithPackages system;
           agda2hs = agda2hsWithCanonicalGhc system;
           typetopology = typeTopologyAgda system;
           ci = (canonicalHaskellPackages system).dhall;
@@ -298,7 +295,7 @@
             script = pkgs.writeShellApplication {
               name = "agda2hs-semantic-search";
               runtimeInputs = [
-                agdaWithCanonicalGhc system
+                agdaWithPackages system
                 (agda2hsWithCanonicalGhc system)
                 pkgs.z3
                 pkgs.coreutils
@@ -310,7 +307,7 @@
                 rm -rf "$out"
                 mkdir -p "$out"
                 bash .ci/mirth/agda_command_sync.sh --check
-                "${agdaWithCanonicalGhc system}/bin/agda" --dependency-graph="$out/theorems-monolith.dot" -i . FullCoupled/TheoremsMonolith.agda
+                "${agdaWithPackages system}/bin/agda" --dependency-graph="$out/theorems-monolith.dot" -i . FullCoupled/TheoremsMonolith.agda
                 test -s "$out/theorems-monolith.dot"
                 bash .ci/discovery/agda_semantic_source_closure.sh \
                   "$out/theorems-monolith.dot" \
@@ -319,9 +316,9 @@
                   "${typeTopologyAgda system}" \
                   "${agda2hsBaseLib system}"
                 test -s "$out/.semantic-source-files"
-                "${agdaWithCanonicalGhc system}/bin/agda" -i . FullCoupled/Agda2HsSemanticExtractor.agda
-                "${agdaWithCanonicalGhc system}/bin/agda" -i . FullCoupled/Agda2HsSemanticSearch.agda
-                "${agdaWithCanonicalGhc system}/bin/agda" -i . FullCoupled/Agda2HsTheoremGraphEGraph.agda
+                "${agdaWithPackages system}/bin/agda" -i . FullCoupled/Agda2HsSemanticExtractor.agda
+                "${agdaWithPackages system}/bin/agda" -i . FullCoupled/Agda2HsSemanticSearch.agda
+                "${agdaWithPackages system}/bin/agda" -i . FullCoupled/Agda2HsTheoremGraphEGraph.agda
                 "${agda2hsWithCanonicalGhc system}/bin/agda2hs" -i . FullCoupled/Agda2HsSemanticExtractor.agda -o "$out"
                 "${agda2hsWithCanonicalGhc system}/bin/agda2hs" -i . FullCoupled/Agda2HsSemanticSearch.agda -o "$out"
                 "${agda2hsWithCanonicalGhc system}/bin/agda2hs" -i . FullCoupled/Agda2HsTheoremGraphEGraph.agda -o "$out"
@@ -396,7 +393,7 @@
             script = pkgs.writeShellApplication {
               name = "agda-haskell-pipeline";
               runtimeInputs = [
-                agdaWithCanonicalGhc system
+                agdaWithPackages system
                 (agda2hsWithCanonicalGhc system)
                 pkgs.z3
                 pkgs.coreutils
@@ -464,7 +461,7 @@
           agda-ci = pkgs.mkShellNoCC {
             packages = [
               pkgs.dhall
-              agdaWithCanonicalGhc system
+              agdaWithPackages system
               pkgs.z3
               pkgs.coreutils
               pkgs.findutils
@@ -485,7 +482,7 @@
               pkgs.dhall
               pkgs.z3
               pkgs.mirth
-              agdaWithCanonicalGhc system
+              agdaWithPackages system
               (agdaEmacs system)
             ];
             shellHook = ''
@@ -496,7 +493,7 @@
           ci = pkgs.mkShell {
             packages = [
               (canonicalHaskellPackages system).dhall
-              agdaWithCanonicalGhc system
+              agdaWithPackages system
               pkgs.z3
               pkgs.coreutils
               pkgs.findutils
@@ -517,7 +514,7 @@
               pkgs.z3
               pkgs.mirth
               pkgs.gh
-              agdaWithCanonicalGhc system
+              agdaWithPackages system
               (agdaEmacs system)
             ];
             shellHook = ''
@@ -535,7 +532,7 @@
               (canonicalHaskellPackages system).dhall-json
               pkgs.mirth
               pkgs.gh
-              agdaWithCanonicalGhc system
+              agdaWithPackages system
               (agdaEmacs system)
               pkgs.stdenv.cc
               pkgs.yamlscript
