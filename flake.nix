@@ -150,10 +150,13 @@
         let
           pkgs = pkgsFor system;
         in
-        pkgs.agda.withPackages [
-          (typeTopologyAgda system)
-          (agda2hsBaseLib system)
-        ];
+        pkgs.agda.withPackages {
+          pkgs = [
+            (typeTopologyAgda system)
+            (agda2hsBaseLib system)
+          ];
+          ghc = null;
+        };
 
       agda2hsWithCanonicalGhc = system:
         agda2hs.packages.${system}.agda2hs.withPackages {
