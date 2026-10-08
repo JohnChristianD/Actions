@@ -82,7 +82,23 @@
           cp "${typetopology}/typetopology.agda-lib" "$typetopology_dir/"
           touch "$typetopology_dir/.ready"
         fi
-      '';
+      '' ;
+
+      agdaProofCommand = system:
+        let
+          pkgs = pkgsFor system;
+        in
+        pkgs.writeShellApplication {
+          name = "agda-proof";
+          runtimeInputs = [
+            pkgs.agda
+            pkgs.coreutils
+          ];
+          text = ''
+            ${agdaTypeTopologySetup}
+            exec agda -i "$typetopology_dir/source" -i . "$@"
+          '' ;
+        };
 
       agdaCommand = system:
         let
@@ -95,9 +111,8 @@
             pkgs.coreutils
           ];
           text = ''
-            ${agdaTypeTopologySetup}
-            exec agda -l agda2hs-base -i "$typetopology_dir/source" -i . "$@"
-          '';
+            exec agda -l agda2hs-base -i . "$@"
+          '' ;
         };
 
       agda2hsCommand = system:
@@ -108,15 +123,12 @@
           name = "agda2hs-ci";
           runtimeInputs = [
             (agda2hsWithCanonicalGhc system)
+            pkgs.coreutils
           ];
           text = ''
-            set -euo pipefail
             exec agda2hs -l agda2hs-base -i . "$@"
-          '';
+          '' ;
         };
-
-
-
     in
     {
       packages = forAllSystems (system:
@@ -256,7 +268,7 @@
                 rm -rf "$out"
                 mkdir -p "$out"
                 bash .ci/mirth/agda_command_sync.sh --check
-                "${agdaCommand system}/bin/agda2hs-agda" --dependency-graph="$out/theorems-monolith.dot" -i . FullCoupled/TheoremsMonolith.agda
+                "${agdaProofCommand system}/bin/agda-proof" --dependency-graph="$out/theorems-monolith.dot" -i . FullCoupled/TheoremsMonolith.agda
                 test -s "$out/theorems-monolith.dot"
                 bash .ci/discovery/agda_semantic_source_closure.sh \
                   "$out/theorems-monolith.dot" \
@@ -409,7 +421,7 @@
           agda-ci = pkgs.mkShellNoCC {
             packages = [
               pkgs.dhall
-              (agdaCommand system)
+              (agdaProofCommand system)
               pkgs.z3
               pkgs.coreutils
               pkgs.findutils
@@ -420,7 +432,7 @@
             ];
             shellHook = ''
               set -euo pipefail
-              export AGDA_COMMAND="agda2hs-agda"
+              export AGDA_COMMAND="agda-proof"
             '';
           };
 
@@ -430,18 +442,18 @@
               pkgs.dhall
               pkgs.z3
               pkgs.mirth
-              (agdaCommand system)
+              (agdaProofCommand system)
               (agdaEmacs system)
             ];
             shellHook = ''
-              export AGDA_COMMAND="agda2hs-agda"
+              export AGDA_COMMAND="agda-proof"
             '';
           };
 
           ci = pkgs.mkShell {
             packages = [
               pkgs.dhall
-              (agdaCommand system)
+              (agdaProofCommand system)
               pkgs.z3
               pkgs.coreutils
               pkgs.findutils
@@ -451,7 +463,7 @@
               pkgs.gnused
             ];
             shellHook = ''
-              export AGDA_COMMAND="agda2hs-agda"
+              export AGDA_COMMAND="agda-proof"
             '';
           };
 
@@ -462,11 +474,11 @@
               pkgs.z3
               pkgs.mirth
               pkgs.gh
-              (agdaCommand system)
+              (agdaProofCommand system)
               (agdaEmacs system)
             ];
             shellHook = ''
-              export AGDA_COMMAND="agda2hs-agda"
+              export AGDA_COMMAND="agda-proof"
             '';
           };
 
@@ -479,13 +491,13 @@
               pkgs.dhall-json
               pkgs.mirth
               pkgs.gh
-              (agdaCommand system)
+              (agdaProofCommand system)
               (agdaEmacs system)
               pkgs.stdenv.cc
               pkgs.elmPackages.elm
             ];
             shellHook = ''
-              export AGDA_COMMAND="agda2hs-agda"
+              export AGDA_COMMAND="agda-proof"
             '';
           };
         });
