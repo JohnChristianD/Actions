@@ -490,12 +490,12 @@ record NatRingSolverNormalizationTheorem : Set₁ where
   field
     normalization :
       ∀ (epsilon scale : ℕ) →
-      (epsilon + suc zero) * scale ＝
+      (epsilon + succ zero) * scale ＝
       (epsilon * scale) + scale
 
 nat-ring-solver-layernorm-step :
   ∀ (epsilon scale : ℕ) →
-  (epsilon + suc zero) * scale ＝
+  (epsilon + succ zero) * scale ＝
   (epsilon * scale) + scale
 nat-ring-solver-layernorm-step epsilon scale =
   trans
@@ -569,7 +569,7 @@ record CanonicalSafeTacticNormalizationTheorem : Set₁ where
       CanonicalAlgebraicTacticBackendTheorem
     natSemiringNormalization :
       ∀ (epsilon scale : ℕ) →
-      (epsilon + suc zero) * scale ＝
+      (epsilon + succ zero) * scale ＝
       (epsilon * scale) + scale
     integerRingNormalization :
       ∀ (i j k : Int) →
@@ -1309,7 +1309,7 @@ eGraphAStarIterate :
   State →
   State
 eGraphAStarIterate step zero s = s
-eGraphAStarIterate step (suc n) s =
+eGraphAStarIterate step (succ n) s =
   eGraphAStarIterate step n (step s)
 
 record EGraphAStarFiniteRankConvergenceWitness
@@ -1423,7 +1423,7 @@ eGraphAStarEventualStableFromRank W stableOrNot s =
       refl
       (smaller (subst (λ k → rank W (step W s) < k) rankEq descent))
   ... | n′ , stableAtN′ =
-    suc n′ , stableAtN′
+    succ n′ , stableAtN′
 
 eGraphAStarStablePathPersists :
   ∀ {Expression State : Set}
@@ -1437,7 +1437,7 @@ eGraphAStarStablePathPersists :
       n
       s)
 eGraphAStarStablePathPersists W stableS zero = stableS
-eGraphAStarStablePathPersists W {s = s} stableS (suc n) =
+eGraphAStarStablePathPersists W {s = s} stableS (succ n) =
   eGraphAStarStablePathPersists
     W
     (stableNext W s stableS)
@@ -1544,7 +1544,7 @@ integerLayerNormAStarCostModel :
   AStarCostModel IntegerLayerNormExpression
 integerLayerNormAStarCostModel =
   aStarCostModel
-    (λ _ _ → suc zero)
+    (λ _ _ → succ zero)
     (λ _ → zero)
 
 integerLayerNormAStarClosure :
@@ -1715,9 +1715,9 @@ integerLayerNormAStarRank :
   IntegerLayerNormAStarPhase →
   ℕ
 integerLayerNormAStarRank integerLayerNormRawPhase =
-  suc (suc zero)
+  succ (succ zero)
 integerLayerNormAStarRank integerLayerNormCenteredPhase =
-  suc zero
+  succ zero
 integerLayerNormAStarRank integerLayerNormRadicandPhase =
   zero
 
@@ -1790,10 +1790,10 @@ integerLayerNormAStarEventualStable :
           phase))
 integerLayerNormAStarEventualStable
   integerLayerNormRawPhase =
-  suc (suc zero) , refl
+  succ (succ zero) , refl
 integerLayerNormAStarEventualStable
   integerLayerNormCenteredPhase =
-  suc zero , refl
+  succ zero , refl
 integerLayerNormAStarEventualStable
   integerLayerNormRadicandPhase =
   zero , refl
@@ -2018,20 +2018,20 @@ canonical-integer-layernorm-astar-execution-bridge-theorem =
 
 nat-ring-solver-layernorm-contribution :
   ∀ (xs : List C.Int8) (epsilon : ℕ) →
-  (suc epsilon * length xs * length xs)
+  (succ epsilon * length xs * length xs)
   ＝
   (epsilon * length xs * length xs)
   + (length xs * length xs)
 nat-ring-solver-layernorm-contribution =
   NatRingSolver.solve-∀
 
-integerLayerNorm-epsilon-contribution-suc :
+integerLayerNorm-epsilon-contribution-succ :
   ∀ (xs : List C.Int8) (epsilon : ℕ) →
-  (suc epsilon * length xs * length xs)
+  (succ epsilon * length xs * length xs)
   ＝
   (epsilon * length xs * length xs)
   + (length xs * length xs)
-integerLayerNorm-epsilon-contribution-suc =
+integerLayerNorm-epsilon-contribution-succ =
   nat-ring-solver-layernorm-contribution
 
 integerLayerNorm-radicand-epsilon-zero :
@@ -2041,21 +2041,21 @@ integerLayerNorm-radicand-epsilon-zero :
   C.integerLayerNormVarianceNumerator xs
 integerLayerNorm-radicand-epsilon-zero xs = refl
 
-integerLayerNorm-radicand-epsilon-suc :
+integerLayerNorm-radicand-epsilon-succ :
   ∀ (xs : List C.Int8) (epsilon : ℕ) →
-  C.integerLayerNormRadicand xs (suc epsilon)
+  C.integerLayerNormRadicand xs (succ epsilon)
   ＝
   C.integerLayerNormRadicand xs epsilon
   +Int
   (pos (length xs * length xs))
-integerLayerNorm-radicand-epsilon-suc xs epsilon =
+integerLayerNorm-radicand-epsilon-succ xs epsilon =
   trans
     (cong
       (λ n →
         C.integerLayerNormVarianceNumerator xs
         +Int
         (pos n))
-      (integerLayerNorm-epsilon-contribution-suc xs epsilon))
+      (integerLayerNorm-epsilon-contribution-succ xs epsilon))
     (sym
       (integer-ring-solver-assoc
         (C.integerLayerNormVarianceNumerator xs)
@@ -2134,9 +2134,9 @@ integerLayerNorm-radicand-epsilon-linear xs zero =
     (sym
       (ℤ-zero-right-neutral
         (C.integerLayerNormVarianceNumerator xs)))
-integerLayerNorm-radicand-epsilon-linear xs (suc epsilon) =
+integerLayerNorm-radicand-epsilon-linear xs (succ epsilon) =
   trans
-    (integerLayerNorm-radicand-epsilon-suc xs epsilon)
+    (integerLayerNorm-radicand-epsilon-succ xs epsilon)
     (trans
       (cong₂ _+Int_
         (integerLayerNorm-radicand-epsilon-linear xs epsilon)
@@ -2153,7 +2153,7 @@ integerLayerNorm-radicand-epsilon-linear xs (suc epsilon) =
             +Int
             (pos n))
           (sym
-            (integerLayerNorm-epsilon-contribution-suc
+            (integerLayerNorm-epsilon-contribution-succ
               xs
               epsilon)))))
 
@@ -2169,7 +2169,7 @@ record IntegerLayerNormEpsilonRayGrowthTheorem : Set₁ where
       C.integerLayerNormVarianceNumerator xs
     successorRay :
       ∀ (xs : List C.Int8) (epsilon : ℕ) →
-      C.integerLayerNormRadicand xs (suc epsilon)
+      C.integerLayerNormRadicand xs (succ epsilon)
       ＝
       C.integerLayerNormRadicand xs epsilon
       +Int
@@ -2190,7 +2190,7 @@ integer-layernorm-epsilon-ray-growth-theorem =
   integerLayerNormEpsilonRayGrowthTheorem
     canonical-integer-layernorm-egraph-astar-theorem
     integerLayerNorm-radicand-epsilon-zero
-    integerLayerNorm-radicand-epsilon-suc
+    integerLayerNorm-radicand-epsilon-succ
     integerLayerNorm-radicand-epsilon-linear
 
 record CanonicalIntegerLayerNormStabilityGrowthTheorem : Set₁ where
@@ -2394,7 +2394,7 @@ iterateConjugacy :
   ＝
   iterateStep physicalStep n (encode s)
 iterateConjugacy encode stepConjugacy zero s = refl
-iterateConjugacy {learnerStep = learnerStep} {physicalStep = physicalStep} encode stepConjugacy (suc n) s =
+iterateConjugacy {learnerStep = learnerStep} {physicalStep = physicalStep} encode stepConjugacy (succ n) s =
   trans
     (stepConjugacy (iterateStep learnerStep n s))
     (cong
@@ -2749,7 +2749,7 @@ canonicalGRUFractalTransportedInjective =
   fractalTransportedEncodeInjective canonicalGRUFractal
 
 canonicalGRUTwoScaleRefinement :
-  GRUFractalRefines zero (suc zero)
+  GRUFractalRefines zero (succ zero)
 canonicalGRUTwoScaleRefinement = z≤n
 
 canonicalGRUTwoScaleInjective :
@@ -3325,12 +3325,12 @@ canonical-aq-loop-theorem =
 
 canonicalAperiodic-theorem :
   ∀ K s n →
-  C.iterateCanonical K (suc n) s ≢ s
+  C.iterateCanonical K (succ n) s ≢ s
 canonicalAperiodic-theorem = C.canonicalAperiodic
 
 canonicalNoNontrivialFiniteCycle-theorem :
   ∀ K s n →
-  C.iterateCanonical K (suc n) s ＝ s → ⊥
+  C.iterateCanonical K (succ n) s ＝ s → ⊥
 canonicalNoNontrivialFiniteCycle-theorem = C.canonicalNoNontrivialFiniteCycle
 
 record StateIsomorphism (A B : Set) : Set where
@@ -3346,7 +3346,7 @@ open StateIsomorphism public
 iterateIsomorphism :
   ∀ {A : Set} → (A → A) → ℕ → A → A
 iterateIsomorphism f zero a = a
-iterateIsomorphism f (suc n) a = iterateIsomorphism f n (f a)
+iterateIsomorphism f (succ n) a = iterateIsomorphism f n (f a)
 
 record StepConjugacyWitness
   (A B : Set)
@@ -3373,7 +3373,7 @@ stepConjugacy-iterate :
   iterateIsomorphism targetStep n (to (isomorphism W) a)
 stepConjugacy-iterate {sourceStep = sourceStep} {targetStep = targetStep} W zero a =
   refl
-stepConjugacy-iterate {sourceStep = sourceStep} {targetStep = targetStep} W (suc n) a =
+stepConjugacy-iterate {sourceStep = sourceStep} {targetStep = targetStep} W (succ n) a =
   trans
     (stepConjugacy-iterate {sourceStep = sourceStep} {targetStep = targetStep} W n (sourceStep a))
     (cong
@@ -3390,7 +3390,7 @@ iteratePredicateTransport :
   Property (iterateIsomorphism step n b)
 iteratePredicateTransport step Property preserved zero b proof =
   proof
-iteratePredicateTransport step Property preserved (suc n) b proof =
+iteratePredicateTransport step Property preserved (succ n) b proof =
   iteratePredicateTransport
     step
     Property
@@ -3456,7 +3456,7 @@ canonicalPersistentGRU-afterFullStep-iterate :
   ＝
   persistentGRU (gru s)
 canonicalPersistentGRU-afterFullStep-iterate K zero s = refl
-canonicalPersistentGRU-afterFullStep-iterate K (suc n) s =
+canonicalPersistentGRU-afterFullStep-iterate K (succ n) s =
   trans
     (canonicalPersistentGRU-afterFullStep-iterate
       K n (canonicalFullStep K s))
@@ -3786,7 +3786,7 @@ commutingIterate :
   ∀ {S : Set} →
   (S → S) → ℕ → S → S
 commutingIterate step zero s = s
-commutingIterate step (suc n) s =
+commutingIterate step (succ n) s =
   step (commutingIterate step n s)
 
 record CommutingSquareTheorem
@@ -3822,7 +3822,7 @@ commutingSquareTheorem-from-square {step = step} {observe = observe} {featureSte
       observe (commutingIterate step n s) ＝
       commutingIterate featureStep n (observe s)
     deriveIterateSquare zero s = refl
-    deriveIterateSquare (suc n) s =
+    deriveIterateSquare (succ n) s =
       trans
         (square (commutingIterate step n s))
         (cong featureStep (deriveIterateSquare n s))
@@ -3858,7 +3858,7 @@ canonicalCount-freeMonoidActionHomomorphism :
     C.CanonicalFullLearnerState
     ℕ
     (C.canonicalFullStep K)
-    suc
+    succ
     (λ s → C.totalCount (C.lcbCounts s))
 canonicalCount-freeMonoidActionHomomorphism K =
   freeMonoidActionHomomorphism-from-square
@@ -3895,7 +3895,7 @@ recurrentPrefix-scan-lifts-conjugacy :
       xs n
       (replace s)
 recurrentPrefix-scan-lifts-conjugacy replace step h xs zero s = refl
-recurrentPrefix-scan-lifts-conjugacy replace step h xs (suc n) s =
+recurrentPrefix-scan-lifts-conjugacy replace step h xs (succ n) s =
   trans
     (recurrentPrefix-scan-lifts-conjugacy
       replace
@@ -4020,7 +4020,7 @@ canonicalFullLearner-iterate-conjugacy :
   replace (C.iterateCanonical K n s) ＝
   C.iterateCanonical K n (replace s)
 canonicalFullLearner-iterate-conjugacy replace K h zero s = refl
-canonicalFullLearner-iterate-conjugacy replace K h (suc n) s =
+canonicalFullLearner-iterate-conjugacy replace K h (succ n) s =
   trans
     (canonicalFullLearner-iterate-conjugacy
       replace K h n (C.canonicalFullStep K s))
@@ -4084,7 +4084,7 @@ productRecurrentPrefix-correct :
   (C.recurrentPrefixState RA xs n s ,
    C.recurrentPrefixState RB xs n t)
 productRecurrentPrefix-correct RA RB xs zero s t = refl
-productRecurrentPrefix-correct RA RB xs (suc n) s t =
+productRecurrentPrefix-correct RA RB xs (succ n) s t =
   cong₂
     (λ a b →
       (C.runNetwork RA a (xs n) ,
@@ -4221,7 +4221,7 @@ canonical-qLog2Bias8-law :
         (C.dyadicDenominator (C.qLog8 x))))
 canonical-qLog2Bias8-law x with C.int8Magnitude x
 ... | zero = refl
-... | suc n = refl
+... | succ n = refl
 
 
 record CanonicalBiasedWatkinsNegativeQMunchausenL2TargetTheorem : Set₁ where
@@ -4322,15 +4322,15 @@ canonicalWatkinsTarget-endogenous-leftInverse K observe inverse leftInverse s =
           (C.canonicalEndogenousFeedback K t))
       (leftInverse s))
 
-suc-injective :
-  ∀ {m n : ℕ} → suc m ＝ suc n → m ＝ n
-suc-injective refl = refl
+succ-injective :
+  ∀ {m n : ℕ} → succ m ＝ succ n → m ＝ n
+succ-injective refl = refl
 
 natPlus-left-cancel :
   ∀ (k m n : ℕ) → k + m ＝ k + n → m ＝ n
 natPlus-left-cancel zero m n eq = eq
-natPlus-left-cancel (suc k) m n eq =
-  natPlus-left-cancel k m n (suc-injective eq)
+natPlus-left-cancel (succ k) m n eq =
+  natPlus-left-cancel k m n (succ-injective eq)
 
 canonicalOrbit-state-injective :
   ∀ K s {m n : ℕ} →
@@ -4708,7 +4708,7 @@ canonicalDeterministicFiniteStepDivergenceInevitability :
   (K : C.CanonicalFullLearnerKernel)
   (s : C.CanonicalFullLearnerState)
   (n : ℕ) →
-  C.iterateCanonical K (suc n) s ≢ s
+  C.iterateCanonical K (succ n) s ≢ s
 canonicalDeterministicFiniteStepDivergenceInevitability =
   C.canonicalAperiodic
 
@@ -4729,14 +4729,14 @@ canonicalIterateComposition :
   C.iterateCanonical K n (C.iterateCanonical K m s)
 canonicalIterateComposition K m zero s
   rewrite +-identityʳ m = refl
-canonicalIterateComposition K m (suc n) s
-  rewrite +-suc m n =
+canonicalIterateComposition K m (succ n) s
+  rewrite +-succ m n =
   cong (C.canonicalFullStep K)
     (canonicalIterateComposition K m n s)
 
 recurrentPrefixStepWork : ℕ → ℕ
 recurrentPrefixStepWork zero = zero
-recurrentPrefixStepWork (suc n) = suc (recurrentPrefixStepWork n)
+recurrentPrefixStepWork (succ n) = succ (recurrentPrefixStepWork n)
 
 recurrentPrefixStepWork-law :
   ∀ n → recurrentPrefixStepWork n ＝ n
@@ -4748,9 +4748,9 @@ recurrentPrefixStepWork-split :
   recurrentPrefixStepWork m + recurrentPrefixStepWork n
 recurrentPrefixStepWork-split m zero
   rewrite +-identityʳ m = refl
-recurrentPrefixStepWork-split m (suc n)
-  rewrite +-suc m n =
-  cong suc (recurrentPrefixStepWork-split m n)
+recurrentPrefixStepWork-split m (succ n)
+  rewrite +-succ m n =
+  cong succ (recurrentPrefixStepWork-split m n)
 
 canonicalNatIndexedExactUniversalReadout :
   ∀ {Feature Output : Set}
@@ -4778,7 +4778,7 @@ hardSignGate-idempotent x with C.hardSign x
 
 iterateState : ∀ {State : Set} → (State → State) → ℕ → State → State
 iterateState step zero s = s
-iterateState step (suc n) s = step (iterateState step n s)
+iterateState step (succ n) s = step (iterateState step n s)
 
 
 record FiniteRankStabilityCertificate
@@ -5012,7 +5012,7 @@ iterateUpdate :
   ∀ {State : Set} →
   (State → State) → ℕ → State → State
 iterateUpdate update zero state = state
-iterateUpdate update (suc n) state =
+iterateUpdate update (succ n) state =
   update (iterateUpdate update n state)
 
 GloballyEventuallyFixed :
@@ -5046,7 +5046,7 @@ guardedCubicalTraceStage :
   GuardedCubicalTrace Feature →
   Feature
 guardedCubicalTraceStage zero trace = GuardedCubicalTrace.head trace
-guardedCubicalTraceStage (suc n) trace =
+guardedCubicalTraceStage (succ n) trace =
   guardedCubicalTraceStage n (GuardedCubicalTrace.tail trace)
 
 record GuardedCubicalDenseRepresentation
@@ -5114,7 +5114,7 @@ iterateGuardedFeature :
   GuardedCubicalTrace Feature →
   GuardedCubicalTrace Feature
 iterateGuardedFeature step zero s = s
-iterateGuardedFeature step (suc n) s =
+iterateGuardedFeature step (succ n) s =
   step (iterateGuardedFeature step n s)
 
 guardedCubicalIterateConjugacy :
@@ -5141,7 +5141,7 @@ guardedCubicalIterateConjugacy
 guardedCubicalIterateConjugacy
   {stateStep = stateStep}
   {featureStep = featureStep}
-  C (suc n) s =
+  C (succ n) s =
   trans
     (GuardedCubicalConjugacy.stepConjugacy C (iterateUpdate stateStep n s))
     (cong
@@ -5275,7 +5275,7 @@ iterateStep-add :
   iterateStep step n
     (iterateStep step m s)
 iterateStep-add step zero n s = refl
-iterateStep-add step (suc m) n s =
+iterateStep-add step (succ m) n s =
   iterateStep-add step m n (step s)
 
 iterateStep-fixed :
@@ -5286,7 +5286,7 @@ iterateStep-fixed :
   ∀ n →
   iterateStep step n s ＝ s
 iterateStep-fixed step fixed zero = refl
-iterateStep-fixed step fixed (suc n) =
+iterateStep-fixed step fixed (succ n) =
   trans
     (cong
       (iterateStep step n)
@@ -5399,21 +5399,21 @@ gruInjectiveTailStability-identifiability W =
 
 
 successor-never-globally-eventually-fixed-at-zero :
-  ¬ GloballyEventuallyFixed suc 0
+  ¬ GloballyEventuallyFixed succ 0
 successor-never-globally-eventually-fixed-at-zero h =
-  no-suc-zero
+  no-succ-zero
     (trans
-      (sym (iterateUpdate-suc 1))
+      (sym (iterateUpdate-succ 1))
       (proj₂ (h 1)))
   where
-    iterateUpdate-suc :
-      ∀ n → iterateUpdate suc n 1 ＝ suc n
-    iterateUpdate-suc zero = refl
-    iterateUpdate-suc (suc n) =
-      cong suc (iterateUpdate-suc n)
+    iterateUpdate-succ :
+      ∀ n → iterateUpdate succ n 1 ＝ succ n
+    iterateUpdate-succ zero = refl
+    iterateUpdate-succ (succ n) =
+      cong succ (iterateUpdate-succ n)
 
-    no-suc-zero : ∀ {n : ℕ} → suc n ≢ 0
-    no-suc-zero ()
+    no-succ-zero : ∀ {n : ℕ} → succ n ≢ 0
+    no-succ-zero ()
 
 exact-injective-continuous-leftInverse-does-not-imply-update-stability :
   ¬
@@ -5432,7 +5432,7 @@ exact-injective-continuous-leftInverse-does-not-imply-update-stability h =
       (λ n → n)
       (λ n → n)
       (λ _ → TrivialContinuity)
-      suc
+      succ
       0
       (continuousLeftInverseTheorem
         (λ _ → trivialContinuity)
@@ -5486,7 +5486,7 @@ ActionWeights = List ℕ
 
 nonzeroWeight : ℕ → ℕ
 nonzeroWeight zero = zero
-nonzeroWeight (suc _) = suc zero
+nonzeroWeight (succ _) = succ zero
 
 actionSupportCount : ActionWeights → ℕ
 actionSupportCount [] = zero
@@ -5516,12 +5516,12 @@ generalTsallis2NearDyadicSparsity : ActionWeights → C.Dyadic
 generalTsallis2NearDyadicSparsity xs with actionWeightSquareSum xs
 ... | zero =
   C.fromNatDyadic 1 1
-... | suc q =
+... | succ q =
   C.fromNatDyadic
     (generalTsallis2Numerator xs)
     (generalTsallis2Denominator xs)
 
-natZeroNotSuc : ∀ {n} → suc n ≢ zero
+natZeroNotSuc : ∀ {n} → succ n ≢ zero
 natZeroNotSuc ()
 
 generalTsallis2NearDyadicSparsity-zero :
@@ -5532,7 +5532,7 @@ generalTsallis2NearDyadicSparsity-zero :
 generalTsallis2NearDyadicSparsity-zero xs h
   with actionWeightSquareSum xs
 ... | zero = refl
-... | suc q = ⊥-elim (natZeroNotSuc h)
+... | succ q = ⊥-elim (natZeroNotSuc h)
 
 generalTsallis2NearDyadicSparsity-definition :
   ∀ (xs : ActionWeights) →
@@ -5544,7 +5544,7 @@ generalTsallis2NearDyadicSparsity-definition :
 generalTsallis2NearDyadicSparsity-definition xs h
   with actionWeightSquareSum xs
 ... | zero = ⊥-elim (h refl)
-... | suc q = refl
+... | succ q = refl
 
 dyadicEquivalent :
   C.Dyadic →
@@ -5554,7 +5554,7 @@ dyadicEquivalent x y = x ＝ y
 
 tsallis2NearDyadic-oneHot :
   dyadicEquivalent
-    (generalTsallis2NearDyadicSparsity (suc zero ∷ zero ∷ []))
+    (generalTsallis2NearDyadicSparsity (succ zero ∷ zero ∷ []))
     (C.fromNatDyadic 1 2)
 tsallis2NearDyadic-oneHot = refl
 
@@ -6138,7 +6138,7 @@ globalConjugacyEquivalence-iterate :
   ＝
   iterateState featureStep n (observe s)
 globalConjugacyEquivalence-iterate G zero s = refl
-globalConjugacyEquivalence-iterate G (suc n) s =
+globalConjugacyEquivalence-iterate G (succ n) s =
   trans
     (GlobalConjugacyEquivalence.forward G (iterateState step n s))
     (cong
@@ -6689,7 +6689,7 @@ klaAffineAStarCostModel :
   AStarCostModel KLAAffineExpression
 klaAffineAStarCostModel =
   aStarCostModel
-    (λ _ _ → suc zero)
+    (λ _ _ → succ zero)
     (λ _ → zero)
 
 klaAffineAStarClosure :
@@ -6919,8 +6919,8 @@ canonicalAStarZeroCost :
 canonicalAStarZeroCost = refl
 
 canonicalAStarSuccessorCost :
-  ∀ n → n + suc zero ＝ suc n
-canonicalAStarSuccessorCost n = +-suc n zero
+  ∀ n → n + succ zero ＝ succ n
+canonicalAStarSuccessorCost n = +-succ n zero
 
 record CanonicalAStarCostGuidanceTheorem : Set₁ where
   constructor canonicalAStarCostGuidanceTheorem
@@ -6928,7 +6928,7 @@ record CanonicalAStarCostGuidanceTheorem : Set₁ where
     zeroCostIdentity :
       (zero + zero) ＝ zero
     successorCostComposition :
-      ∀ n → n + suc zero ＝ suc n
+      ∀ n → n + succ zero ＝ succ n
     exactTokenTrace :
       ∀ (K : C.CanonicalTokenLanguageModelKernel)
       (xs ys : C.CanonicalTokenSequence)
@@ -6995,9 +6995,9 @@ record CanonicalFiniteCycleExclusionIsomorphismTheorem : Set₁ where
         (f : A → A)
         (g : B → B) →
         (∀ a → to iso (f a) ＝ g (to iso a)) →
-        (∀ n a → iterateIsomorphism f (suc n) a ≢ a) →
+        (∀ n a → iterateIsomorphism f (succ n) a ≢ a) →
         ∀ n a →
-        iterateIsomorphism g (suc n) (to iso a) ≢ to iso a
+        iterateIsomorphism g (succ n) (to iso a) ≢ to iso a
 
 open CanonicalFiniteCycleExclusionIsomorphismTheorem public
 
@@ -7007,7 +7007,7 @@ eGraphAStarIterate-isomorphism :
   eGraphAStarIterate step n s ＝
   iterateIsomorphism step n s
 eGraphAStarIterate-isomorphism step zero s = refl
-eGraphAStarIterate-isomorphism step (suc n) s =
+eGraphAStarIterate-isomorphism step (succ n) s =
   eGraphAStarIterate-isomorphism
     step
     n
@@ -7527,7 +7527,7 @@ finiteMixedNash-cycle-transport :
     ∀ n p →
     iterateIsomorphism
       (step W)
-      (suc n)
+      (succ n)
       p
       ≢
       p)
@@ -7549,7 +7549,7 @@ finiteMixedNash-cycle-transport :
   (∀ n p →
     iterateIsomorphism
       stepB
-      (suc n)
+      (succ n)
       (to iso p)
       ≢
       to iso p)
@@ -7727,7 +7727,7 @@ canonical-operator-composition-theorem =
 f4Orbit :
   C.F4IntUKernel → C.Int8 → ℕ → C.F4IntUState → C.F4IntUState
 f4Orbit K g zero s = s
-f4Orbit K g (suc n) s =
+f4Orbit K g (succ n) s =
   C.f4ThetaStep K (f4Orbit K g n s) g
 
 record F4UpperBoundedTrajectory
@@ -7742,14 +7742,14 @@ record F4UpperBoundedTrajectory
       C.code (C.thetaQ (f4Orbit K g n s)) ≤ pos bound
 
 nat-plus-one :
-  ∀ n → n + suc zero ＝ suc n
+  ∀ n → n + succ zero ＝ succ n
 nat-plus-one n =
   trans
-    (+-suc n zero)
-    (cong suc (+-identityʳ n))
+    (+-succ n zero)
+    (cong succ (+-identityʳ n))
 
 integer-nat-plus-one :
-  ∀ n → (pos n) +Int (pos 1) ＝ pos (suc n)
+  ∀ n → (pos n) +Int (pos 1) ＝ pos (succ n)
 integer-nat-plus-one n =
   cong +_ (nat-plus-one n)
 
@@ -7786,7 +7786,7 @@ f4-unit-forcing-linear-growth :
   C.code (C.thetaQ s) +Int (pos n)
 f4-unit-forcing-linear-growth zero s =
   sym (ℤ-zero-right-neutral (C.code (C.thetaQ s)))
-f4-unit-forcing-linear-growth (suc n) s =
+f4-unit-forcing-linear-growth (succ n) s =
   trans
     (f4-zero-L2-unit-step-code
       (f4Orbit (C.f4IntUKernel C.zero8) C.one8 n s))
@@ -7803,11 +7803,11 @@ f4-unit-forcing-linear-growth (suc n) s =
           (λ z → C.code (C.thetaQ s) +Int z)
           (integer-nat-plus-one n))))
 
-nat-suc-not-le :
-  ∀ n → suc n ≤ n → ⊥
-nat-suc-not-le zero ()
-nat-suc-not-le (suc n) (s≤s h) =
-  nat-suc-not-le n h
+nat-succ-not-le :
+  ∀ n → succ n ≤ n → ⊥
+nat-succ-not-le zero ()
+nat-succ-not-le (succ n) (s≤s h) =
+  nat-succ-not-le n h
 
 f4-unit-forcing-no-upper-bound :
   ∀ {s : C.F4IntUState} →
@@ -7819,10 +7819,10 @@ f4-unit-forcing-no-upper-bound :
 f4-unit-forcing-no-upper-bound thetaZero boundedWitness =
   let
     B = F4UpperBoundedTrajectory.bound boundedWitness
-    horizonBound = F4UpperBoundedTrajectory.bounded boundedWitness (suc B)
+    horizonBound = F4UpperBoundedTrajectory.bounded boundedWitness (succ B)
     growth =
       f4-unit-forcing-linear-growth
-        (suc B)
+        (succ B)
         _
     growthFromZero :
       C.code
@@ -7830,29 +7830,29 @@ f4-unit-forcing-no-upper-bound thetaZero boundedWitness =
           (f4Orbit
             (C.f4IntUKernel C.zero8)
             C.one8
-            (suc B)
+            (succ B)
             _))
       ＝
-      pos (suc B)
+      pos (succ B)
     growthFromZero =
       trans
         growth
         (trans
           (cong
-            (λ z → z +Int (pos (suc B)))
+            (λ z → z +Int (pos (succ B)))
             (cong C.code thetaZero))
-          (ℤ-zero-left-neutral (pos (suc B))))
+          (ℤ-zero-left-neutral (pos (succ B))))
     impossibleOrder :
-      pos (suc B) ≤ pos B
+      pos (succ B) ≤ pos B
     impossibleOrder =
       subst
         (λ z → z ≤ pos B)
         growthFromZero
         horizonBound
   in
-    nat-suc-not-le B
-      (ℤ-bigger-or-equal-not-less (pos (suc B)) (pos B) impossibleOrder
-       (ℕ-order-respects-ℤ-order B (suc B) (<-succ B)))
+    nat-succ-not-le B
+      (ℤ-bigger-or-equal-not-less (pos (succ B)) (pos B) impossibleOrder
+       (ℕ-order-respects-ℤ-order B (succ B) (<-succ B)))
 
 record CanonicalPureNonOrangeBypassCompletionTheorem : Set₁ where
   constructor canonicalPureNonOrangeBypassCompletionTheorem
@@ -7883,7 +7883,7 @@ record StationaryLimitTheorem
   constructor stationaryLimitTheorem
   field
     transitionLaw :
-      ∀ n → μ (suc n) ＝ P (μ n)
+      ∀ n → μ (succ n) ＝ P (μ n)
     converges :
       Converges μ μ∞
     limitPreserved :
@@ -7920,7 +7920,7 @@ record CanonicalStationarySubcompositionTheorem : Set₁ where
         (μ : ℕ → Distribution)
         (π : Distribution)
         (Converges : (ℕ → Distribution) → Distribution → Set) →
-      (∀ n → μ (suc n) ＝ P (μ n)) →
+      (∀ n → μ (succ n) ＝ P (μ n)) →
       Converges μ π →
       (Converges μ π → P π ＝ π) →
       StationaryLimitTheorem
@@ -8013,8 +8013,8 @@ record StrictFunctionClassSeparation
       ¬ FBase witness
 
 twoPow : ℕ → ℕ
-twoPow zero = suc zero
-twoPow (suc k) = twoPow k + twoPow k
+twoPow zero = succ zero
+twoPow (succ k) = twoPow k + twoPow k
 
 nat-plus-right-mono :
   ∀ {a b c : ℕ} → a ≤ b → a + c ≤ b + c
@@ -8999,7 +8999,7 @@ canonical-unconditional-agda-egraph-astar-closure =
 f4-add-right-nonnegative :
   ∀ (n m : ℕ) → n ≤ n + m
 f4-add-right-nonnegative n zero = ≤-refl
-f4-add-right-nonnegative n (suc m) =
+f4-add-right-nonnegative n (succ m) =
   s≤s (f4-add-right-nonnegative n m)
 
 record MegaGeneralizedWalrasianEquilibrium
@@ -9124,10 +9124,10 @@ open MegaFirstWelfareTheoremConditions public
 
 megaNatNoStrictBack :
   ∀ {n : ℕ} →
-  suc n ≤ n →
+  succ n ≤ n →
   ⊥
 megaNatNoStrictBack {zero} ()
-megaNatNoStrictBack {suc n} (s≤s h) =
+megaNatNoStrictBack {succ n} (s≤s h) =
   megaNatNoStrictBack h
 
 megaNatStrictCostContradiction :
@@ -9516,7 +9516,7 @@ factorTransitionAfterIterate :
   iterateIsomorphism (factorStep W) n (observe s)
 factorTransitionAfterIterate W zero s =
   refl
-factorTransitionAfterIterate W (suc n) s =
+factorTransitionAfterIterate W (succ n) s =
   trans
     (factorTransitionAfterIterate W n (step s))
     (cong
@@ -9778,7 +9778,7 @@ iterateStep :
   State →
   State
 iterateStep step zero s = s
-iterateStep step (suc n) s = step (iterateStep step n s)
+iterateStep step (succ n) s = step (iterateStep step n s)
 
 record StrictProgressWitness
   (State Measure : Set)
@@ -9848,10 +9848,10 @@ strictProgressAfterIterate :
   (n : ℕ)
   (s : State) →
   measure W s <
-  measure W (iterateStep step (suc n) s)
+  measure W (iterateStep step (succ n) s)
 strictProgressAfterIterate W zero s =
   stepProgress W s
-strictProgressAfterIterate W (suc n) s =
+strictProgressAfterIterate W (succ n) s =
   transitive W
     (stepProgress W s)
     (strictProgressAfterIterate W n (step s))
@@ -9863,7 +9863,7 @@ noPositiveFiniteCycleFromStrictProgress :
   (W : StrictProgressWitness State Measure step _<_)
   (n : ℕ)
   (s : State) →
-  iterateStep step (suc n) s ＝ s →
+  iterateStep step (succ n) s ＝ s →
   ⊥
 noPositiveFiniteCycleFromStrictProgress W n s eq =
   irreflexive W
@@ -9882,18 +9882,18 @@ record NatSuccessorProgressWitness
   field
     successor :
       ∀ s →
-      measure (step s) ＝ suc (measure s)
+      measure (step s) ＝ succ (measure s)
 
 open NatSuccessorProgressWitness public
 
 sucInjective :
-  ∀ {m n : ℕ} → suc m ＝ suc n → m ＝ n
+  ∀ {m n : ℕ} → succ m ＝ succ n → m ＝ n
 sucInjective refl = refl
 
 natPlusLeftCancel :
   ∀ (k m n : ℕ) → k + m ＝ k + n → m ＝ n
 natPlusLeftCancel zero m n eq = eq
-natPlusLeftCancel (suc k) m n eq =
+natPlusLeftCancel (succ k) m n eq =
   natPlusLeftCancel k m n (sucInjective eq)
 
 successorMeasureAfterIterate :
@@ -9906,12 +9906,12 @@ successorMeasureAfterIterate :
   measure (iterateStep step n s) ＝ measure s + n
 successorMeasureAfterIterate W zero s =
   sym (+-identityʳ (measure W s))
-successorMeasureAfterIterate W (suc n) s =
+successorMeasureAfterIterate W (succ n) s =
   trans
     (successor W (iterateStep (step W) n s))
     (trans
-      (cong suc (successorMeasureAfterIterate W n s))
-      (sym (+-suc (measure W s) n)))
+      (cong succ (successorMeasureAfterIterate W n s))
+      (sym (+-succ (measure W s) n)))
 
 successorMeasureOrbitInjective :
   ∀ {State : Set}
@@ -9933,9 +9933,9 @@ successorMeasureOrbitInjective W s {m} {n} eq =
         (cong (measure W) eq)
         (successorMeasureAfterIterate W n s)))
 
-natSucProgress : ∀ n → n < suc n
+natSucProgress : ∀ n → n < succ n
 natSucProgress zero = s≤s z≤n
-natSucProgress (suc n) = s≤s (natSucProgress n)
+natSucProgress (succ n) = s≤s (natSucProgress n)
 
 canonicalTotalCountStepProgress :
   ∀ {A : Set}
@@ -9969,7 +9969,7 @@ canonicalNoPositiveCycleFromTotalCount :
   (K : C.FullLearnerKernel A)
   (n : ℕ)
   (s : C.FullLearnerState A) →
-  iterateStep (C.canonicalFullStep K) (suc n) s ＝ s →
+  iterateStep (C.canonicalFullStep K) (succ n) s ＝ s →
   ⊥
 canonicalNoPositiveCycleFromTotalCount K n s =
   noPositiveFiniteCycleFromStrictProgress
@@ -9997,7 +9997,7 @@ record MonolithStrictProgressClosure
       StrictProgressWitness State Measure step _<_
     noPositiveCycle :
       ∀ n s →
-      iterateStep step (suc n) s ＝ s →
+      iterateStep step (succ n) s ＝ s →
       ⊥
 
 open MonolithStrictProgressClosure public
@@ -10853,14 +10853,14 @@ record CommonsNonDerivabilityCounterexample : Set₁ where
         (action commonsWorld a)
     aggregateExtractionIsTwo :
       aggregateExtraction commonsWorld ＝
-      suc (suc zero)
+      succ (succ zero)
     extractionIsOne :
       ∀ a →
       extraction (action commonsWorld a) ＝
-      suc zero
+      succ zero
     capacityIsOne :
       resourceCapacity (sharedResource commonsWorld) ＝
-      suc zero
+      succ zero
 
 open CommonsNonDerivabilityCounterexample public
 
@@ -10880,17 +10880,17 @@ noUnconditionalCommonsPreservation :
 noUnconditionalCommonsPreservation C D =
   twoNotLeOne
     (subst
-      (λ n → n ≤ suc zero)
+      (λ n → n ≤ succ zero)
       (capacityIsOne C)
       (subst
-        (λ n → suc (suc zero) ≤ n)
+        (λ n → succ (succ zero) ≤ n)
         (aggregateExtractionIsTwo C)
         (derive D
           (commonsWorld C)
           (allLocallyOptimal C))))
 
 twoNotLeOne :
-  ¬ suc (suc zero) ≤ suc zero
+  ¬ succ (succ zero) ≤ succ zero
 twoNotLeOne ()
 
 twoAgentCommonsCounterexample :
@@ -10901,11 +10901,11 @@ twoAgentCommonsCounterexample =
     (⊤ ⊎ ⊤)
     (⊤ ⊎ ⊤)
     ℕ
-    (λ _ → suc zero)
-    (λ _ → suc zero)
+    (λ _ → succ zero)
+    (λ _ → succ zero)
     (λ _ _ → inj₂ tt)
-    (λ _ → suc zero)
-    (λ _ → suc (suc zero))
+    (λ _ → succ zero)
+    (λ _ → succ (succ zero))
     (λ _ _ a → a ＝ inj₂ tt)
     tt
     refl
@@ -11284,10 +11284,10 @@ noUnconditionalNestedCommonsPreservation :
 noUnconditionalNestedCommonsPreservation level C D =
   twoNotLeOne
     (subst
-      (λ n → n ≤ suc zero)
+      (λ n → n ≤ succ zero)
       (capacityIsOne C)
       (subst
-        (λ n → suc (suc zero) ≤ n)
+        (λ n → succ (succ zero) ≤ n)
         (aggregateExtractionIsTwo C)
         (derive D
           level
@@ -11391,7 +11391,7 @@ eGraphEconomicFixedOrbit :
   ∀ n →
   iterateStep update n fixed ＝ fixed
 eGraphEconomicFixedOrbit W zero = refl
-eGraphEconomicFixedOrbit W (suc n) =
+eGraphEconomicFixedOrbit W (succ n) =
   trans
     (cong update (eGraphEconomicFixedOrbit W n))
     (stationary W)
