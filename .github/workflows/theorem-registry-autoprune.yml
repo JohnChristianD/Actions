@@ -52,10 +52,12 @@ jobs:
           set -euo pipefail
           manifest=build/agda2hs-semantic-search/agda2hs-semantic-search-manifest.tsv
           test -s "$manifest"
-          grep -Eq '^compiler=ghc-[0-9]+\.[0-9]+\.[0-9]+          grep -Fq 'proofKernel=Agda' "$manifest"
+          grep -Eq '^compiler=ghc-[0-9]+\.[0-9]+\.[0-9]+$' "$manifest"
+          grep -Fq 'plugins=none' "$manifest"
+          grep -Fq 'proofKernel=Agda' "$manifest"
           grep -Fq 'searchKernel=Agda2Hs' "$manifest"
           grep -Fq 'semanticCompletenessCheck=pass' "$manifest"
-          echo 'agda-semantic-registry=pass' "$manifest"
+          echo 'agda-semantic-registry=pass'
           grep -Fq 'plugins=none' "$manifest"
           grep -Fq 'proofKernel=Agda' "$manifest"
           grep -Fq 'searchKernel=Agda2Hs' "$manifest"
