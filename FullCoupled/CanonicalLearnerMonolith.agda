@@ -132,8 +132,8 @@ plus-succ zero n = refl
 plus-succ (succ m) n = ap succ (plus-succ m n)
 
 plus-succ-lt : ∀ (m n : ℕ) → m < m + succ n
-plus-succ-lt zero n = s≤s z≤n
-plus-succ-lt (succ m) n = s≤s (plus-succ-lt m n)
+plus-succ-lt zero n = ⋆
+plus-succ-lt (succ m) n = plus-succ-lt m n
 
 plus-succ-not-self : ∀ (m n : ℕ) → m + succ n ≢ m
 plus-succ-not-self m n eq =
