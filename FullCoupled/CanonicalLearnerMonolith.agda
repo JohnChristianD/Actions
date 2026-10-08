@@ -41,8 +41,25 @@ module FullCoupled.CanonicalLearnerMonolith where
 
 -- BEGIN MIRTH-SYNC COMMON IMPORTS
 -- Merged external import surface; internal FullCoupled imports remain module-local.
-open import Haskell.Prelude hiding (String; ⊥)
 open import MLTT.Spartan hiding (J)
+open import MLTT.Athenian
+open import Integers.Type
+open import Integers.Addition
+open import Integers.Multiplication
+
+Nat : Set
+Nat = ℕ
+
+Int : Set
+Int = ℤ
+
+infixl 31 _+Int_
+_+Int_ : Int → Int → Int
+_+Int_ = _+_
+
+infixl 31 _*Int_
+_*Int_ : Int → Int → Int
+_*Int_ = _*_
 open import Naturals
 open import Naturals.Exponentiation
 open import Naturals.Division
@@ -63,7 +80,6 @@ open import UF.Subsingletons-FunExt
 open import UF.UA-FunExt
 -- END MIRTH-SYNC COMMON IMPORTS
 
-open import Haskell.Prelude.Nat.Properties using (≤-antisym)
 open import InfinitePigeon.FinitePigeon
 
 -- BEGIN MIRTH-SYNC CANONICAL COMMAND
@@ -80,13 +96,13 @@ int8StateSpace : Set
 int8StateSpace = Int
 
 zero8 : Int8
-zero8 = int8 (+ 0)
+zero8 = int8 (pos 0)
 
 one8 : Int8
-one8 = int8 (+ 1)
+one8 = int8 (pos 1)
 
 int8OfNat : Nat → Int8
-int8OfNat n = int8 (+ n)
+int8OfNat n = int8 (pos n)
 
 int8Add : Int8 → Int8 → Int8
 int8Add x y = int8 (code x +Int code y)
@@ -149,8 +165,8 @@ data Signed : Set where
   signedPos : Nat → Signed
 
 signedCode : Int8 → Signed
-signedCode (int8 (+ 0)) = signedZer
-signedCode (int8 (+ (suc n))) = signedPos (suc n)
+signedCode (int8 (pos 0)) = signedZer
+signedCode (int8 (pos (suc n))) = signedPos (suc n)
 signedCode (int8 (-[1+ n ])) = signedNeg (suc n)
 
 data BoolLike : Set where
@@ -329,7 +345,7 @@ integerCodeSumList (x ∷ xs) = x +Int integerCodeSumList xs
 integerLayerNormCenteredNumerator :
   List Int8 → Int8 → Int
 integerLayerNormCenteredNumerator xs x =
-  (+ (length xs)) *Int code x +Int (- integerCodeSum xs)
+  (pos (length xs)) *Int code x +Int (- integerCodeSum xs)
 
 integerLayerNormCenteredNumerators :
   List Int8 → List Int
@@ -352,7 +368,7 @@ integerLayerNormVarianceNumerator xs =
 integerLayerNormEpsilonContribution :
   List Int8 → Nat → Int
 integerLayerNormEpsilonContribution xs epsilon =
-  (+ (epsilon * (length xs) * (length xs)))
+  (pos (epsilon * (length xs) * (length xs)))
 
 integerLayerNormRadicand :
   List Int8 → Nat → Int
@@ -373,7 +389,7 @@ record IntegerLayerNormCertificate
     epsilon : Nat
     root : Nat
     rootSquared :
-      (+ (root * root)) ≡
+      (pos (root * root)) ≡
       integerLayerNormRadicand xs epsilon
     rootNonZero : root ≢ zero
 open IntegerLayerNormCertificate public
@@ -398,13 +414,13 @@ integerLayerNormValue {xs} config certificate x =
       (code (fixedScale config) *Int
         integerLayerNormCenteredNumerator xs x)
      +Int
-     (code (beta config) *Int (+ (root certificate))))
+     (code (beta config) *Int (pos (root certificate))))
     (root certificate)
     (rootNonZero certificate)
 
 
 int8Magnitude : Int8 → Nat
-int8Magnitude (int8 (+ n)) = n
+int8Magnitude (int8 (pos n)) = n
 int8Magnitude (int8 (-[1+ n ])) = suc n
 
 topCodes : Nat → List ScoreEntry → List Nat
@@ -527,13 +543,13 @@ data HardSign : Set where
   negativeSign zeroSign positiveSign : HardSign
 
 hardSignNonnegative : Int8 → HardSign
-hardSignNonnegative (int8 (+ 0)) = zeroSign
-hardSignNonnegative (int8 (+ (suc n))) = positiveSign
+hardSignNonnegative (int8 (pos 0)) = zeroSign
+hardSignNonnegative (int8 (pos (suc n))) = positiveSign
 hardSignNonnegative (int8 (-[1+ n ])) = negativeSign
 
 hardSign : Int8 → HardSign
-hardSign (int8 (+ 0)) = zeroSign
-hardSign (int8 (+ (suc n))) = positiveSign
+hardSign (int8 (pos 0)) = zeroSign
+hardSign (int8 (pos (suc n))) = positiveSign
 hardSign (int8 (-[1+ n ])) = negativeSign
 
 hardSignGate : Int8 → Int8
@@ -640,8 +656,8 @@ data MonoidLSTMGate : Set where
   monoidHold monoidWrite monoidReset monoidAccum : MonoidLSTMGate
 
 monoidLSTMGateOf : Int8 → MonoidLSTMGate
-monoidLSTMGateOf (int8 (+ 0)) = monoidHold
-monoidLSTMGateOf (int8 (+ (suc n))) = monoidAccum
+monoidLSTMGateOf (int8 (pos 0)) = monoidHold
+monoidLSTMGateOf (int8 (pos (suc n))) = monoidAccum
 monoidLSTMGateOf (int8 (-[1+ n ])) = monoidReset
 
 monoidLSTMCellStep : MonoidLSTMGate → Int8 → Int8 → Int8
@@ -1658,9 +1674,9 @@ canonicalHaarFeatureReconstruct :
       n = proj₂ (canonicalCReLU8 x)
   in int8Sub p n ≡ x
 canonicalHaarFeatureReconstruct
-  (int8 (+ 0)) = refl
+  (int8 (pos 0)) = refl
 canonicalHaarFeatureReconstruct
-  (int8 (+ (suc n))) = refl
+  (int8 (pos (suc n))) = refl
 canonicalHaarFeatureReconstruct
   (int8 (-[1+ n ])) = refl
 
