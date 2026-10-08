@@ -186,7 +186,7 @@ module ReflectionCompat where
     pi : Arg Type → Abs Type → Term
     agda-sort : Sort → Term
     lit : Literal → Term
-    meta : Name → List (Arg Term) → Term
+    meta : Meta → List (Arg Term) → Term
     unknown : Term
 
   data Sort where
