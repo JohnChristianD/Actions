@@ -174,8 +174,7 @@ module ReflectionCompat where
   data Pattern : Set
   data Clause : Set
 
-  Type = Term
-  Telescope = List (Σ String (λ _ → Arg Type))
+  Telescope = List (Σ String (λ _ → Arg Term))
 
   data Term where
     var : ℕ → List (Arg Term) → Term
@@ -256,7 +255,7 @@ module ReflectionCompat where
     bindTC : ∀ {a b} {A : Set a} {B : Set b} → TC A → (A → TC B) → TC B
     unify : Term → Term → TC ⊤
     typeError : ∀ {a} {A : Set a} → List ErrorPart → TC A
-    inferType : Term → TC Type
+    inferType : Term → TC Term
     catchTC : ∀ {a} {A : Set a} → TC A → TC A → TC A
     quoteTC : ∀ {a} {A : Set a} → A → TC Term
 
@@ -281,7 +280,6 @@ open ReflectionCompat using
   ; Arg
   ; arg
   ; Term
-  ; Type
   ; TC
   ; returnTC
   ; bindTC
