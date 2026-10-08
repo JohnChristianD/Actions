@@ -58,7 +58,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: NixOS/nix-installer-action@62c1943cefa2b84e9f5cc7c1f214b30817ef4b6c
+      - uses: NixOS/nix-installer-action@62c1943b776c509394b550f3f983adc14e9212d6
         with:
           installer-version: '2.35.1'
 
