@@ -289,13 +289,16 @@ int8-code-injective refl = refl
 scoreList : ∀ {A : Set} → ActionSpace A → QFunction {A} → CountFunction {A} → List ScoreEntry
 scoreList {A} K q c = map (λ a → (scoreA {A = A} q c a , a)) (candidates K)
 
-compareInt8 : Int8 → Int8 → FullCoupled.TypeTopologyCompat.ComparisonResult
+data ComparisonResult : Set where
+  less equal greater : ComparisonResult
+
+compareInt8 : Int8 → Int8 → ComparisonResult
 compareInt8 x y with ℤ-trichotomous (code x) (code y)
 ... | inl _ = less
 ... | inr (inl _) = equal
 ... | inr (inr _) = greater
 
-compareNat : ℕ → ℕ → FullCoupled.TypeTopologyCompat.ComparisonResult
+compareNat : ℕ → ℕ → ComparisonResult
 compareNat zero zero = equal
 compareNat zero (succ _) = less
 compareNat (succ _) zero = greater
