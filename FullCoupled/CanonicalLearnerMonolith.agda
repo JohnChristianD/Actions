@@ -430,7 +430,7 @@ integerLayerNormValue {xs} config certificate x =
 
 int8Magnitude : Int8 → ℕ
 int8Magnitude (int8 (pos n)) = n
-int8Magnitude (int8 (-[1+ n ])) = succ n
+int8Magnitude (int8 (negsucc n)) = succ n
 
 topCodes : ℕ → List ScoreEntry → List ℕ
 topCodes zero xs = []
