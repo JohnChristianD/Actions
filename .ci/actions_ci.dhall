@@ -77,6 +77,10 @@ let script = merge {
       END { exit(found ? 0 : 1) }
     ' FullCoupled/TheoremsMonolith.agda
     grep -Fq 'open import Haskell.Prelude' FullCoupled/Agda2HsSemanticSearch.agda
+    ! grep -Fq 'open import Naturals' FullCoupled/Agda2HsSemanticSearch.agda
+    ! grep -Fq 'open import Naturals.Properties' FullCoupled/Agda2HsSemanticSearch.agda
+    ! grep -Fq 'open import MLTT.Two-Properties' FullCoupled/Agda2HsSemanticSearch.agda
+    ! grep -Fq 'open import UF.FunExt' FullCoupled/Agda2HsSemanticSearch.agda
     ! grep -Fq 'import Unsafe.Haskell' FullCoupled/Agda2HsSemanticSearch.agda
     ! grep -Fq 'open import Equality' FullCoupled/Agda2HsSemanticSearch.agda
     ! grep -Fq 'open import Naturals' FullCoupled/Agda2HsSemanticSearch.agda
