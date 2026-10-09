@@ -3293,10 +3293,10 @@ record CanonicalAQLoopTheorem : Set₁ where
       ∀ K s →
       C.canonicalSignal K s ＝
       C.canonicalWatkinsTarget K s
-    gruSignalCoupling :
+    gruHaarInputCoupling :
       ∀ K s →
       C.canonicalGRUStep K s ＝
-      C.gruStep (C.gru s) (C.canonicalSignal K s)
+      C.gruStep (C.gru s) (C.canonicalHaarRecurrentInput K s)
     f4SignalCoupling :
       ∀ K s →
       C.canonicalOptimizerStep K s ＝
@@ -3321,8 +3321,7 @@ canonical-aq-loop-theorem =
   canonicalAQLoopTheorem
     (λ K s → refl)
     (λ K s → refl)
-    (λ K s → refl)
-    (λ K s → refl)
+    C.canonicalRecurrentInput-law
     (λ K s → refl)
     (λ K s → refl)
 
@@ -3714,7 +3713,7 @@ CanonicalGRUF4PrefixState =
 
 CanonicalGRUF4PrefixInput : Set
 CanonicalGRUF4PrefixInput =
-  C.Int8
+  C.Int8 × C.Int8
 
 canonicalGRUF4PrefixNetwork :
   C.CanonicalFullLearnerKernel →
@@ -3723,20 +3722,20 @@ canonicalGRUF4PrefixNetwork :
     CanonicalGRUF4PrefixInput
 canonicalGRUF4PrefixNetwork K =
   C.recurrentNetwork
-    (λ { (g , o) signal →
-      ( C.gruStep g signal
-      , C.f4ThetaStep (C.optimizerKernel K) o signal ) })
+    (λ { (g , o) (gruInput , optimizerInput) →
+      ( C.gruStep g gruInput
+      , C.f4ThetaStep (C.optimizerKernel K) o optimizerInput ) })
 
 canonicalGRUF4Prefix-step-law :
   ∀ (K : C.CanonicalFullLearnerKernel)
   (g : C.GRUState) (o : C.F4IntUState)
-  (signal : C.Int8) →
+  (gruInput optimizerInput : C.Int8) →
   C.runNetwork (canonicalGRUF4PrefixNetwork K)
-    (g , o) signal
+    (g , o) (gruInput , optimizerInput)
   ＝
-  ( C.gruStep g signal
-  , C.f4ThetaStep (C.optimizerKernel K) o signal )
-canonicalGRUF4Prefix-step-law K g o signal = refl
+  ( C.gruStep g gruInput
+  , C.f4ThetaStep (C.optimizerKernel K) o optimizerInput )
+canonicalGRUF4Prefix-step-law K g o gruInput optimizerInput = refl
 
 canonicalGRUF4-prefix-monoid-homomorphism :
   RecurrentPrefixMonoidHomomorphism
@@ -3752,7 +3751,7 @@ canonicalFullStep-GRUF4-prefix-bridge :
   (s : C.CanonicalFullLearnerState) →
   C.runNetwork (canonicalGRUF4PrefixNetwork K)
     (C.gru s , C.optimizer s)
-    (C.canonicalSignal K s)
+    (C.canonicalHaarRecurrentInput K s , C.canonicalSignal K s)
   ＝
   ( C.gru (C.canonicalFullStep K s)
   , C.optimizer (C.canonicalFullStep K s))
@@ -3772,7 +3771,7 @@ record CanonicalGRUF4WatkinsPrefixCompositionTheorem : Set₁ where
       (s : C.CanonicalFullLearnerState) →
       C.runNetwork (canonicalGRUF4PrefixNetwork K)
         (C.gru s , C.optimizer s)
-        (C.canonicalSignal K s)
+        (C.canonicalHaarRecurrentInput K s , C.canonicalSignal K s)
       ＝
       ( C.gru (C.canonicalFullStep K s)
       , C.optimizer (C.canonicalFullStep K s))
@@ -3954,16 +3953,7 @@ canonical-recurrent-scan-conjugacy-theorem =
     (λ replace step h xs n s →
       recurrentPrefix-scan-lifts-conjugacy replace step h xs n s)
 
-canonicalRecurrentInput-watkinsTarget-law :
-  ∀ {A} (K : C.FullLearnerKernel A) (s : C.FullLearnerState A) →
-  C.canonicalGRUStep K s ＝
-  C.gruStep (C.gru s) (C.canonicalWatkinsTarget K s)
-canonicalRecurrentInput-watkinsTarget-law K s =
-  trans
-    (C.canonicalRecurrentInput-law K s)
-    (ap
-      (C.gruStep (C.gru s))
-      (C.canonicalSignal-watkins-target K s))
+
 record CanonicalFullLearnerConnectedScanConjugacyTheorem : Set₁ where
   constructor canonicalFullLearnerConnectedScanConjugacyTheorem
   field
@@ -3982,7 +3972,7 @@ record CanonicalFullLearnerConnectedScanConjugacyTheorem : Set₁ where
       (s : C.CanonicalFullLearnerState) →
       C.runNetwork (canonicalGRUF4PrefixNetwork K)
         (C.gru s , C.optimizer s)
-        (C.canonicalSignal K s)
+        (C.canonicalHaarRecurrentInput K s , C.canonicalSignal K s)
       ＝
       ( C.gru (C.canonicalFullStep K s)
       , C.optimizer (C.canonicalFullStep K s))
@@ -3995,13 +3985,13 @@ record CanonicalFullLearnerConnectedScanConjugacyTheorem : Set₁ where
       ∀ (K : C.CanonicalFullLearnerKernel)
       (s : C.CanonicalFullLearnerState) →
       C.canonicalSignal K s ＝ C.canonicalWatkinsTarget K s
-    gruWatkinsCoupling :
+    gruHaarInputCoupling :
       ∀ (K : C.CanonicalFullLearnerKernel)
       (s : C.CanonicalFullLearnerState) →
       C.canonicalGRUStep K s ＝
       C.gruStep
         (C.gru s)
-        (C.canonicalWatkinsTarget K s)
+        (C.canonicalHaarRecurrentInput K s)
     optimizerWatkinsCoupling :
       ∀ (K : C.CanonicalFullLearnerKernel)
       (s : C.CanonicalFullLearnerState) →
@@ -4039,7 +4029,7 @@ canonical-full-learner-connected-scan-conjugacy-theorem =
     canonicalFullStep-GRUF4-prefix-bridge
     C.canonicalFullStep-watkins
     C.canonicalSignal-watkins-target
-    canonicalRecurrentInput-watkinsTarget-law
+    C.canonicalRecurrentInput-law
     C.canonicalOptimizerStep-qMunchausen-L2
 record S4PlusS5RecurrentScanTheorem (State Input : Set) : Set₁ where
   constructor s4PlusS5RecurrentScanTheorem
