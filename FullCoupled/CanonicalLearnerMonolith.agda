@@ -161,11 +161,7 @@ int8+-idʳ a = ap int8 (ℤ-zero-right-neutral (code a))
 int8Roundtrip : ∀ n → code (int8OfNat n) ＝ pos n
 int8Roundtrip n = refl
 
-le-refl : ∀ n → n ≤ n
-le-refl zero = ⋆
-le-refl (succ n) = le-refl n
-
-lt-irrefl : ∀ n → (n < n) → 𝟘
+lt-irrefl : ∀ (n : ℕ) → (n < n) → 𝟘
 lt-irrefl zero p = p
 lt-irrefl (succ n) p = lt-irrefl n p
 
