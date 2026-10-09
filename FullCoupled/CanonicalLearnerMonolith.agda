@@ -181,7 +181,7 @@ plus-succ-not-self m n eq =
 
 succ-succ-lt : ∀ n → n < succ (succ n)
 succ-succ-lt zero = ≤-succ zero
-succ-succ-lt (succ n) = ≤-succ (succ-succ-lt n)
+succ-succ-lt (succ n) = ≤-succ (succ n)
 
 succ-succ-not-self : ∀ n → succ (succ n) ≠ n
 succ-succ-not-self n eq =
