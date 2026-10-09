@@ -362,7 +362,7 @@ macro
         bindTC (＝-type-info τ) λ where
           (_ , _ , l , _) →
             unify goal
-              (def (quote cong)
+              (def (quote ap)
                 (𝓋𝓇𝒶 ($-head l) ∷ 𝓋𝓇𝒶 p ∷ [])))
       or-else unify goal p
 
