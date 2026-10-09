@@ -383,6 +383,7 @@ module ExactSearchInversion (fe : FunExt) where
 
   open import TWA.Thesis.Chapter3.ClosenessSpaces fe
   open import TWA.Thesis.Chapter3.SearchableTypes fe
+  open import MGS.Equivalences using (is-equiv)
 
   record SearchableEquivalence
     (X Y : ClosenessSpace 𝓤₀) : Set₁ where
