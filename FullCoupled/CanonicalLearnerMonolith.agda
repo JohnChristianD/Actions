@@ -791,9 +791,9 @@ persistentMonoidLSTM-preservation
 
 monoidLSTMParameterPersistence :
   ∀ (s : MonoidLSTMState) (x : Int8) →
-  matrixState (monoidLSTMStep s x) ＝ matrixState s ×
-  noiseState (monoidLSTMStep s x) ＝ noiseState s ×
-  controlState (monoidLSTMStep s x) ＝ controlState s
+  (matrixState (monoidLSTMStep s x) ＝ matrixState s) ×
+  ((noiseState (monoidLSTMStep s x) ＝ noiseState s) ×
+   (controlState (monoidLSTMStep s x) ＝ controlState s))
 monoidLSTMParameterPersistence
   (monoidLSTMState h c m n g) x =
   refl , (refl , refl)
