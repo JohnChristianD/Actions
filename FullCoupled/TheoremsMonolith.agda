@@ -4730,12 +4730,18 @@ canonicalIterateComposition :
   (s : C.CanonicalFullLearnerState) →
   C.iterateCanonical K (m + n) s ＝
   C.iterateCanonical K n (C.iterateCanonical K m s)
-canonicalIterateComposition K m zero s
-  rewrite +-identityʳ m = refl
-canonicalIterateComposition K m (succ n) s
-  rewrite +-succ m n =
-  ap (C.canonicalFullStep K)
-    (canonicalIterateComposition K m n s)
+canonicalIterateComposition K m zero s =
+  ap
+    (λ k → C.iterateCanonical K k s)
+    (+-identityʳ m)
+canonicalIterateComposition K m (succ n) s =
+  trans
+    (ap
+      (λ k → C.iterateCanonical K k s)
+      (+-succ m n))
+    (ap
+      (C.canonicalFullStep K)
+      (canonicalIterateComposition K m n s))
 
 recurrentPrefixStepWork : ℕ → ℕ
 recurrentPrefixStepWork zero = zero
@@ -4749,11 +4755,14 @@ recurrentPrefixStepWork-split :
   ∀ m n →
   recurrentPrefixStepWork (m + n) ＝
   recurrentPrefixStepWork m + recurrentPrefixStepWork n
-recurrentPrefixStepWork-split m zero
-  rewrite +-identityʳ m = refl
-recurrentPrefixStepWork-split m (succ n)
-  rewrite +-succ m n =
-  ap succ (recurrentPrefixStepWork-split m n)
+recurrentPrefixStepWork-split m zero =
+  trans
+    (ap recurrentPrefixStepWork (+-identityʳ m))
+    (sym (+-identityʳ (recurrentPrefixStepWork m)))
+recurrentPrefixStepWork-split m (succ n) =
+  trans
+    (ap recurrentPrefixStepWork (+-succ m n))
+    (ap succ (recurrentPrefixStepWork-split m n))
 
 canonicalNatIndexedExactUniversalReadout :
   ∀ {Feature Output : Set}
