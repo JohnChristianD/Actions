@@ -383,7 +383,6 @@ module ExactSearchInversion (fe : FunExt) where
 
   open import TWA.Thesis.Chapter3.ClosenessSpaces fe
   open import TWA.Thesis.Chapter3.SearchableTypes fe
-  open import MGS.Equivalences using (is-equiv)
 
   record SearchableEquivalence
     (X Y : ClosenessSpace 𝓤₀) : Set₁ where
@@ -419,7 +418,7 @@ module ExactSearchInversion (fe : FunExt) where
   forward-is-equiv :
     ∀ {X Y : ClosenessSpace 𝓤₀}
     (E : SearchableEquivalence X Y) →
-    is-equiv (forward E)
+    MGS.Equivalences.is-equiv (forward E)
   forward-is-equiv E =
     invertibles-are-equivs
       (forward E)
