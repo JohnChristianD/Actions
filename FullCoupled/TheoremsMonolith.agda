@@ -54,6 +54,7 @@ open import Naturals.Exponentiation
 open import Naturals.Division
 open import Naturals.Properties
 open import Naturals.Order
+open import Naturals.Multiplication using (distributivity-mult-over-addition'; mult-commutativity; mult-right-id)
 open import Notation.Order
 open import Rationals.Addition renaming (_+_ to _ℚ+_)
 open import Rationals.Multiplication
@@ -505,9 +506,9 @@ nat-ring-solver-layernorm-step :
   (epsilon * scale) + scale
 nat-ring-solver-layernorm-step epsilon scale =
   trans
-    (mul-distr-r epsilon 1 scale)
+    (distributivity-mult-over-addition' epsilon 1 scale)
     (ap (λ x → epsilon * scale + x)
-      (trans (mul-commute 1 scale) (mul-one-r scale)))
+      (trans (mult-commutativity 1 scale) (mult-right-id scale)))
 
 nat-ring-solver-normalization-theorem :
   NatRingSolverNormalizationTheorem
