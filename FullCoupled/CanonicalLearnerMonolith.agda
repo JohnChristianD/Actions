@@ -128,6 +128,13 @@ int8+-assoc a b c = ap int8 (ℤ+-assoc (code a) (code b) (code c))
 int8*-assoc : ∀ a b c → int8Mul (int8Mul a b) c ＝ int8Mul a (int8Mul b c)
 int8*-assoc a b c = ap int8 (ℤ*-assoc (code a) (code b) (code c))
 
+sym : ∀ {A : Set} {x y : A} → x ＝ y → y ＝ x
+sym refl = refl
+
+int8*-distribˡ : ∀ a b c → int8Mul a (int8Add b c) ＝ int8Add (int8Mul a b) (int8Mul a c)
+int8*-distribˡ a b c =
+  ap int8 (distributivity-mult-over-ℤ' (code b) (code c) (code a))
+
 int8Roundtrip : ∀ n → code (int8OfNat n) ＝ pos n
 int8Roundtrip n = refl
 
