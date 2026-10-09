@@ -1229,6 +1229,9 @@ f4ParameterInvariant : ∀ (K : F4IntUKernel) (s : F4IntUState) (g : Int8) →
   int8Add (int8Add (thetaQ s) g) (l2Correction (globalL2 K))
 f4ParameterInvariant K s g = refl
 
+HaarAccumulator : Set
+HaarAccumulator = Int8 × Int8
+
 record FullLearnerState (A : Set) : Set₁ where
   constructor fullLearnerState
   field
@@ -1748,9 +1751,6 @@ record HaarFeaturedLinearTransformer : Set where
   field
     qProjection kProjection vProjection : Int8 → Int8
 open HaarFeaturedLinearTransformer public
-
-HaarAccumulator : Set
-HaarAccumulator = Int8 × Int8
 
 haarAccumulator-id : HaarAccumulator
 haarAccumulator-id = zero8 , zero8
