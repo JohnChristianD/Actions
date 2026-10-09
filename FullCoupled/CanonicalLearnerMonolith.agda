@@ -747,10 +747,14 @@ monoidLSTMCellStep-is-affine :
   ∀ g c x →
   monoidLSTMCellStep g c x ＝
   applyMonoidAffine (monoidLSTMAffineOf g x) c
-monoidLSTMCellStep-is-affine monoidHold c x = refl
+monoidLSTMCellStep-is-affine monoidHold c x =
+  trans
+    (sym (int8*-idˡ c))
+    (sym (int8+-idʳ (int8Mul one8 c)))
 monoidLSTMCellStep-is-affine monoidWrite c x = refl
 monoidLSTMCellStep-is-affine monoidReset c x = refl
-monoidLSTMCellStep-is-affine monoidAccum c x = refl
+monoidLSTMCellStep-is-affine monoidAccum c x =
+  ap (λ z → int8Add z (leaky2 x)) (sym (int8*-idˡ c))
 
 scanMonoidAffine : List Int8 → MonoidAffine
 scanMonoidAffine [] = monoidAffine-id
