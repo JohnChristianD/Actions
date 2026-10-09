@@ -1332,7 +1332,7 @@ hardSparse-to-softSparse-zero :
 hardSparse-to-softSparse-zero K s h {a} distinct =
   transport (λ n → n ≤ zero)
     (sym (h distinct))
-    z≤n
+    (zero-least zero)
 
 softSparse-zero-to-hardSparse :
   ∀ {A}
@@ -1341,7 +1341,7 @@ softSparse-zero-to-hardSparse :
   SoftSparseBounded K s zero →
   HardSparse K s
 softSparse-zero-to-hardSparse K s h {a} distinct =
-  ≤-anti (h distinct) z≤n
+  ≤-anti (h distinct) (zero-least _)
 
 replaceOptimizer : ∀ {A} → FullLearnerState A → F4IntUState → FullLearnerState A
 replaceOptimizer s o = fullLearnerState (watkins s) (gru s) o
