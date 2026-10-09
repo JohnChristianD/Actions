@@ -1084,8 +1084,8 @@ recurrentPrefix-split :
     (shiftInput xs m)
     n
     (recurrentPrefixState R xs m s)
-recurrentPrefix-split R xs m zero s rewrite +-identityʳ m = refl
-recurrentPrefix-split R xs m (succ n) s rewrite +-succ m n =
+recurrentPrefix-split R xs m zero s rewrite plus-zero m = refl
+recurrentPrefix-split R xs m (succ n) s rewrite plus-succ m n =
   ap
     (λ z → runNetwork R z (xs (m + n)))
     (recurrentPrefix-split R xs m n s)
