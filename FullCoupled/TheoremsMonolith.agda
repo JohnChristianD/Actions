@@ -67,6 +67,7 @@ open import UF.Size
 open import UF.Subsingletons
 open import UF.Subsingletons-FunExt
 open import UF.UA-FunExt
+open import UF.Equiv using (is-equiv; section-retraction-equiv)
 -- END MIRTH-SYNC COMMON IMPORTS
 
 -- Stable Agda 2.8.0.2 reflection compatibility surface.
@@ -420,10 +421,10 @@ module ExactSearchInversion (fe : FunExt) where
     (E : SearchableEquivalence X Y) →
     is-equiv (forward E)
   forward-is-equiv E =
-    invertibles-are-equivs
+    section-retraction-equiv
       (forward E)
-      (inverse E , (λ y → forward-inverse E y)
-                  , (λ x → inverse-forward E x))
+      (inverse E , (λ y → forward-inverse E y))
+      (inverse E , (λ x → inverse-forward E x))
 
   pullback-decidable-uc-predicate :
     ∀ {X Y : ClosenessSpace 𝓤₀}
