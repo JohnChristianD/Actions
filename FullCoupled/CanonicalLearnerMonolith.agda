@@ -149,6 +149,9 @@ int8*-idʳ a = ap int8 (ℤ-mult-right-id (code a))
 int8*-zeroʳ : ∀ a → int8Mul a zero8 ＝ zero8
 int8*-zeroʳ a = ap int8 (ℤ-zero-right-is-zero (code a))
 
+int8*-zeroˡ : ∀ a → int8Mul zero8 a ＝ zero8
+int8*-zeroˡ a = ap int8 (ℤ-zero-left-base (code a))
+
 int8+-idˡ : ∀ a → int8Add zero8 a ＝ a
 int8+-idˡ a = ap int8 (ℤ-zero-left-neutral (code a))
 
@@ -751,8 +754,18 @@ monoidLSTMCellStep-is-affine monoidHold c x =
   trans
     (sym (int8*-idˡ c))
     (sym (int8+-idʳ (int8Mul one8 c)))
-monoidLSTMCellStep-is-affine monoidWrite c x = refl
-monoidLSTMCellStep-is-affine monoidReset c x = refl
+monoidLSTMCellStep-is-affine monoidWrite c x =
+  trans
+    (sym (int8+-idˡ (leaky2 x)))
+    (ap
+      (λ z → int8Add z (leaky2 x))
+      (sym (int8*-zeroˡ c)))
+monoidLSTMCellStep-is-affine monoidReset c x =
+  trans
+    (sym (int8+-idˡ zero8))
+    (ap
+      (λ z → int8Add z zero8)
+      (sym (int8*-zeroˡ c)))
 monoidLSTMCellStep-is-affine monoidAccum c x =
   ap (λ z → int8Add z (leaky2 x)) (sym (int8*-idˡ c))
 
