@@ -675,16 +675,17 @@ record MonoidAffine : Set where
 open MonoidAffine public
 
 _∘ₘ_ : MonoidAffine → MonoidAffine → MonoidAffine
-(a₁ , b₁) ∘ₘ (a₂ , b₂) =
-  int8Mul a₁ a₂ ,
-  int8Add (int8Mul a₁ b₂) b₁
+(monoidAffine a₁ b₁) ∘ₘ (monoidAffine a₂ b₂) =
+  monoidAffine
+    (int8Mul a₁ a₂)
+    (int8Add (int8Mul a₁ b₂) b₁)
 
 monoidAffine-id : MonoidAffine
-monoidAffine-id = one8 , zero8
+monoidAffine-id = monoidAffine one8 zero8
 
 monoidAffine-assoc : ∀ a b c → (a ∘ₘ b) ∘ₘ c ＝ a ∘ₘ (b ∘ₘ c)
-monoidAffine-assoc (a₁ , b₁) (a₂ , b₂) (a₃ , b₃) =
-  cong₂ _,_
+monoidAffine-assoc (monoidAffine a₁ b₁) (monoidAffine a₂ b₂) (monoidAffine a₃ b₃) =
+  cong₂ monoidAffine
     (int8*-assoc a₁ a₂ a₃)
     (trans
       (cong₂ int8Add
@@ -703,23 +704,23 @@ monoidAffine-assoc (a₁ , b₁) (a₂ , b₂) (a₃ , b₃) =
             b₂)))))
 
 monoidAffine-idˡ : ∀ a → monoidAffine-id ∘ₘ a ＝ a
-monoidAffine-idˡ (a , b) =
-  cong₂ _,_
+monoidAffine-idˡ (monoidAffine a b) =
+  cong₂ monoidAffine
     (int8*-idˡ a)
     (trans
       (ap (λ z → int8Add z zero8) (int8*-idˡ b))
       (int8+-idʳ b))
 
 monoidAffine-idʳ : ∀ a → a ∘ₘ monoidAffine-id ＝ a
-monoidAffine-idʳ (a , b) =
-  cong₂ _,_
+monoidAffine-idʳ (monoidAffine a b) =
+  cong₂ monoidAffine
     (int8*-idʳ a)
     (trans
       (ap (λ z → int8Add z b) (int8*-zeroʳ a))
       (int8+-idˡ b))
 
 applyMonoidAffine : MonoidAffine → Int8 → Int8
-applyMonoidAffine (a , b) c =
+applyMonoidAffine (monoidAffine a b) c =
   int8Add (int8Mul a c) b
 
 data MonoidLSTMGate : Set where
@@ -737,10 +738,10 @@ monoidLSTMCellStep monoidReset c x = zero8
 monoidLSTMCellStep monoidAccum c x = int8Add c (leaky2 x)
 
 monoidLSTMAffineOf : MonoidLSTMGate → Int8 → MonoidAffine
-monoidLSTMAffineOf monoidHold x = one8 , zero8
-monoidLSTMAffineOf monoidWrite x = zero8 , leaky2 x
-monoidLSTMAffineOf monoidReset x = zero8 , zero8
-monoidLSTMAffineOf monoidAccum x = one8 , leaky2 x
+monoidLSTMAffineOf monoidHold x = monoidAffine one8 zero8
+monoidLSTMAffineOf monoidWrite x = monoidAffine zero8 (leaky2 x)
+monoidLSTMAffineOf monoidReset x = monoidAffine zero8 zero8
+monoidLSTMAffineOf monoidAccum x = monoidAffine one8 (leaky2 x)
 
 monoidLSTMCellStep-is-affine :
   ∀ g c x →
