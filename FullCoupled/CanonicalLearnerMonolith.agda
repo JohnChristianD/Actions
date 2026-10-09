@@ -60,6 +60,8 @@ infixl 31 _*Int_
 _*Int_ : Int → Int → Int
 _*Int_ = _ℤ*_
 open import Naturals.Addition
+open import Naturals.Addition renaming (_+_ to _+ℕ_)
+open import Naturals.Multiplication renaming (_*_ to _*ℕ_)
 open import Naturals.Exponentiation
 open import Naturals.Division
 open import Naturals.Properties
