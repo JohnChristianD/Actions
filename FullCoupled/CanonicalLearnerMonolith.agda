@@ -441,7 +441,8 @@ record IntegerLayerNormCertificate
     epsilon : ℕ
     root : ℕ
     rootSquared :
-      (pos (root * root)) ＝
+      code
+        (int8Mul (int8OfNat root) (int8OfNat root)) ＝
       integerLayerNormRadicand xs epsilon
     rootNonZero : root ≠ zero
 open IntegerLayerNormCertificate public
