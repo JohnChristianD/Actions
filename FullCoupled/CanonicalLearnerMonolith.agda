@@ -169,7 +169,7 @@ plus-zero (succ n) = ap succ (plus-zero n)
 
 plus-succ : ∀ (m n : ℕ) → m + succ n ＝ succ (m + n)
 plus-succ zero n = refl
-plus-succ (succ m) n = ap succ (plus-succ m n)
+plus-succ (succ m) n = refl
 
 plus-succ-lt : ∀ (m n : ℕ) → m < m + succ n
 plus-succ-lt zero n = ⋆
