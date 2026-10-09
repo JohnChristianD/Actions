@@ -149,6 +149,9 @@ int8*-idʳ a = ap int8 (ℤ-mult-right-id (code a))
 int8*-zeroʳ : ∀ a → int8Mul a zero8 ＝ zero8
 int8*-zeroʳ a = ap int8 (ℤ-zero-right-is-zero (code a))
 
+int8*-zeroˡ : ∀ a → int8Mul zero8 a ＝ zero8
+int8*-zeroˡ a = ap int8 (ℤ-zero-left-base (code a))
+
 int8+-idˡ : ∀ a → int8Add zero8 a ＝ a
 int8+-idˡ a = ap int8 (ℤ-zero-left-neutral (code a))
 
@@ -417,7 +420,10 @@ integerLayerNormVarianceNumerator xs =
 integerLayerNormEpsilonContribution :
   List Int8 → ℕ → Int
 integerLayerNormEpsilonContribution xs epsilon =
-  (pos (epsilon * (length xs) * (length xs)))
+  code
+    (int8Mul
+      (int8OfNat epsilon)
+      (int8Mul (int8OfNat (length xs)) (int8OfNat (length xs))))
 
 integerLayerNormRadicand :
   List Int8 → ℕ → Int
@@ -438,7 +444,8 @@ record IntegerLayerNormCertificate
     epsilon : ℕ
     root : ℕ
     rootSquared :
-      (pos (root * root)) ＝
+      code
+        (int8Mul (int8OfNat root) (int8OfNat root)) ＝
       integerLayerNormRadicand xs epsilon
     rootNonZero : root ≠ zero
 open IntegerLayerNormCertificate public
@@ -483,8 +490,19 @@ topCodes zero xs = []
 topCodes (succ k) [] = []
 topCodes (succ k) ((x , a) ∷ xs) = int8Magnitude x ∷ topCodes k xs
 
+-- TypeTopology arithmetic aliases stay local: do not import the agda2hs
+-- Prelude here, since its builtin Nat is a different source type.
+infixl 7 _*ℕ_
+_*ℕ_ : ℕ → ℕ → ℕ
+x *ℕ zero = zero
+x *ℕ succ y = x + x *ℕ y
+
+infixl 6 _+ℕ_
+_+ℕ_ : ℕ → ℕ → ℕ
+_+ℕ_ = _+_
+
 supportValid : List ScoreEntry → ℕ → ℕ → BoolLike
-supportValid xs temperature k with natLt (sumList (topCodes k xs)) ((k * natAt (k ∸ 1) (topCodes k xs)) + temperature)
+supportValid xs temperature k with natLt (sumList (topCodes k xs)) (((k *ℕ natAt (k ∸ 1) (topCodes k xs)) +ℕ temperature))
 ... | enabled = enabled
 ... | disabled = disabled
 
@@ -503,7 +521,7 @@ record SparseWeight : Set where
 open SparseWeight public
 
 sparsemaxWeight : ∀ {A : Set} → ActionSpace A → QFunction {A} → CountFunction {A} → ℕ → SparseWeight
-sparsemaxWeight {A} K q c a = sparseWeight ((k * int8Magnitude (scoreA {A = A} q c a)) + sparsemaxTemperature ∸ s) (k * sparsemaxTemperature)
+sparsemaxWeight {A} K q c a = sparseWeight (((k *ℕ int8Magnitude (scoreA {A = A} q c a)) +ℕ sparsemaxTemperature) ∸ s) (k *ℕ sparsemaxTemperature)
   where
     xs = sortScores (scoreList K q c)
     k = supportSize K q c
@@ -572,7 +590,7 @@ signedDyadicBias8 q with dyadicNumerator q
 ... | succ n = int8Neg
   (int8OfNat
     (dyadicDivide
-      (munchausenScale8 * succ n)
+      (munchausenScale8 *ℕ succ n)
       q))
 
 qLog2Bias8 : Int8 → Int8
@@ -660,16 +678,17 @@ record MonoidAffine : Set where
 open MonoidAffine public
 
 _∘ₘ_ : MonoidAffine → MonoidAffine → MonoidAffine
-(a₁ , b₁) ∘ₘ (a₂ , b₂) =
-  int8Mul a₁ a₂ ,
-  int8Add (int8Mul a₁ b₂) b₁
+(monoidAffine a₁ b₁) ∘ₘ (monoidAffine a₂ b₂) =
+  monoidAffine
+    (int8Mul a₁ a₂)
+    (int8Add (int8Mul a₁ b₂) b₁)
 
 monoidAffine-id : MonoidAffine
-monoidAffine-id = one8 , zero8
+monoidAffine-id = monoidAffine one8 zero8
 
 monoidAffine-assoc : ∀ a b c → (a ∘ₘ b) ∘ₘ c ＝ a ∘ₘ (b ∘ₘ c)
-monoidAffine-assoc (a₁ , b₁) (a₂ , b₂) (a₃ , b₃) =
-  cong₂ _,_
+monoidAffine-assoc (monoidAffine a₁ b₁) (monoidAffine a₂ b₂) (monoidAffine a₃ b₃) =
+  cong₂ monoidAffine
     (int8*-assoc a₁ a₂ a₃)
     (trans
       (cong₂ int8Add
@@ -688,23 +707,23 @@ monoidAffine-assoc (a₁ , b₁) (a₂ , b₂) (a₃ , b₃) =
             b₂)))))
 
 monoidAffine-idˡ : ∀ a → monoidAffine-id ∘ₘ a ＝ a
-monoidAffine-idˡ (a , b) =
-  cong₂ _,_
+monoidAffine-idˡ (monoidAffine a b) =
+  cong₂ monoidAffine
     (int8*-idˡ a)
     (trans
       (ap (λ z → int8Add z zero8) (int8*-idˡ b))
       (int8+-idʳ b))
 
 monoidAffine-idʳ : ∀ a → a ∘ₘ monoidAffine-id ＝ a
-monoidAffine-idʳ (a , b) =
-  cong₂ _,_
+monoidAffine-idʳ (monoidAffine a b) =
+  cong₂ monoidAffine
     (int8*-idʳ a)
     (trans
       (ap (λ z → int8Add z b) (int8*-zeroʳ a))
       (int8+-idˡ b))
 
 applyMonoidAffine : MonoidAffine → Int8 → Int8
-applyMonoidAffine (a , b) c =
+applyMonoidAffine (monoidAffine a b) c =
   int8Add (int8Mul a c) b
 
 data MonoidLSTMGate : Set where
@@ -722,19 +741,33 @@ monoidLSTMCellStep monoidReset c x = zero8
 monoidLSTMCellStep monoidAccum c x = int8Add c (leaky2 x)
 
 monoidLSTMAffineOf : MonoidLSTMGate → Int8 → MonoidAffine
-monoidLSTMAffineOf monoidHold x = one8 , zero8
-monoidLSTMAffineOf monoidWrite x = zero8 , leaky2 x
-monoidLSTMAffineOf monoidReset x = zero8 , zero8
-monoidLSTMAffineOf monoidAccum x = one8 , leaky2 x
+monoidLSTMAffineOf monoidHold x = monoidAffine one8 zero8
+monoidLSTMAffineOf monoidWrite x = monoidAffine zero8 (leaky2 x)
+monoidLSTMAffineOf monoidReset x = monoidAffine zero8 zero8
+monoidLSTMAffineOf monoidAccum x = monoidAffine one8 (leaky2 x)
 
 monoidLSTMCellStep-is-affine :
   ∀ g c x →
   monoidLSTMCellStep g c x ＝
   applyMonoidAffine (monoidLSTMAffineOf g x) c
-monoidLSTMCellStep-is-affine monoidHold c x = refl
-monoidLSTMCellStep-is-affine monoidWrite c x = refl
-monoidLSTMCellStep-is-affine monoidReset c x = refl
-monoidLSTMCellStep-is-affine monoidAccum c x = refl
+monoidLSTMCellStep-is-affine monoidHold c x =
+  trans
+    (sym (int8*-idˡ c))
+    (sym (int8+-idʳ (int8Mul one8 c)))
+monoidLSTMCellStep-is-affine monoidWrite c x =
+  trans
+    (sym (int8+-idˡ (leaky2 x)))
+    (ap
+      (λ z → int8Add z (leaky2 x))
+      (sym (int8*-zeroˡ c)))
+monoidLSTMCellStep-is-affine monoidReset c x =
+  trans
+    (sym (int8+-idˡ zero8))
+    (ap
+      (λ z → int8Add z zero8)
+      (sym (int8*-zeroˡ c)))
+monoidLSTMCellStep-is-affine monoidAccum c x =
+  ap (λ z → int8Add z (leaky2 x)) (sym (int8*-idˡ c))
 
 scanMonoidAffine : List Int8 → MonoidAffine
 scanMonoidAffine [] = monoidAffine-id
@@ -1089,11 +1122,18 @@ recurrentPrefix-split :
     (shiftInput xs m)
     n
     (recurrentPrefixState R xs m s)
-recurrentPrefix-split R xs m zero s rewrite plus-zero m = refl
-recurrentPrefix-split R xs m (succ n) s rewrite plus-succ m n =
+recurrentPrefix-split R xs m zero s =
   ap
-    (λ z → runNetwork R z (xs (m + n)))
-    (recurrentPrefix-split R xs m n s)
+    (λ k → recurrentPrefixState R xs k s)
+    (plus-zero m)
+recurrentPrefix-split R xs m (succ n) s =
+  trans
+    (ap
+      (λ k → recurrentPrefixState R xs k s)
+      (plus-succ m n))
+    (ap
+      (λ z → runNetwork R z (xs (m + n)))
+      (recurrentPrefix-split R xs m n s))
 
 canonicalMonoidLSTM-recurrent-prefix-correct :
   ∀ (xs : ℕ → Int8) (n : ℕ) (s : MonoidLSTMState) →
@@ -1333,7 +1373,7 @@ canonicalHaarFeatureReconstruct
 canonicalHaarFeatureReconstruct
   (int8 (pos (succ n))) = refl
 canonicalHaarFeatureReconstruct
-  (int8 (negsucc n)) = refl
+  (int8 (negsucc n)) = int8+-idˡ (int8 (negsucc n))
 
 canonicalHaarFeatureInjective :
   ∀ {x y} →
@@ -1708,7 +1748,7 @@ canonicalPersistentGRUPreservation K s =
 canonicalRecurrentInput-law : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) →
   canonicalGRUStep K s ＝
   gruStep (gru s)
-    (canonicalSignal K s)
+    (canonicalHaarRecurrentInput K s)
 canonicalRecurrentInput-law K s = refl
 
 canonicalOptimizerStep : ∀ {A} → FullLearnerKernel A → FullLearnerState A → F4IntUState
@@ -1793,7 +1833,7 @@ canonicalAperiodic K s n cyc = plus-succ-not-self (totalCount (lcbCounts s)) n
 
 canonicalOrbitNonFixed : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) (n : ℕ) → iterateCanonical K n s ≠ canonicalFullStep K (iterateCanonical K n s)
 canonicalOrbitNonFixed K s n eq =
-  canonicalNoFixedPoint K (iterateCanonical K n s) (sym eq)
+  canonicalNoFixedPoint K (iterateCanonical K n s) (eq ⁻¹)
 
 canonicalNoNontrivialFiniteCycle : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) (n : ℕ) → iterateCanonical K (succ n) s ＝ s → 𝟘
 canonicalNoNontrivialFiniteCycle K s n cyc = canonicalAperiodic K s n cyc
