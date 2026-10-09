@@ -1232,6 +1232,243 @@ f4ParameterInvariant K s g = refl
 HaarAccumulator : Set
 HaarAccumulator = Int8 × Int8
 
+
+------------------------------------------------------------------------
+-- Haar-featured linear transformer.
+--
+-- Haar mixing remains exact integer arithmetic, now used as a feature map
+-- inside a parameterized linear-attention accumulator.  The accumulator
+-- is additive and therefore itself forms a monoid; sequence processing is
+-- a pure left-to-right scan over rank-one feature updates.
+------------------------------------------------------------------------
+
+CanonicalHaarPair : Set
+CanonicalHaarPair = Int8 × Int8
+
+canonicalHaarMix : Int8 → Int8 → CanonicalHaarPair
+canonicalHaarMix x y =
+  int8Add x y , int8Sub x y
+
+canonicalHaarMix-left : ∀ x y →
+  proj₁ (canonicalHaarMix x y) ＝ int8Add x y
+canonicalHaarMix-left x y = refl
+
+canonicalHaarMix-right : ∀ x y →
+  proj₂ (canonicalHaarMix x y) ＝ int8Sub x y
+canonicalHaarMix-right x y = refl
+
+canonicalHaarMix-linear-form :
+  ∀ x y →
+  canonicalHaarMix x y ＝
+  (int8Add x y , int8Sub x y)
+canonicalHaarMix-linear-form x y = refl
+
+canonicalReLU8 : Int8 → Int8
+canonicalReLU8 x with hardSign x
+... | negativeSign = zero8
+... | zeroSign = zero8
+... | positiveSign = x
+
+canonicalCReLU8 : Int8 → CanonicalHaarPair
+canonicalCReLU8 x =
+  canonicalReLU8 x , canonicalReLU8 (int8Neg x)
+
+------------------------------------------------------------------------
+-- Rational CReLU': CReLU with the negative ReLU branch replaced by the
+-- exact rational softsign branch, matching the SignReLU shape while
+-- keeping the paired positive/negative CReLU representation.
+------------------------------------------------------------------------
+
+canonicalSignReLU' : ℚ → ℚ
+canonicalSignReLU' (((negsucc n , a) , _)) =
+  toℚ (negsucc n , a + succ n)
+canonicalSignReLU' q = q
+
+CanonicalCReLUPrimePair : Set
+CanonicalCReLUPrimePair = ℚ × ℚ
+
+canonicalCReLU' : ℚ → CanonicalCReLUPrimePair
+canonicalCReLU' x =
+  canonicalSignReLU' x , canonicalSignReLU' (- x)
+
+canonicalHaarFeature : Int8 → CanonicalHaarPair
+canonicalHaarFeature x =
+  canonicalHaarMix
+    (proj₁ (canonicalCReLU8 x))
+    (proj₂ (canonicalCReLU8 x))
+
+canonicalHaarFeature-left : ∀ x →
+  proj₁ (canonicalHaarFeature x) ＝
+  int8Add
+    (proj₁ (canonicalCReLU8 x))
+    (proj₂ (canonicalCReLU8 x))
+canonicalHaarFeature-left x = refl
+
+canonicalHaarFeature-right : ∀ x →
+  proj₂ (canonicalHaarFeature x) ＝
+  int8Sub
+    (proj₁ (canonicalCReLU8 x))
+    (proj₂ (canonicalCReLU8 x))
+canonicalHaarFeature-right x = refl
+
+canonicalHaarOrthogonalCross :
+  int8Add
+    (int8Mul one8 one8)
+    (int8Mul one8 (int8Neg one8))
+  ＝ zero8
+canonicalHaarOrthogonalCross = refl
+
+canonicalHaarFeatureReconstruct :
+  ∀ x →
+  let p = proj₁ (canonicalCReLU8 x)
+      n = proj₂ (canonicalCReLU8 x)
+  in int8Sub p n ＝ x
+canonicalHaarFeatureReconstruct
+  (int8 (pos 0)) = refl
+canonicalHaarFeatureReconstruct
+  (int8 (pos (succ n))) = refl
+canonicalHaarFeatureReconstruct
+  (int8 (negsucc n)) = refl
+
+canonicalHaarFeatureInjective :
+  ∀ {x y} →
+  canonicalCReLU8 x ＝ canonicalCReLU8 y →
+  x ＝ y
+canonicalHaarFeatureInjective {x} {y} eq =
+  trans
+    (sym (canonicalHaarFeatureReconstruct x))
+    (trans
+      (cong₂
+        (λ a b → int8Sub a b)
+        (ap proj₁ eq)
+        (ap proj₂ eq))
+      (canonicalHaarFeatureReconstruct y))
+
+record HaarFeaturedLinearTransformer : Set where
+  constructor haarFeaturedLinearTransformer
+  field
+    qProjection kProjection vProjection : Int8 → Int8
+open HaarFeaturedLinearTransformer public
+
+haarAccumulator-id : HaarAccumulator
+haarAccumulator-id = zero8 , zero8
+
+haarAccumulator-op :
+  HaarAccumulator → HaarAccumulator → HaarAccumulator
+haarAccumulator-op (a₁ , b₁) (a₂ , b₂) =
+  int8Add a₁ a₂ , int8Add b₁ b₂
+
+haarAccumulator-op-assoc :
+  ∀ x y z →
+  haarAccumulator-op
+    (haarAccumulator-op x y)
+    z
+  ＝
+  haarAccumulator-op
+    x
+    (haarAccumulator-op y z)
+haarAccumulator-op-assoc
+  (a₁ , b₁)
+  (a₂ , b₂)
+  (a₃ , b₃) =
+  cong₂ _,_
+    (int8+-assoc a₁ a₂ a₃)
+    (int8+-assoc b₁ b₂ b₃)
+
+haarAccumulator-op-idˡ :
+  ∀ x →
+  haarAccumulator-op haarAccumulator-id x ＝ x
+haarAccumulator-op-idˡ (a , b) =
+  cong₂ _,_
+    (int8+-idˡ a)
+    (int8+-idˡ b)
+
+haarAccumulator-op-idʳ :
+  ∀ x →
+  haarAccumulator-op x haarAccumulator-id ＝ x
+haarAccumulator-op-idʳ (a , b) =
+  cong₂ _,_
+    (int8+-idʳ a)
+    (int8+-idʳ b)
+
+haarKeyValueContribution :
+  HaarFeaturedLinearTransformer →
+  Int8 →
+  HaarAccumulator
+haarKeyValueContribution T x =
+  let (kp , kn) =
+        canonicalHaarFeature
+          (kProjection T x)
+      v = vProjection T x
+  in int8Mul kp v , int8Mul kn v
+
+haarAccumulatorStep :
+  HaarFeaturedLinearTransformer →
+  HaarAccumulator →
+  Int8 →
+  HaarAccumulator
+haarAccumulatorStep T s x =
+  haarAccumulator-op s
+    (haarKeyValueContribution T x)
+
+haarQueryRead :
+  HaarFeaturedLinearTransformer →
+  HaarAccumulator →
+  Int8 →
+  Int8
+haarQueryRead T (sp , sn) x =
+  let (qp , qn) =
+        canonicalHaarFeature
+          (qProjection T x)
+  in int8Add
+       (int8Mul qp sp)
+       (int8Mul qn sn)
+
+haarLinearTransform :
+  HaarFeaturedLinearTransformer →
+  HaarAccumulator →
+  List Int8 →
+  List Int8
+haarLinearTransform T s₀ [] = []
+haarLinearTransform T s₀ (x ∷ xs) =
+  let s₁ = haarAccumulatorStep T s₀ x
+  in haarQueryRead T s₁ x ∷
+     haarLinearTransform T s₁ xs
+
+haarLinearTransform-step-law :
+  ∀ T s x →
+  haarAccumulatorStep T s x ＝
+  haarAccumulator-op s
+    (haarKeyValueContribution T x)
+haarLinearTransform-step-law T s x = refl
+
+haarLinearTransform-associative-prefix :
+  ∀ T s x y →
+  haarAccumulatorStep T
+    (haarAccumulatorStep T s x)
+    y
+  ＝
+  haarAccumulator-op
+    (haarAccumulatorStep T s x)
+    (haarKeyValueContribution T y)
+haarLinearTransform-associative-prefix T s x y = refl
+
+canonicalHaarFeaturedTransformer :
+  HaarFeaturedLinearTransformer
+canonicalHaarFeaturedTransformer =
+  haarFeaturedLinearTransformer
+    identityActivation8
+    identityActivation8
+    identityActivation8
+
+canonicalHaarFeaturedLinearScan :
+  HaarAccumulator →
+  List Int8 →
+  List Int8
+canonicalHaarFeaturedLinearScan =
+  haarLinearTransform canonicalHaarFeaturedTransformer
+
+
 record FullLearnerState (A : Set) : Set₁ where
   constructor fullLearnerState
   field
@@ -1636,238 +1873,5 @@ canonicalTokenLogitTrace K (t ∷ ts) s =
   logits K s ∷
   canonicalTokenLogitTrace K ts (canonicalTokenStep s t)
 
-------------------------------------------------------------------------
--- Haar-featured linear transformer.
---
--- Haar mixing remains exact integer arithmetic, now used as a feature map
--- inside a parameterized linear-attention accumulator.  The accumulator
--- is additive and therefore itself forms a monoid; sequence processing is
--- a pure left-to-right scan over rank-one feature updates.
-------------------------------------------------------------------------
 
-CanonicalHaarPair : Set
-CanonicalHaarPair = Int8 × Int8
-
-canonicalHaarMix : Int8 → Int8 → CanonicalHaarPair
-canonicalHaarMix x y =
-  int8Add x y , int8Sub x y
-
-canonicalHaarMix-left : ∀ x y →
-  proj₁ (canonicalHaarMix x y) ＝ int8Add x y
-canonicalHaarMix-left x y = refl
-
-canonicalHaarMix-right : ∀ x y →
-  proj₂ (canonicalHaarMix x y) ＝ int8Sub x y
-canonicalHaarMix-right x y = refl
-
-canonicalHaarMix-linear-form :
-  ∀ x y →
-  canonicalHaarMix x y ＝
-  (int8Add x y , int8Sub x y)
-canonicalHaarMix-linear-form x y = refl
-
-canonicalReLU8 : Int8 → Int8
-canonicalReLU8 x with hardSign x
-... | negativeSign = zero8
-... | zeroSign = zero8
-... | positiveSign = x
-
-canonicalCReLU8 : Int8 → CanonicalHaarPair
-canonicalCReLU8 x =
-  canonicalReLU8 x , canonicalReLU8 (int8Neg x)
-
-------------------------------------------------------------------------
--- Rational CReLU': CReLU with the negative ReLU branch replaced by the
--- exact rational softsign branch, matching the SignReLU shape while
--- keeping the paired positive/negative CReLU representation.
-------------------------------------------------------------------------
-
-canonicalSignReLU' : ℚ → ℚ
-canonicalSignReLU' (((negsucc n , a) , _)) =
-  toℚ (negsucc n , a + succ n)
-canonicalSignReLU' q = q
-
-CanonicalCReLUPrimePair : Set
-CanonicalCReLUPrimePair = ℚ × ℚ
-
-canonicalCReLU' : ℚ → CanonicalCReLUPrimePair
-canonicalCReLU' x =
-  canonicalSignReLU' x , canonicalSignReLU' (- x)
-
-canonicalHaarFeature : Int8 → CanonicalHaarPair
-canonicalHaarFeature x =
-  canonicalHaarMix
-    (proj₁ (canonicalCReLU8 x))
-    (proj₂ (canonicalCReLU8 x))
-
-canonicalHaarFeature-left : ∀ x →
-  proj₁ (canonicalHaarFeature x) ＝
-  int8Add
-    (proj₁ (canonicalCReLU8 x))
-    (proj₂ (canonicalCReLU8 x))
-canonicalHaarFeature-left x = refl
-
-canonicalHaarFeature-right : ∀ x →
-  proj₂ (canonicalHaarFeature x) ＝
-  int8Sub
-    (proj₁ (canonicalCReLU8 x))
-    (proj₂ (canonicalCReLU8 x))
-canonicalHaarFeature-right x = refl
-
-canonicalHaarOrthogonalCross :
-  int8Add
-    (int8Mul one8 one8)
-    (int8Mul one8 (int8Neg one8))
-  ＝ zero8
-canonicalHaarOrthogonalCross = refl
-
-canonicalHaarFeatureReconstruct :
-  ∀ x →
-  let p = proj₁ (canonicalCReLU8 x)
-      n = proj₂ (canonicalCReLU8 x)
-  in int8Sub p n ＝ x
-canonicalHaarFeatureReconstruct
-  (int8 (pos 0)) = refl
-canonicalHaarFeatureReconstruct
-  (int8 (pos (succ n))) = refl
-canonicalHaarFeatureReconstruct
-  (int8 (negsucc n)) = refl
-
-canonicalHaarFeatureInjective :
-  ∀ {x y} →
-  canonicalCReLU8 x ＝ canonicalCReLU8 y →
-  x ＝ y
-canonicalHaarFeatureInjective {x} {y} eq =
-  trans
-    (sym (canonicalHaarFeatureReconstruct x))
-    (trans
-      (cong₂
-        (λ a b → int8Sub a b)
-        (ap proj₁ eq)
-        (ap proj₂ eq))
-      (canonicalHaarFeatureReconstruct y))
-
-record HaarFeaturedLinearTransformer : Set where
-  constructor haarFeaturedLinearTransformer
-  field
-    qProjection kProjection vProjection : Int8 → Int8
-open HaarFeaturedLinearTransformer public
-
-haarAccumulator-id : HaarAccumulator
-haarAccumulator-id = zero8 , zero8
-
-haarAccumulator-op :
-  HaarAccumulator → HaarAccumulator → HaarAccumulator
-haarAccumulator-op (a₁ , b₁) (a₂ , b₂) =
-  int8Add a₁ a₂ , int8Add b₁ b₂
-
-haarAccumulator-op-assoc :
-  ∀ x y z →
-  haarAccumulator-op
-    (haarAccumulator-op x y)
-    z
-  ＝
-  haarAccumulator-op
-    x
-    (haarAccumulator-op y z)
-haarAccumulator-op-assoc
-  (a₁ , b₁)
-  (a₂ , b₂)
-  (a₃ , b₃) =
-  cong₂ _,_
-    (int8+-assoc a₁ a₂ a₃)
-    (int8+-assoc b₁ b₂ b₃)
-
-haarAccumulator-op-idˡ :
-  ∀ x →
-  haarAccumulator-op haarAccumulator-id x ＝ x
-haarAccumulator-op-idˡ (a , b) =
-  cong₂ _,_
-    (int8+-idˡ a)
-    (int8+-idˡ b)
-
-haarAccumulator-op-idʳ :
-  ∀ x →
-  haarAccumulator-op x haarAccumulator-id ＝ x
-haarAccumulator-op-idʳ (a , b) =
-  cong₂ _,_
-    (int8+-idʳ a)
-    (int8+-idʳ b)
-
-haarKeyValueContribution :
-  HaarFeaturedLinearTransformer →
-  Int8 →
-  HaarAccumulator
-haarKeyValueContribution T x =
-  let (kp , kn) =
-        canonicalHaarFeature
-          (kProjection T x)
-      v = vProjection T x
-  in int8Mul kp v , int8Mul kn v
-
-haarAccumulatorStep :
-  HaarFeaturedLinearTransformer →
-  HaarAccumulator →
-  Int8 →
-  HaarAccumulator
-haarAccumulatorStep T s x =
-  haarAccumulator-op s
-    (haarKeyValueContribution T x)
-
-haarQueryRead :
-  HaarFeaturedLinearTransformer →
-  HaarAccumulator →
-  Int8 →
-  Int8
-haarQueryRead T (sp , sn) x =
-  let (qp , qn) =
-        canonicalHaarFeature
-          (qProjection T x)
-  in int8Add
-       (int8Mul qp sp)
-       (int8Mul qn sn)
-
-haarLinearTransform :
-  HaarFeaturedLinearTransformer →
-  HaarAccumulator →
-  List Int8 →
-  List Int8
-haarLinearTransform T s₀ [] = []
-haarLinearTransform T s₀ (x ∷ xs) =
-  let s₁ = haarAccumulatorStep T s₀ x
-  in haarQueryRead T s₁ x ∷
-     haarLinearTransform T s₁ xs
-
-haarLinearTransform-step-law :
-  ∀ T s x →
-  haarAccumulatorStep T s x ＝
-  haarAccumulator-op s
-    (haarKeyValueContribution T x)
-haarLinearTransform-step-law T s x = refl
-
-haarLinearTransform-associative-prefix :
-  ∀ T s x y →
-  haarAccumulatorStep T
-    (haarAccumulatorStep T s x)
-    y
-  ＝
-  haarAccumulator-op
-    (haarAccumulatorStep T s x)
-    (haarKeyValueContribution T y)
-haarLinearTransform-associative-prefix T s x y = refl
-
-canonicalHaarFeaturedTransformer :
-  HaarFeaturedLinearTransformer
-canonicalHaarFeaturedTransformer =
-  haarFeaturedLinearTransformer
-    identityActivation8
-    identityActivation8
-    identityActivation8
-
-canonicalHaarFeaturedLinearScan :
-  HaarAccumulator →
-  List Int8 →
-  List Int8
-canonicalHaarFeaturedLinearScan =
-  haarLinearTransform canonicalHaarFeaturedTransformer
 
