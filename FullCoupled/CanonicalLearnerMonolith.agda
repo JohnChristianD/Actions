@@ -1341,7 +1341,7 @@ softSparse-zero-to-hardSparse :
   SoftSparseBounded K s zero →
   HardSparse K s
 softSparse-zero-to-hardSparse K s h {a} distinct =
-  ≤-anti (h distinct) (zero-least _)
+  zero-least'' _ (h distinct)
 
 replaceOptimizer : ∀ {A} → FullLearnerState A → F4IntUState → FullLearnerState A
 replaceOptimizer s o = fullLearnerState (watkins s) (gru s) o
