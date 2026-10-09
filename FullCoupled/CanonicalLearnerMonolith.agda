@@ -1250,11 +1250,11 @@ canonicalHaarMix x y =
   int8Add x y , int8Sub x y
 
 canonicalHaarMix-left : ∀ x y →
-  proj₁ (canonicalHaarMix x y) ＝ int8Add x y
+  pr₁ (canonicalHaarMix x y) ＝ int8Add x y
 canonicalHaarMix-left x y = refl
 
 canonicalHaarMix-right : ∀ x y →
-  proj₂ (canonicalHaarMix x y) ＝ int8Sub x y
+  pr₂ (canonicalHaarMix x y) ＝ int8Sub x y
 canonicalHaarMix-right x y = refl
 
 canonicalHaarMix-linear-form :
@@ -1294,21 +1294,21 @@ canonicalCReLU' x =
 canonicalHaarFeature : Int8 → CanonicalHaarPair
 canonicalHaarFeature x =
   canonicalHaarMix
-    (proj₁ (canonicalCReLU8 x))
-    (proj₂ (canonicalCReLU8 x))
+    (pr₁ (canonicalCReLU8 x))
+    (pr₂ (canonicalCReLU8 x))
 
 canonicalHaarFeature-left : ∀ x →
-  proj₁ (canonicalHaarFeature x) ＝
+  pr₁ (canonicalHaarFeature x) ＝
   int8Add
-    (proj₁ (canonicalCReLU8 x))
-    (proj₂ (canonicalCReLU8 x))
+    (pr₁ (canonicalCReLU8 x))
+    (pr₂ (canonicalCReLU8 x))
 canonicalHaarFeature-left x = refl
 
 canonicalHaarFeature-right : ∀ x →
-  proj₂ (canonicalHaarFeature x) ＝
+  pr₂ (canonicalHaarFeature x) ＝
   int8Sub
-    (proj₁ (canonicalCReLU8 x))
-    (proj₂ (canonicalCReLU8 x))
+    (pr₁ (canonicalCReLU8 x))
+    (pr₂ (canonicalCReLU8 x))
 canonicalHaarFeature-right x = refl
 
 canonicalHaarOrthogonalCross :
@@ -1320,8 +1320,8 @@ canonicalHaarOrthogonalCross = refl
 
 canonicalHaarFeatureReconstruct :
   ∀ x →
-  let p = proj₁ (canonicalCReLU8 x)
-      n = proj₂ (canonicalCReLU8 x)
+  let p = pr₁ (canonicalCReLU8 x)
+      n = pr₂ (canonicalCReLU8 x)
   in int8Sub p n ＝ x
 canonicalHaarFeatureReconstruct
   (int8 (pos 0)) = refl
@@ -1340,8 +1340,8 @@ canonicalHaarFeatureInjective {x} {y} eq =
     (trans
       (cong₂
         (λ a b → int8Sub a b)
-        (ap proj₁ eq)
-        (ap proj₂ eq))
+        (ap pr₁ eq)
+        (ap pr₂ eq))
       (canonicalHaarFeatureReconstruct y))
 
 record HaarFeaturedLinearTransformer : Set where
