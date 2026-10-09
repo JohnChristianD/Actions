@@ -544,7 +544,7 @@ list-monoid-solver-append-assoc :
   ∀ (xs ys zs : List C.Int8) →
   xs ++ (ys ++ zs) ＝ (xs ++ ys) ++ zs
 list-monoid-solver-append-assoc xs ys zs =
-  sym (monoid-assoc xs ys zs)
+  sym (++-assoc xs ys zs)
 
 list-monoid-solver-normalization-theorem :
   ListMonoidSolverNormalizationTheorem
