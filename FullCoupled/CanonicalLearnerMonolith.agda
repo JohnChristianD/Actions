@@ -135,6 +135,21 @@ int8*-distribˡ : ∀ a b c → int8Mul a (int8Add b c) ＝ int8Add (int8Mul a b
 int8*-distribˡ a b c =
   ap int8 (distributivity-mult-over-ℤ' (code b) (code c) (code a))
 
+int8*-idˡ : ∀ a → int8Mul one8 a ＝ a
+int8*-idˡ a = ap int8 (ℤ-mult-left-id (code a))
+
+int8*-idʳ : ∀ a → int8Mul a one8 ＝ a
+int8*-idʳ a = ap int8 (ℤ-mult-right-id (code a))
+
+int8*-zeroʳ : ∀ a → int8Mul a zero8 ＝ zero8
+int8*-zeroʳ a = ap int8 (ℤ-zero-right-is-zero (code a))
+
+int8+-idˡ : ∀ a → int8Add zero8 a ＝ a
+int8+-idˡ a = ap int8 (ℤ-zero-left-neutral (code a))
+
+int8+-idʳ : ∀ a → int8Add a zero8 ＝ a
+int8+-idʳ a = ap int8 (ℤ-zero-right-neutral (code a))
+
 int8Roundtrip : ∀ n → code (int8OfNat n) ＝ pos n
 int8Roundtrip n = refl
 
