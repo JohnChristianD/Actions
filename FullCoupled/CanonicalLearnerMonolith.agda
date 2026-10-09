@@ -518,7 +518,7 @@ record SparseWeight : Set where
 open SparseWeight public
 
 sparsemaxWeight : ∀ {A : Set} → ActionSpace A → QFunction {A} → CountFunction {A} → ℕ → SparseWeight
-sparsemaxWeight {A} K q c a = sparseWeight ((k * int8Magnitude (scoreA {A = A} q c a)) + sparsemaxTemperature ∸ s) (k * sparsemaxTemperature)
+sparsemaxWeight {A} K q c a = sparseWeight (((k *ℕ int8Magnitude (scoreA {A = A} q c a)) +ℕ sparsemaxTemperature) ∸ s) (k *ℕ sparsemaxTemperature)
   where
     xs = sortScores (scoreList K q c)
     k = supportSize K q c
@@ -587,7 +587,7 @@ signedDyadicBias8 q with dyadicNumerator q
 ... | succ n = int8Neg
   (int8OfNat
     (dyadicDivide
-      (munchausenScale8 * succ n)
+      (munchausenScale8 *ℕ succ n)
       q))
 
 qLog2Bias8 : Int8 → Int8
