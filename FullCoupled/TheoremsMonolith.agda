@@ -358,11 +358,12 @@ macro
   apply-cong : Term → Term → TC ⊤
   apply-cong p goal =
     try
-      (do τ ← inferType goal
-          _ , _ , l , _ ← ＝-type-info τ
-          unify goal
-            (def (quote cong)
-              (𝓋𝓇𝒶 ($-head l) ∷ 𝓋𝓇𝒶 p ∷ [])))
+      (bindTC (inferType goal) λ τ →
+        bindTC (＝-type-info τ) λ where
+          (_ , _ , l , _) →
+            unify goal
+              (def (quote cong)
+                (𝓋𝓇𝒶 ($-head l) ∷ 𝓋𝓇𝒶 p ∷ [])))
       or-else unify goal p
 
 
