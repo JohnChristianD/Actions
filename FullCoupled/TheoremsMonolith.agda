@@ -503,11 +503,13 @@ nat-ring-solver-layernorm-step :
   ∀ (epsilon scale : ℕ) →
   (epsilon + succ zero) * scale ＝
   (epsilon * scale) + scale
+-- Local proof-only lemmas: keep Nat multiplication out of the shared import surface.
+open import Naturals.Multiplication using (distributivity-mult-over-addition'; mult-left-id)
+
 nat-ring-solver-layernorm-step epsilon scale =
   trans
-    (mul-distr-r epsilon 1 scale)
-    (ap (λ x → epsilon * scale + x)
-      (trans (mul-commute 1 scale) (mul-one-r scale)))
+    (distributivity-mult-over-addition' epsilon 1 scale)
+    (ap (λ x → epsilon * scale + x) (mult-left-id scale))
 
 nat-ring-solver-normalization-theorem :
   NatRingSolverNormalizationTheorem
