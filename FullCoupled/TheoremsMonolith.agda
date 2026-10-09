@@ -384,6 +384,7 @@ module ExactSearchInversion (fe : FunExt) where
   open import TWA.Thesis.Chapter3.ClosenessSpaces fe hiding (decidable-uc-predicate)
   open import TWA.Thesis.Chapter3.SearchableTypes fe
   open import MGS.Equivalences using (is-equiv; invertibles-are-equivs)
+  open import UF.SubtypeClassifier using (_holds)
 
   record SearchableEquivalence
     (X Y : ClosenessSpace 𝓤₀) : Set₁ where
