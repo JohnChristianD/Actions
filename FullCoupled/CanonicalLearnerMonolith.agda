@@ -161,13 +161,7 @@ int8+-idʳ a = ap int8 (ℤ-zero-right-neutral (code a))
 int8Roundtrip : ∀ n → code (int8OfNat n) ＝ pos n
 int8Roundtrip n = refl
 
-le-refl : ∀ n → n ≤ n
-le-refl zero = ⋆
-le-refl (succ n) = le-refl n
 
-lt-irrefl : ∀ n → (n < n) → 𝟘
-lt-irrefl zero p = p
-lt-irrefl (succ n) p = lt-irrefl n p
 
 plus-zero : ∀ n → n + zero ＝ n
 plus-zero zero = refl
@@ -177,22 +171,22 @@ plus-succ : ∀ (m n : ℕ) → m + succ n ＝ succ (m + n)
 plus-succ zero n = refl
 plus-succ (succ m) n = refl
 
-plus-succ-lt : ∀ (m n : ℕ) → m < m + succ n
+plus-succ-lt : ∀ (m n : ℕ) → m <ℕ (m + succ n)
 plus-succ-lt m zero = ≤-refl (succ m)
 plus-succ-lt m (succ n) = ≤-+ m (succ n)
 
 plus-succ-not-self : ∀ (m n : ℕ) → m + succ n ≠ m
 plus-succ-not-self m n eq =
-  lt-irrefl m (transport (λ z → m < z) eq (plus-succ-lt m n))
+  not-less-than-itself m (transport (λ z → m <ℕ z) eq (plus-succ-lt m n))
 
-succ-succ-lt : ∀ n → n < succ (succ n)
+succ-succ-lt : ∀ (n : ℕ) → n <ℕ succ (succ n)
 succ-succ-lt zero = ≤-succ zero
 succ-succ-lt (succ n) = ≤-succ (succ n)
 
 succ-succ-not-self : ∀ n → succ (succ n) ≠ n
 succ-succ-not-self n eq =
-  lt-irrefl (succ (succ n))
-    (transport (λ z → z < succ (succ n)) (eq ⁻¹) (succ-succ-lt n))
+  not-less-than-itself (succ (succ n))
+    (transport (λ z → z <ℕ succ (succ n)) (eq ⁻¹) (succ-succ-lt n))
 
 iterate : ∀ {S : Set} → (S → S) → ℕ → S → S
 iterate step zero s = s
