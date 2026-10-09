@@ -491,6 +491,9 @@ module ExactSearchInversion (fe : FunExt) where
     inverse-preserves-csearchability
 
 ------------------------------------------------------------------------
+-- Local proof-only lemmas: keep Nat multiplication out of the shared import surface.
+open import Naturals.Multiplication using (distributivity-mult-over-addition'; mult-left-id)
+
 record NatRingSolverNormalizationTheorem : Set₁ where
   constructor natRingSolverNormalizationTheorem
   field
@@ -503,9 +506,6 @@ nat-ring-solver-layernorm-step :
   ∀ (epsilon scale : ℕ) →
   (epsilon + succ zero) * scale ＝
   (epsilon * scale) + scale
--- Local proof-only lemmas: keep Nat multiplication out of the shared import surface.
-open import Naturals.Multiplication using (distributivity-mult-over-addition'; mult-left-id)
-
 nat-ring-solver-layernorm-step epsilon scale =
   trans
     (distributivity-mult-over-addition' epsilon 1 scale)
