@@ -335,7 +335,7 @@ syntax try-fun t f = try t or-else f
 -- Imported qualified; theorem names remain isolated from this monolith.
 ------------------------------------------------------------------------
 
-open import FullCoupled.CanonicalLearnerMonolith as C
+open import FullCoupled.CanonicalLearnerMonolith as C hiding (Int; _+Int_; _*Int_)
 -- END THEOREM-SPECIFIC IMPORTS
 
 ------------------------------------------------------------------------
