@@ -64,6 +64,7 @@ open import Naturals.Exponentiation
 open import Naturals.Division
 open import Naturals.Properties
 open import Naturals.Order
+open import Naturals.Multiplication using (distributivity-mult-over-addition'; mult-commutativity; mult-right-id)
 open import Notation.Order
 open import Rationals.Addition renaming (_+_ to _ℚ+_)
 open import Rationals.Multiplication
