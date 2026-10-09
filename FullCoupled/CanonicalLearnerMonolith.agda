@@ -1790,13 +1790,13 @@ canonicalOrbitNonFixed : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState
 canonicalOrbitNonFixed K s n eq =
   canonicalNoFixedPoint K (iterateCanonical K n s) (sym eq)
 
-canonicalNoNontrivialFiniteCycle : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) (n : ℕ) → iterateCanonical K (succ n) s ＝ s → ⊥
+canonicalNoNontrivialFiniteCycle : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) (n : ℕ) → iterateCanonical K (succ n) s ＝ s → 𝟘
 canonicalNoNontrivialFiniteCycle K s n cyc = canonicalAperiodic K s n cyc
 
 canonicalTotalCountIterate2 : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) → totalCount (lcbCounts (iterateCanonical K 2 s)) ＝ succ (succ (totalCount (lcbCounts s)))
 canonicalTotalCountIterate2 K s = refl
 
-canonicalNoCountedTwoCycle : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) → iterateCanonical K 2 s ＝ s → ⊥
+canonicalNoCountedTwoCycle : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) → iterateCanonical K 2 s ＝ s → 𝟘
 canonicalNoCountedTwoCycle K s cyc = succ-succ-not-self (totalCount (lcbCounts s))
   (trans (sym (canonicalTotalCountIterate2 K s))
     (ap (λ t → totalCount (lcbCounts t)) cyc))
