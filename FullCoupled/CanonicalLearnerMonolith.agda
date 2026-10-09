@@ -417,7 +417,7 @@ integerLayerNormVarianceNumerator xs =
 integerLayerNormEpsilonContribution :
   List Int8 → ℕ → Int
 integerLayerNormEpsilonContribution xs epsilon =
-  (pos (epsilon * (length xs) * (length xs)))
+  pos (epsilon * length xs * length xs)
 
 integerLayerNormRadicand :
   List Int8 → ℕ → Int
