@@ -60,8 +60,6 @@ infixl 31 _*Int_
 _*Int_ : Int → Int → Int
 _*Int_ = _ℤ*_
 open import Naturals.Addition
-open import Naturals.Addition renaming (_+_ to _+ℕ_)
-open import Naturals.Multiplication renaming (_*_ to _*ℕ_)
 open import Naturals.Exponentiation
 open import Naturals.Division
 open import Naturals.Properties
@@ -488,6 +486,17 @@ topCodes : ℕ → List ScoreEntry → List ℕ
 topCodes zero xs = []
 topCodes (succ k) [] = []
 topCodes (succ k) ((x , a) ∷ xs) = int8Magnitude x ∷ topCodes k xs
+
+-- TypeTopology arithmetic aliases stay local: do not import the agda2hs
+-- Prelude here, since its builtin Nat is a different source type.
+infixl 7 _*ℕ_
+_*ℕ_ : ℕ → ℕ → ℕ
+x *ℕ zero = zero
+x *ℕ succ y = x + x *ℕ y
+
+infixl 6 _+ℕ_
+_+ℕ_ : ℕ → ℕ → ℕ
+_+ℕ_ = _+_
 
 supportValid : List ScoreEntry → ℕ → ℕ → BoolLike
 supportValid xs temperature k with natLt (sumList (topCodes k xs)) (((k *ℕ natAt (k ∸ 1) (topCodes k xs)) +ℕ temperature))
