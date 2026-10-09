@@ -629,8 +629,8 @@ statisticalEncodeDistinguishes :
   ∀ {State Observation : Set}
   (R : CarrierPolymorphicStatisticalRepresentation State Observation)
   {s t : State} →
-  s ≢ t →
-  encode R s ≢ encode R t
+  s ≠ t →
+  encode R s ≠ encode R t
 statisticalEncodeDistinguishes R distinct collision =
   distinct (statisticalEncodeInjective R collision)
 
