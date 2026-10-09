@@ -117,10 +117,12 @@ int8Mul : Int8 → Int8 → Int8
 int8Mul x y = int8 (code x *Int code y)
 
 int8Neg : Int8 → Int8
-int8Neg x = int8 (- code x)
+int8Neg (int8 (pos zero)) = zero8
+int8Neg (int8 (pos (succ n))) = int8 (negsucc n)
+int8Neg (int8 (negsucc n)) = int8 (pos (succ n))
 
 int8Sub : Int8 → Int8 → Int8
-int8Sub x y = int8 (code x +Int (- code y))
+int8Sub x y = int8 (code x +Int code (int8Neg y))
 
 int8+-assoc : ∀ a b c → int8Add (int8Add a b) c ＝ int8Add a (int8Add b c)
 int8+-assoc a b c = ap int8 (ℤ+-assoc (code a) (code b) (code c))
