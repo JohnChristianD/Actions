@@ -1748,7 +1748,7 @@ canonicalPersistentGRUPreservation K s =
 canonicalRecurrentInput-law : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) →
   canonicalGRUStep K s ＝
   gruStep (gru s)
-    (canonicalSignal K s)
+    (canonicalHaarRecurrentInput K s)
 canonicalRecurrentInput-law K s = refl
 
 canonicalOptimizerStep : ∀ {A} → FullLearnerKernel A → FullLearnerState A → F4IntUState
