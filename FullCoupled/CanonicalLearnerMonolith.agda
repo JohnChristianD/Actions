@@ -77,6 +77,7 @@ open import UF.Size
 open import UF.Subsingletons
 open import UF.Subsingletons-FunExt
 open import UF.UA-FunExt
+open import UF.Equiv using (is-equiv; section-retraction-equiv)
 -- END MIRTH-SYNC COMMON IMPORTS
 
 
