@@ -519,11 +519,11 @@ record IntegerRingSolverNormalizationTheorem : Set₁ where
   constructor integerRingSolverNormalizationTheorem
   field
     normalization :
-      ∀ (i j k : Int) →
+      ∀ (i j k : ℤ) →
       i +Int (j +Int k) ＝ (i +Int j) +Int k
 
 integer-ring-solver-assoc :
-  ∀ (i j k : Int) →
+  ∀ (i j k : ℤ) →
   i +Int (j +Int k) ＝ (i +Int j) +Int k
 integer-ring-solver-assoc i j k =
   sym (ℤ+-assoc i j k)
