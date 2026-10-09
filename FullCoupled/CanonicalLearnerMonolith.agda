@@ -116,10 +116,13 @@ int8Add x y = int8 (code x +Int code y)
 int8Mul : Int8 → Int8 → Int8
 int8Mul x y = int8 (code x *Int code y)
 
+intNeg : Int → Int
+intNeg (pos zero) = pos zero
+intNeg (pos (succ n)) = negsucc n
+intNeg (negsucc n) = pos (succ n)
+
 int8Neg : Int8 → Int8
-int8Neg (int8 (pos zero)) = zero8
-int8Neg (int8 (pos (succ n))) = int8 (negsucc n)
-int8Neg (int8 (negsucc n)) = int8 (pos (succ n))
+int8Neg x = int8 (intNeg (code x))
 
 int8Sub : Int8 → Int8 → Int8
 int8Sub x y = int8 (code x +Int code (int8Neg y))
@@ -307,7 +310,7 @@ finiteLCBBonus8 (succ (succ (succ (succ (succ (succ zero)))))) = int8OfNat 1
 finiteLCBBonus8 _ = zero8
 
 lcbNegate : Int8 → Int8
-lcbNegate x = int8 (- code x)
+lcbNegate x = int8Neg x
 
 scoreA : ∀ {A : Set} → QFunction {A} → CountFunction {A} → ℕ → Int8
 scoreA q c a = int8Add (q a) (lcbNegate (finiteLCBBonus8 (c a)))
@@ -391,7 +394,7 @@ integerCodeSumList (x ∷ xs) = x +Int integerCodeSumList xs
 integerLayerNormCenteredNumerator :
   List Int8 → Int8 → Int
 integerLayerNormCenteredNumerator xs x =
-  (pos (length xs)) *Int code x +Int (- integerCodeSum xs)
+  (pos (length xs)) *Int code x +Int intNeg (integerCodeSum xs)
 
 integerLayerNormCenteredNumerators :
   List Int8 → List Int
