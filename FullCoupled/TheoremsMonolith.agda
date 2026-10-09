@@ -443,7 +443,7 @@ module ExactSearchInversion (fe : FunExt) where
     ∀ {X Y : ClosenessSpace 𝓤₀}
     (E : SearchableEquivalence X Y) →
     csearchable 𝓤₀ Y
-  inverse-preserves-csearchability E ((p , d) , ϕ) =
+  inverse-preserves-csearchability {X = X} {Y = Y} E ((p , d) , ϕ) =
     y₀ , γ
     where
       pulled : decidable-uc-predicate 𝓤₀ X
