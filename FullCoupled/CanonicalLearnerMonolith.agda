@@ -488,7 +488,7 @@ topCodes (succ k) [] = []
 topCodes (succ k) ((x , a) ∷ xs) = int8Magnitude x ∷ topCodes k xs
 
 supportValid : List ScoreEntry → ℕ → ℕ → BoolLike
-supportValid xs temperature k with natLt (sumList (topCodes k xs)) ((k * natAt (k ∸ 1) (topCodes k xs)) + temperature)
+supportValid xs temperature k with natLt (sumList (topCodes k xs)) (((k *ℕ natAt (k ∸ 1) (topCodes k xs)) +ℕ temperature))
 ... | enabled = enabled
 ... | disabled = disabled
 
