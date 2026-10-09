@@ -133,7 +133,7 @@ int8+-assoc a b c = ap int8 (ℤ+-assoc (code a) (code b) (code c))
 int8*-assoc : ∀ a b c → int8Mul (int8Mul a b) c ＝ int8Mul a (int8Mul b c)
 int8*-assoc a b c = ap int8 (ℤ*-assoc (code a) (code b) (code c))
 
-sym : ∀ {𝓤 : Universe} {A : 𝓤 ̇} {x y : A} → x ＝ y → y ＝ x
+sym : ∀ {A : Set} {x y : A} → x ＝ y → y ＝ x
 sym refl = refl
 
 int8*-distribˡ : ∀ a b c → int8Mul a (int8Add b c) ＝ int8Add (int8Mul a b) (int8Mul a c)
@@ -1833,7 +1833,7 @@ canonicalAperiodic K s n cyc = plus-succ-not-self (totalCount (lcbCounts s)) n
 
 canonicalOrbitNonFixed : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) (n : ℕ) → iterateCanonical K n s ≠ canonicalFullStep K (iterateCanonical K n s)
 canonicalOrbitNonFixed K s n eq =
-  canonicalNoFixedPoint K (iterateCanonical K n s) (sym eq)
+  canonicalNoFixedPoint K (iterateCanonical K n s) (eq ⁻¹)
 
 canonicalNoNontrivialFiniteCycle : ∀ {A} (K : FullLearnerKernel A) (s : FullLearnerState A) (n : ℕ) → iterateCanonical K (succ n) s ＝ s → 𝟘
 canonicalNoNontrivialFiniteCycle K s n cyc = canonicalAperiodic K s n cyc
