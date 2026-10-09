@@ -906,9 +906,9 @@ persistent-preservation s x =
 
 gruParameterPersistence :
   ∀ (s : GRUState) (x : Int8) →
-  matrixState (gruStep s x) ＝ matrixState s ×
-  noiseState (gruStep s x) ＝ noiseState s ×
-  controlState (gruStep s x) ＝ controlState s
+  (matrixState (gruStep s x) ＝ matrixState s) ×
+  ((noiseState (gruStep s x) ＝ noiseState s) ×
+   (controlState (gruStep s x) ＝ controlState s))
 gruParameterPersistence s x =
   monoidLSTMParameterPersistence s x
 
