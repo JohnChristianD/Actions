@@ -1373,7 +1373,7 @@ canonicalHaarFeatureReconstruct
 canonicalHaarFeatureReconstruct
   (int8 (pos (succ n))) = refl
 canonicalHaarFeatureReconstruct
-  (int8 (negsucc n)) = refl
+  (int8 (negsucc n)) = int8+-idˡ (int8 (negsucc n))
 
 canonicalHaarFeatureInjective :
   ∀ {x y} →
