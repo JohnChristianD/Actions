@@ -1131,6 +1131,17 @@ record AStarSemanticClosure
 
 open AStarSemanticClosure public
 
+-- A* supplies candidate ordering/cost metadata, but semantic closure is
+-- justified solely by the soundness theorem for an explicit e-graph path.
+aStar-guided-semantic-closure :
+  ∀ {Expression State : Set}
+  (A : AStarSemanticClosure Expression State) →
+  ∀ {e f : Expression} →
+  EGraphSemanticPath (semantics A) e f →
+  interpret (semantics A) e ＝ interpret (semantics A) f
+aStar-guided-semantic-closure A =
+  eGraph-path-sound (semantics A)
+
 ------------------------------------------------------------------------
 -- Haskell-like algebraic structure for A* candidate plans.
 --
@@ -9026,9 +9037,8 @@ nLabMaxwellFourLawGRUAlgebraicConsistencyTheorem-from-closed B =
 ------------------------------------------------------------------------
 
 canonical-repository-wide-agda-egraph-astar-closure :
-  ∀ {Module : Set}
-  (F : AgdaSemanticModuleFamily Module)
-  (m : Module)
+  (F : AgdaSemanticModuleFamily)
+  (m : RepositoryAgdaModule)
   {e f : Expression F m} →
   EGraphSemanticPath
     (semantics (closure F m))
