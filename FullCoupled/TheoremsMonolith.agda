@@ -1467,7 +1467,7 @@ eGraphAStarEventualStableFromRank :
           (step W)
           n
           s))
-eGraphAStarEventualStableFromRank W stableOrNot s =
+eGraphAStarEventualStableFromRank {Expression = Expression} {State = State} W stableOrNot s =
   go s (rank W s) refl (<-wellFounded (rank W s))
   where
   go :
