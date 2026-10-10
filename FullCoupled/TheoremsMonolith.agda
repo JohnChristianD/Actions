@@ -335,8 +335,30 @@ syntax try-fun t f = try t or-else f
 -- Imported qualified; theorem names remain isolated from this monolith.
 ------------------------------------------------------------------------
 
+-- Keep the TypeTopology sum algebra local: the synchronized imports hide
+-- `_+_` to disambiguate natural/integer/rational addition.
+open import MLTT.Plus renaming (_+_ to _⊎_; inl to inj₁; inr to inj₂)
+open import Ordinals.Notions _<_ renaming (is-accessible to RankAccessible; acc to rankAcc)
 open import FullCoupled.CanonicalLearnerMonolith as C hiding (Int; _+Int_; _*Int_)
 -- END THEOREM-SPECIFIC IMPORTS
+
+-- TypeTopology's falsity is 𝟘. Keep familiar theorem notation local;
+-- do not import the Agda standard library or alter builtin ownership.
+⊥ : Set
+⊥ = 𝟘
+
+⊥-elim : ∀ {A : Set} → ⊥ → A
+⊥-elim = 𝟘-elim
+
+-- Keep natural multiplication explicit: the synchronized import surface also
+-- contains rational multiplication, so theorem algebra names TypeTopology's
+-- natural operation through this local alias.
+module NatMult = Naturals.Multiplication
+
+infixl 32 _ℕ*_
+_ℕ*_ : ℕ → ℕ → ℕ
+_ℕ*_ = NatMult._*_
+
 
 ------------------------------------------------------------------------
 -- Reflection compression for repeated equality transport.
@@ -639,6 +661,13 @@ statisticalEncodeDistinguishes R distinct collision =
 ------------------------------------------------------------------------
 
 module GRUStatisticalInjectivity where
+-- TypeTopology's pinned Spartan surface has equality and negation but does not
+-- export inequality notation. Derive it locally to avoid widening the synchronized
+-- import block and introducing another import-closure conflict.
+infix 4 _≢_
+_≢_ : ∀ {A : Set} → A → A → Set
+x ≢ y = ¬ (x ＝ y)
+
 CanonicalGRUStatisticalObservation : Set
 CanonicalGRUStatisticalObservation = C.GRUState × (C.CanonicalToken → C.Int8)
 canonicalGRUStatisticalEncode : C.GRUState → CanonicalGRUStatisticalObservation
@@ -1124,6 +1153,17 @@ record AStarSemanticClosure
 
 open AStarSemanticClosure public
 
+-- A* supplies candidate ordering/cost metadata, but semantic closure is
+-- justified solely by the soundness theorem for an explicit e-graph path.
+aStar-guided-semantic-closure :
+  ∀ {Expression State : Set}
+  (A : AStarSemanticClosure Expression State) →
+  ∀ {e f : Expression} →
+  EGraphSemanticPath (semantics A) e f →
+  interpret (semantics A) e ＝ interpret (semantics A) f
+aStar-guided-semantic-closure A =
+  eGraph-path-sound (semantics A)
+
 ------------------------------------------------------------------------
 -- Haskell-like algebraic structure for A* candidate plans.
 --
@@ -1153,21 +1193,21 @@ aStar-plan-append-associative :
   ∀ (xs ys zs : List Expression) →
   (xs ++ ys) ++ zs ＝ xs ++ (ys ++ zs)
 aStar-plan-append-associative xs ys zs =
-  Monoid.assoc (++-monoid _)
+  ++-assoc xs ys zs
 
 aStar-plan-append-identity-left :
   ∀ {Expression : Set} →
   ∀ (xs : List Expression) →
   [] ++ xs ＝ xs
-aStar-plan-append-identity-left xs =
-  Monoid.identityˡ (++-monoid _)
+aStar-plan-append-identity-left xs = refl
 
 aStar-plan-append-identity-right :
   ∀ {Expression : Set} →
   ∀ (xs : List Expression) →
   xs ++ [] ＝ xs
-aStar-plan-append-identity-right xs =
-  Monoid.identityʳ (++-monoid _)
+aStar-plan-append-identity-right [] = refl
+aStar-plan-append-identity-right (x ∷ xs) =
+  ap (x ∷_) (aStar-plan-append-identity-right xs)
 
 aStar-plan-monoid-theorem :
   ∀ (Expression : Set) →
@@ -1187,25 +1227,66 @@ aStar-plan-monoid-theorem Expression =
 -- monad-law proofs in the standard library.
 ------------------------------------------------------------------------
 
+record AStarRawMonad (M : Set → Set) : Set₁ where
+  constructor aStarRawMonad
+  field
+    returnM : ∀ {A : Set} → A → M A
+    bindM : ∀ {A B : Set} → M A → (A → M B) → M B
+
+AStarState : Set → Set → Set
+AStarState S A = S → A × S
+
+aStarStateReturn : ∀ {S A : Set} → A → AStarState S A
+aStarStateReturn value state = value , state
+
+aStarStateBind :
+  ∀ {S A B : Set} →
+  AStarState S A →
+  (A → AStarState S B) →
+  AStarState S B
+aStarStateBind action next state =
+  next (pr₁ (action state)) (pr₂ (action state))
+
+aStarStateRawMonad :
+  ∀ {S : Set} →
+  AStarRawMonad (AStarState S)
+aStarStateRawMonad =
+  aStarRawMonad aStarStateReturn aStarStateBind
+
+aStarListReturn : ∀ {A : Set} → A → List A
+aStarListReturn value = value ∷ []
+
+aStarListBind :
+  ∀ {A B : Set} →
+  List A →
+  (A → List B) →
+  List B
+aStarListBind [] f = []
+aStarListBind (x ∷ xs) f = f x ++ aStarListBind xs f
+
+aStarListRawMonad : AStarRawMonad List
+aStarListRawMonad =
+  aStarRawMonad aStarListReturn aStarListBind
+
 record AStarHaskellMonadSurface (Expression : Set) : Set₁ where
   constructor aStarHaskellMonadSurface
   field
     frontierMonad :
-      Monad (State (List (List Expression)))
+      AStarRawMonad (AStarState (List (List Expression)))
     candidatePlanMonad :
-      Monad List
+      AStarRawMonad List
 
 open AStarHaskellMonadSurface public
 
 aStar-frontier-monad :
   ∀ {Expression : Set} →
-  Monad (State (List (List Expression)))
-aStar-frontier-monad = stateMonad
+  AStarRawMonad (AStarState (List (List Expression)))
+aStar-frontier-monad = aStarStateRawMonad
 
 aStar-candidate-plan-monad :
   ∀ {Expression : Set} →
-  Monad List
-aStar-candidate-plan-monad = listMonad
+  AStarRawMonad List
+aStar-candidate-plan-monad = aStarListRawMonad
 
 aStar-haskell-monad-surface :
   ∀ (Expression : Set) →
@@ -1257,7 +1338,7 @@ record AgdaSemanticModuleFamily : Set₁ where
       (m : RepositoryAgdaModule) →
       AStarSemanticClosure
         (Expression m)
-        (State m)
+        (moduleState m)
 
 open AgdaSemanticModuleFamily public
 
@@ -1405,13 +1486,13 @@ eGraphAStarEventualStableFromRank :
           (step W)
           n
           s))
-eGraphAStarEventualStableFromRank W stableOrNot s =
-  go s (rank W s) refl (<-wellFounded (rank W s))
+eGraphAStarEventualStableFromRank {Expression = Expression} {State = State} W stableOrNot s =
+  go s (rank W s) refl (<-is-well-founded (rank W s))
   where
   go :
     ∀ (s : State) (n : ℕ) →
     rank W s ＝ n →
-    Acc _<_ n →
+    RankAccessible n →
     Σ ℕ
       (λ k →
         stable W
@@ -1419,7 +1500,7 @@ eGraphAStarEventualStableFromRank W stableOrNot s =
             (step W)
             k
             s))
-  go s n rankEq (acc smaller) with stableOrNot s
+  go s n rankEq (rankAcc smaller) with stableOrNot s
   ... | inj₁ stableS =
     zero , stableS
   ... | inj₂ notStable with strictDescent W s notStable
@@ -2025,12 +2106,25 @@ canonical-integer-layernorm-astar-execution-bridge-theorem =
 
 nat-ring-solver-layernorm-contribution :
   ∀ (xs : List C.Int8) (epsilon : ℕ) →
-  (succ epsilon * length xs * length xs)
+  (succ epsilon ℕ* length xs ℕ* length xs)
   ＝
-  (epsilon * length xs * length xs)
-  + (length xs * length xs)
-nat-ring-solver-layernorm-contribution =
-  NatRingSolver.solve-∀
+  (epsilon ℕ* length xs ℕ* length xs)
+  + (length xs ℕ* length xs)
+nat-ring-solver-layernorm-contribution xs epsilon =
+  let n = length xs in
+  (succ epsilon ℕ* n) ℕ* n
+    ＝⟨ ap (_ℕ* n) (NatMult.mult-commutativity (succ epsilon) n) ⟩
+  (n ℕ* succ epsilon) ℕ* n
+    ＝⟨ refl ⟩
+  (n + n ℕ* epsilon) ℕ* n
+    ＝⟨ NatMult.distributivity-mult-over-addition' n (n ℕ* epsilon) n ⟩
+  (n ℕ* n) + (n ℕ* epsilon) ℕ* n
+    ＝⟨ ap ((n ℕ* n) +_) (NatMult.mult-associativity n epsilon n) ⟩
+  (n ℕ* n) + n ℕ* (epsilon ℕ* n)
+    ＝⟨ ap ((n ℕ* n) +_) (NatMult.mult-commutativity n (epsilon ℕ* n)) ⟩
+  (n ℕ* n) + (epsilon ℕ* n) ℕ* n
+    ＝⟨ addition-commutativity (n ℕ* n) ((epsilon ℕ* n) ℕ* n) ⟩
+  (epsilon ℕ* n) ℕ* n + (n ℕ* n) ∎
 
 integerLayerNorm-epsilon-contribution-succ :
   ∀ (xs : List C.Int8) (epsilon : ℕ) →
@@ -2228,10 +2322,10 @@ record CanonicalF4GlobalOptimizerStabilityTheorem : Set₁ where
         (C.l2Correction (C.globalL2 (C.optimizerKernel K)))
     stableNonThetaCoordinates :
       ∀ {A} (K : C.FullLearnerKernel A) (s : C.FullLearnerState A) →
-      C.rTheta (C.canonicalOptimizerStep K s) ＝ C.zero8 ×
-      C.eQ (C.canonicalOptimizerStep K s) ＝ C.eQ (C.optimizer s) ×
-      C.rE (C.canonicalOptimizerStep K s) ＝ C.rE (C.optimizer s) ×
-      C.rL (C.canonicalOptimizerStep K s) ＝ C.rL (C.optimizer s)
+      (C.rTheta (C.canonicalOptimizerStep K s) ＝ C.zero8) ×
+      (C.eQ (C.canonicalOptimizerStep K s) ＝ C.eQ (C.optimizer s)) ×
+      (C.rE (C.canonicalOptimizerStep K s) ＝ C.rE (C.optimizer s)) ×
+      (C.rL (C.canonicalOptimizerStep K s) ＝ C.rL (C.optimizer s))
     equalInputStability :
       ∀ {A} (K : C.FullLearnerKernel A)
         (s t : C.FullLearnerState A) →
@@ -2397,13 +2491,13 @@ iterateConjugacy :
     encode (learnerStep s) ＝
     physicalStep (encode s)) →
   ∀ n s →
-  encode (iterateStep learnerStep n s)
+  encode (C.iterate learnerStep n s)
   ＝
-  iterateStep physicalStep n (encode s)
+  C.iterate physicalStep n (encode s)
 iterateConjugacy encode stepConjugacy zero s = refl
 iterateConjugacy {learnerStep = learnerStep} {physicalStep = physicalStep} encode stepConjugacy (succ n) s =
   trans
-    (stepConjugacy (iterateStep learnerStep n s))
+    (stepConjugacy (C.iterate learnerStep n s))
     (ap
       physicalStep
       (iterateConjugacy encode stepConjugacy n s))
@@ -2498,7 +2592,7 @@ CanonicalLearnerPermutationInvariant =
   C.runMonoidLSTMCell ys c
 
 canonicalNegativeOne8 : C.Int8
-canonicalNegativeOne8 = C.int8 (-[1+ 0 ])
+canonicalNegativeOne8 = C.int8 (negsucc zero)
 
 canonicalPermutation-swap :
   CanonicalListPermutation
@@ -2654,7 +2748,7 @@ record FractalInjectiveComposition
     decode : Level → Observation → State
     decodeEncode : ∀ level state → decode level (encode level state) ＝ state
 
-    transport :
+    transportObservation :
       ∀ {lower upper} →
       Refines lower upper →
       Observation →
@@ -2662,12 +2756,12 @@ record FractalInjectiveComposition
 
     transportInjective :
       ∀ {lower upper} {r : Refines lower upper} {x y : Observation} →
-      transport r x ＝ transport r y →
+      transportObservation r x ＝ transportObservation r y →
       x ＝ y
 
     transportEncode :
       ∀ {lower upper} (r : Refines lower upper) state →
-      transport r (encode lower state) ＝
+      transportObservation r (encode lower state) ＝
       encode upper state
 
 open FractalInjectiveComposition public
@@ -2689,8 +2783,8 @@ fractalTransportedEncodeInjective :
   {Refines : Level → Level → Set}
   (F : FractalInjectiveComposition Level State Observation Refines) →
   ∀ {lower upper} (r : Refines lower upper) {s t : State} →
-  transport F r (encode F lower s) ＝
-  transport F r (encode F lower t) →
+  transportObservation F r (encode F lower s) ＝
+  transportObservation F r (encode F lower t) →
   s ＝ t
 fractalTransportedEncodeInjective F {upper = upper} r eq =
   fractalLevelInjective F upper
@@ -2747,9 +2841,9 @@ canonicalGRUFractalTransportedInjective :
   ∀ {lower upper : GRUFractalLevel}
   (r : GRUFractalRefines lower upper)
   {s t : C.GRUState} →
-  transport canonicalGRUFractal r
+  transportObservation canonicalGRUFractal r
     (encode canonicalGRUFractal lower s) ＝
-  transport canonicalGRUFractal r
+  transportObservation canonicalGRUFractal r
     (encode canonicalGRUFractal lower t) →
   s ＝ t
 canonicalGRUFractalTransportedInjective =
@@ -2757,13 +2851,13 @@ canonicalGRUFractalTransportedInjective =
 
 canonicalGRUTwoScaleRefinement :
   GRUFractalRefines zero (succ zero)
-canonicalGRUTwoScaleRefinement = z≤n
+canonicalGRUTwoScaleRefinement = zero-least (succ zero)
 
 canonicalGRUTwoScaleInjective :
   ∀ {s t : C.GRUState} →
-  transport canonicalGRUFractal canonicalGRUTwoScaleRefinement
+  transportObservation canonicalGRUFractal canonicalGRUTwoScaleRefinement
     (encode canonicalGRUFractal zero s) ＝
-  transport canonicalGRUFractal canonicalGRUTwoScaleRefinement
+  transportObservation canonicalGRUFractal canonicalGRUTwoScaleRefinement
     (encode canonicalGRUFractal zero t) →
   s ＝ t
 canonicalGRUTwoScaleInjective =
@@ -2866,7 +2960,7 @@ record EconomicsGRUFractalAdapter
       economicObservation
         (economicLevelTransport r e)
       ＝
-      FractalInjectiveComposition.transport
+      FractalInjectiveComposition.transportObservation
         injectiveFractalRepresentation
         r
         (economicObservation e)
@@ -8978,9 +9072,8 @@ nLabMaxwellFourLawGRUAlgebraicConsistencyTheorem-from-closed B =
 ------------------------------------------------------------------------
 
 canonical-repository-wide-agda-egraph-astar-closure :
-  ∀ {Module : Set}
-  (F : AgdaSemanticModuleFamily Module)
-  (m : Module)
+  (F : AgdaSemanticModuleFamily)
+  (m : RepositoryAgdaModule)
   {e f : Expression F m} →
   EGraphSemanticPath
     (semantics (closure F m))
