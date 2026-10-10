@@ -3754,8 +3754,8 @@ productEndomorphism :
 productEndomorphism f g =
   C.endomorphism
     (λ st →
-      (C.applyEndomorphism f (proj₁ st) ,
-       C.applyEndomorphism g (proj₂ st)))
+      (C.applyEndomorphism f (pr₁ st) ,
+       C.applyEndomorphism g (pr₂ st)))
 
 productEndomorphism-compose :
   ∀ {StateA StateB : Set}
