@@ -2851,7 +2851,7 @@ canonicalGRUFractalTransportedInjective =
 
 canonicalGRUTwoScaleRefinement :
   GRUFractalRefines zero (succ zero)
-canonicalGRUTwoScaleRefinement = z≤n
+canonicalGRUTwoScaleRefinement = zero-least (succ zero)
 
 canonicalGRUTwoScaleInjective :
   ∀ {s t : C.GRUState} →
