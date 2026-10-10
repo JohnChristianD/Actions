@@ -2491,13 +2491,13 @@ iterateConjugacy :
     encode (learnerStep s) ＝
     physicalStep (encode s)) →
   ∀ n s →
-  encode (iterateStep learnerStep n s)
+  encode (C.iterate learnerStep n s)
   ＝
-  iterateStep physicalStep n (encode s)
+  C.iterate physicalStep n (encode s)
 iterateConjugacy encode stepConjugacy zero s = refl
 iterateConjugacy {learnerStep = learnerStep} {physicalStep = physicalStep} encode stepConjugacy (succ n) s =
   trans
-    (stepConjugacy (iterateStep learnerStep n s))
+    (stepConjugacy (C.iterate learnerStep n s))
     (ap
       physicalStep
       (iterateConjugacy encode stepConjugacy n s))
