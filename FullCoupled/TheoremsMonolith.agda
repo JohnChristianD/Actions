@@ -1160,21 +1160,21 @@ aStar-plan-append-associative :
   ∀ (xs ys zs : List Expression) →
   (xs ++ ys) ++ zs ＝ xs ++ (ys ++ zs)
 aStar-plan-append-associative xs ys zs =
-  Monoid.assoc (++-monoid _)
+  ++-assoc xs ys zs
 
 aStar-plan-append-identity-left :
   ∀ {Expression : Set} →
   ∀ (xs : List Expression) →
   [] ++ xs ＝ xs
-aStar-plan-append-identity-left xs =
-  Monoid.identityˡ (++-monoid _)
+aStar-plan-append-identity-left xs = refl
 
 aStar-plan-append-identity-right :
   ∀ {Expression : Set} →
   ∀ (xs : List Expression) →
   xs ++ [] ＝ xs
-aStar-plan-append-identity-right xs =
-  Monoid.identityʳ (++-monoid _)
+aStar-plan-append-identity-right [] = refl
+aStar-plan-append-identity-right (x ∷ xs) =
+  ap (x ∷_) (aStar-plan-append-identity-right xs)
 
 aStar-plan-monoid-theorem :
   ∀ (Expression : Set) →
