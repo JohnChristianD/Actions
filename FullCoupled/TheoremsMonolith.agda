@@ -54,6 +54,7 @@ open import Naturals.Exponentiation
 open import Naturals.Division
 open import Naturals.Properties
 open import Naturals.Order
+open import Naturals.Multiplication using (distributivity-mult-over-addition'; mult-commutativity; mult-right-id)
 open import Notation.Order
 open import Rationals.Addition renaming (_+_ to _ℚ+_)
 open import Rationals.Multiplication
@@ -67,6 +68,8 @@ open import UF.Size
 open import UF.Subsingletons
 open import UF.Subsingletons-FunExt
 open import UF.UA-FunExt
+open import UF.Equiv using (is-equiv; section-retraction-equiv)
+open import UF.SubtypeClassifier using (_holds)
 -- END MIRTH-SYNC COMMON IMPORTS
 
 -- Stable Agda 2.8.0.2 reflection compatibility surface.
@@ -332,7 +335,7 @@ syntax try-fun t f = try t or-else f
 -- Imported qualified; theorem names remain isolated from this monolith.
 ------------------------------------------------------------------------
 
-open import FullCoupled.CanonicalLearnerMonolith as C
+open import FullCoupled.CanonicalLearnerMonolith as C hiding (Int; _+Int_; _*Int_)
 -- END THEOREM-SPECIFIC IMPORTS
 
 ------------------------------------------------------------------------
@@ -383,8 +386,6 @@ module ExactSearchInversion (fe : FunExt) where
 
   open import TWA.Thesis.Chapter3.ClosenessSpaces fe hiding (decidable-uc-predicate)
   open import TWA.Thesis.Chapter3.SearchableTypes fe
-  open import MGS.Equivalences using (is-equiv; invertibles-are-equivs)
-  open import UF.SubtypeClassifier using (_holds)
 
   record SearchableEquivalence
     (X Y : ClosenessSpace 𝓤₀) : Set₁ where
@@ -422,10 +423,10 @@ module ExactSearchInversion (fe : FunExt) where
     (E : SearchableEquivalence X Y) →
     is-equiv (forward E)
   forward-is-equiv E =
-    invertibles-are-equivs
+    section-retraction-equiv
       (forward E)
-      (inverse E , (λ y → forward-inverse E y)
-                  , (λ x → inverse-forward E x))
+      (inverse E , (λ y → forward-inverse E y))
+      (inverse E , (λ x → inverse-forward E x))
 
   pullback-decidable-uc-predicate :
     ∀ {X Y : ClosenessSpace 𝓤₀}
@@ -444,7 +445,7 @@ module ExactSearchInversion (fe : FunExt) where
     ∀ {X Y : ClosenessSpace 𝓤₀}
     (E : SearchableEquivalence X Y) →
     csearchable 𝓤₀ Y
-  inverse-preserves-csearchability {X} {Y} E ((p , d) , ϕ) =
+  inverse-preserves-csearchability {X = X} {Y = Y} E ((p , d) , ϕ) =
     y₀ , γ
     where
       pulled : decidable-uc-predicate 𝓤₀ X
@@ -491,9 +492,6 @@ module ExactSearchInversion (fe : FunExt) where
     inverse-preserves-csearchability
 
 ------------------------------------------------------------------------
--- Local proof-only lemmas: keep Nat multiplication out of the shared import surface.
-open import Naturals.Multiplication using (distributivity-mult-over-addition'; mult-left-id)
-
 record NatRingSolverNormalizationTheorem : Set₁ where
   constructor natRingSolverNormalizationTheorem
   field
@@ -509,7 +507,8 @@ nat-ring-solver-layernorm-step :
 nat-ring-solver-layernorm-step epsilon scale =
   trans
     (distributivity-mult-over-addition' epsilon 1 scale)
-    (ap (λ x → epsilon * scale + x) (mult-left-id scale))
+    (ap (λ x → epsilon * scale + x)
+      (trans (mult-commutativity 1 scale) (mult-right-id scale)))
 
 nat-ring-solver-normalization-theorem :
   NatRingSolverNormalizationTheorem
@@ -520,12 +519,12 @@ record IntegerRingSolverNormalizationTheorem : Set₁ where
   constructor integerRingSolverNormalizationTheorem
   field
     normalization :
-      ∀ (i j k : Int) →
-      i +Int (j +Int k) ＝ (i +Int j) +Int k
+      ∀ (i j k : ℤ) →
+      i ℤ+ (j ℤ+ k) ＝ (i ℤ+ j) ℤ+ k
 
 integer-ring-solver-assoc :
-  ∀ (i j k : Int) →
-  i +Int (j +Int k) ＝ (i +Int j) +Int k
+  ∀ (i j k : ℤ) →
+  i ℤ+ (j ℤ+ k) ＝ (i ℤ+ j) ℤ+ k
 integer-ring-solver-assoc i j k =
   sym (ℤ+-assoc i j k)
 
@@ -545,7 +544,7 @@ list-monoid-solver-append-assoc :
   ∀ (xs ys zs : List C.Int8) →
   xs ++ (ys ++ zs) ＝ (xs ++ ys) ++ zs
 list-monoid-solver-append-assoc xs ys zs =
-  sym (monoid-assoc xs ys zs)
+  sym (++-assoc xs ys zs)
 
 list-monoid-solver-normalization-theorem :
   ListMonoidSolverNormalizationTheorem
@@ -630,8 +629,8 @@ statisticalEncodeDistinguishes :
   ∀ {State Observation : Set}
   (R : CarrierPolymorphicStatisticalRepresentation State Observation)
   {s t : State} →
-  s ≢ t →
-  encode R s ≢ encode R t
+  s ≠ t →
+  encode R s ≠ encode R t
 statisticalEncodeDistinguishes R distinct collision =
   distinct (statisticalEncodeInjective R collision)
 
@@ -645,7 +644,7 @@ CanonicalGRUStatisticalObservation = C.GRUState × (C.CanonicalToken → C.Int8)
 canonicalGRUStatisticalEncode : C.GRUState → CanonicalGRUStatisticalObservation
 canonicalGRUStatisticalEncode s = s , (λ _ → C.hiddenState s)
 canonicalGRUStatisticalDecode : CanonicalGRUStatisticalObservation → C.GRUState
-canonicalGRUStatisticalDecode observation = proj₁ observation
+canonicalGRUStatisticalDecode observation = pr₁ observation
 canonicalGRUStatisticalDecodeEncode : ∀ s → canonicalGRUStatisticalDecode (canonicalGRUStatisticalEncode s) ＝ s
 canonicalGRUStatisticalDecodeEncode s = refl
 leftInverse-implies-injective :

@@ -48,9 +48,6 @@ collect_imports() {
         line=$0
         if (line ~ /FullCoupled[.]/) next
         if (line ~ /TWA[.]Thesis[.]Chapter3[.](ClosenessSpaces|SearchableTypes)[[:space:]]+fe([[:space:]]|$)/) next
-        if (line ~ /^[[:space:]]*open import MGS[.]Equivalences([[:space:]]|$)/) next
-        if (line ~ /^[[:space:]]*open import UF[.]SubtypeClassifier([[:space:]]|$)/) next
-        if (line ~ /^[[:space:]]*open import Naturals[.]Multiplication([[:space:]]|$)/) next
         if (line ~ /^open import (Agda[.]Builtin[.]Reflection|Haskell[.]Law[.]Num[.]Def|Haskell[.]Law[.]Num[.]Int|Haskell[.]Prelude[.]Nat[.]Properties|Unsafe[.]Haskell)([[:space:]]|$)/) next
         if (line ~ /^open import InfinitePigeon[.]FinitePigeon([[:space:]]|$)/) next
         print line
@@ -92,9 +89,6 @@ external_drift() {
       sub(/^[[:space:]]*(open[[:space:]]+)?import[[:space:]]+/, "", mod)
       if (mod !~ /^FullCoupled[.]/ &&
           mod !~ /^TWA[.]Thesis[.]Chapter3[.](ClosenessSpaces|SearchableTypes)[[:space:]]+fe([[:space:]]|$)/ &&
-          mod !~ /^MGS[.]Equivalences([[:space:]]|$)/ &&
-          mod !~ /^UF[.]SubtypeClassifier([[:space:]]|$)/ &&
-          mod !~ /^Naturals[.]Multiplication([[:space:]]|$)/ &&
           mod !~ /^Agda[.]Builtin[.]Reflection([[:space:]]|$)/ &&
           mod !~ /^Haskell[.]Law[.]Num[.](Def|Int)([[:space:]]|$)/ &&
           mod !~ /^Haskell[.]Prelude[.]Nat[.]Properties([[:space:]]|$)/ &&

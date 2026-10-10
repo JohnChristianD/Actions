@@ -64,6 +64,7 @@ open import Naturals.Exponentiation
 open import Naturals.Division
 open import Naturals.Properties
 open import Naturals.Order
+open import Naturals.Multiplication using (distributivity-mult-over-addition'; mult-commutativity; mult-right-id)
 open import Notation.Order
 open import Rationals.Addition renaming (_+_ to _ℚ+_)
 open import Rationals.Multiplication
@@ -77,6 +78,8 @@ open import UF.Size
 open import UF.Subsingletons
 open import UF.Subsingletons-FunExt
 open import UF.UA-FunExt
+open import UF.Equiv using (is-equiv; section-retraction-equiv)
+open import UF.SubtypeClassifier using (_holds)
 -- END MIRTH-SYNC COMMON IMPORTS
 
 
