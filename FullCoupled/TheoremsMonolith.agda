@@ -342,6 +342,15 @@ open import Ordinals.Notions _<_ renaming (is-accessible to RankAccessible; acc 
 open import FullCoupled.CanonicalLearnerMonolith as C hiding (Int; _+Int_; _*Int_)
 -- END THEOREM-SPECIFIC IMPORTS
 
+-- TypeTopology's falsity is 𝟘. Keep familiar theorem notation local;
+-- do not import the Agda standard library or alter builtin ownership.
+⊥ : Set
+⊥ = 𝟘
+
+⊥-elim : ∀ {A : Set} → ⊥ → A
+⊥-elim = 𝟘-elim
+
+
 ------------------------------------------------------------------------
 -- Reflection compression for repeated equality transport.
 -- The target equality determines the congruence function.
