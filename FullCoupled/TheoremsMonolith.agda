@@ -2748,7 +2748,7 @@ record FractalInjectiveComposition
     decode : Level → Observation → State
     decodeEncode : ∀ level state → decode level (encode level state) ＝ state
 
-    transport :
+    transportObservation :
       ∀ {lower upper} →
       Refines lower upper →
       Observation →
@@ -2756,12 +2756,12 @@ record FractalInjectiveComposition
 
     transportInjective :
       ∀ {lower upper} {r : Refines lower upper} {x y : Observation} →
-      transport r x ＝ transport r y →
+      transportObservation r x ＝ transportObservation r y →
       x ＝ y
 
     transportEncode :
       ∀ {lower upper} (r : Refines lower upper) state →
-      transport r (encode lower state) ＝
+      transportObservation r (encode lower state) ＝
       encode upper state
 
 open FractalInjectiveComposition public
@@ -2783,8 +2783,8 @@ fractalTransportedEncodeInjective :
   {Refines : Level → Level → Set}
   (F : FractalInjectiveComposition Level State Observation Refines) →
   ∀ {lower upper} (r : Refines lower upper) {s t : State} →
-  transport F r (encode F lower s) ＝
-  transport F r (encode F lower t) →
+  transportObservation F r (encode F lower s) ＝
+  transportObservation F r (encode F lower t) →
   s ＝ t
 fractalTransportedEncodeInjective F {upper = upper} r eq =
   fractalLevelInjective F upper
@@ -2841,9 +2841,9 @@ canonicalGRUFractalTransportedInjective :
   ∀ {lower upper : GRUFractalLevel}
   (r : GRUFractalRefines lower upper)
   {s t : C.GRUState} →
-  transport canonicalGRUFractal r
+  transportObservation canonicalGRUFractal r
     (encode canonicalGRUFractal lower s) ＝
-  transport canonicalGRUFractal r
+  transportObservation canonicalGRUFractal r
     (encode canonicalGRUFractal lower t) →
   s ＝ t
 canonicalGRUFractalTransportedInjective =
@@ -2855,9 +2855,9 @@ canonicalGRUTwoScaleRefinement = z≤n
 
 canonicalGRUTwoScaleInjective :
   ∀ {s t : C.GRUState} →
-  transport canonicalGRUFractal canonicalGRUTwoScaleRefinement
+  transportObservation canonicalGRUFractal canonicalGRUTwoScaleRefinement
     (encode canonicalGRUFractal zero s) ＝
-  transport canonicalGRUFractal canonicalGRUTwoScaleRefinement
+  transportObservation canonicalGRUFractal canonicalGRUTwoScaleRefinement
     (encode canonicalGRUFractal zero t) →
   s ＝ t
 canonicalGRUTwoScaleInjective =
@@ -2960,7 +2960,7 @@ record EconomicsGRUFractalAdapter
       economicObservation
         (economicLevelTransport r e)
       ＝
-      FractalInjectiveComposition.transport
+      FractalInjectiveComposition.transportObservation
         injectiveFractalRepresentation
         r
         (economicObservation e)
