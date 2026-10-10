@@ -639,6 +639,13 @@ statisticalEncodeDistinguishes R distinct collision =
 ------------------------------------------------------------------------
 
 module GRUStatisticalInjectivity where
+-- TypeTopology's pinned Spartan surface has equality and negation but does not
+-- export inequality notation. Derive it locally to avoid widening the synchronized
+-- import block and introducing another import-closure conflict.
+infix 4 _≢_
+_≢_ : ∀ {A : Set} → A → A → Set
+x ≢ y = ¬ (x ＝ y)
+
 CanonicalGRUStatisticalObservation : Set
 CanonicalGRUStatisticalObservation = C.GRUState × (C.CanonicalToken → C.Int8)
 canonicalGRUStatisticalEncode : C.GRUState → CanonicalGRUStatisticalObservation
