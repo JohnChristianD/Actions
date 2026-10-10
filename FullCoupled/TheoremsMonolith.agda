@@ -1305,7 +1305,7 @@ record AgdaSemanticModuleFamily : Set₁ where
       (m : RepositoryAgdaModule) →
       AStarSemanticClosure
         (Expression m)
-        (State m)
+        (moduleState m)
 
 open AgdaSemanticModuleFamily public
 
