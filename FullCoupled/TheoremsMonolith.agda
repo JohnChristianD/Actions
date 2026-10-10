@@ -350,6 +350,15 @@ open import FullCoupled.CanonicalLearnerMonolith as C hiding (Int; _+Int_; _*Int
 ⊥-elim : ∀ {A : Set} → ⊥ → A
 ⊥-elim = 𝟘-elim
 
+-- Keep natural multiplication explicit: the synchronized import surface also
+-- contains rational multiplication, so theorem algebra names TypeTopology's
+-- natural operation through this local alias.
+module NatMult = Naturals.Multiplication
+
+infixl 32 _ℕ*_
+_ℕ*_ : ℕ → ℕ → ℕ
+_ℕ*_ = NatMult._*_
+
 
 ------------------------------------------------------------------------
 -- Reflection compression for repeated equality transport.
@@ -2097,12 +2106,25 @@ canonical-integer-layernorm-astar-execution-bridge-theorem =
 
 nat-ring-solver-layernorm-contribution :
   ∀ (xs : List C.Int8) (epsilon : ℕ) →
-  (succ epsilon * length xs * length xs)
+  (succ epsilon ℕ* length xs ℕ* length xs)
   ＝
-  (epsilon * length xs * length xs)
-  + (length xs * length xs)
-nat-ring-solver-layernorm-contribution =
-  NatRingSolver.solve-∀
+  (epsilon ℕ* length xs ℕ* length xs)
+  + (length xs ℕ* length xs)
+nat-ring-solver-layernorm-contribution xs epsilon =
+  let n = length xs in
+  (succ epsilon ℕ* n) ℕ* n
+    ＝⟨ ap (_ℕ* n) (NatMult.mult-commutativity (succ epsilon) n) ⟩
+  (n ℕ* succ epsilon) ℕ* n
+    ＝⟨ refl ⟩
+  (n + n ℕ* epsilon) ℕ* n
+    ＝⟨ NatMult.distributivity-mult-over-addition' n (n ℕ* epsilon) n ⟩
+  (n ℕ* n) + (n ℕ* epsilon) ℕ* n
+    ＝⟨ ap ((n ℕ* n) +_) (NatMult.mult-associativity n epsilon n) ⟩
+  (n ℕ* n) + n ℕ* (epsilon ℕ* n)
+    ＝⟨ ap ((n ℕ* n) +_) (NatMult.mult-commutativity n (epsilon ℕ* n)) ⟩
+  (n ℕ* n) + (epsilon ℕ* n) ℕ* n
+    ＝⟨ addition-commutativity (n ℕ* n) ((epsilon ℕ* n) ℕ* n) ⟩
+  (epsilon ℕ* n) ℕ* n + (n ℕ* n) ∎
 
 integerLayerNorm-epsilon-contribution-succ :
   ∀ (xs : List C.Int8) (epsilon : ℕ) →
