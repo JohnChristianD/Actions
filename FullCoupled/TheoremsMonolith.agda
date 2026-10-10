@@ -4156,8 +4156,8 @@ productRecurrentNetwork :
 productRecurrentNetwork RA RB =
   C.recurrentNetwork
     (λ st x →
-      (C.runNetwork RA (proj₁ st) x ,
-       C.runNetwork RB (proj₂ st) x))
+      (C.runNetwork RA (pr₁ st) x ,
+       C.runNetwork RB (pr₂ st) x))
 
 productRecurrentPrefix-correct :
   ∀ {StateA StateB Input : Set}
@@ -4180,8 +4180,8 @@ productRecurrentPrefix-correct RA RB xs (succ n) s t =
     (λ a b →
       (C.runNetwork RA a (xs n) ,
        C.runNetwork RB b (xs n)))
-    (ap proj₁ (productRecurrentPrefix-correct RA RB xs n s t))
-    (ap proj₂ (productRecurrentPrefix-correct RA RB xs n s t))
+    (ap pr₁ (productRecurrentPrefix-correct RA RB xs n s t))
+    (ap pr₂ (productRecurrentPrefix-correct RA RB xs n s t))
 
 informationPreserving-symbolic-task-factorization :
   ∀ {State Feature Output : Set}
@@ -4218,7 +4218,7 @@ productObservation :
   (StateA × StateB) →
   (FeatureA × FeatureB)
 productObservation observeA observeB st =
-  (observeA (proj₁ st) , observeB (proj₂ st))
+  (observeA (pr₁ st) , observeB (pr₂ st))
 
 productInverse :
   ∀ {StateA StateB FeatureA FeatureB : Set} →
@@ -4227,7 +4227,7 @@ productInverse :
   (FeatureA × FeatureB) →
   (StateA × StateB)
 productInverse inverseA inverseB feature =
-  (inverseA (proj₁ feature) , inverseB (proj₂ feature))
+  (inverseA (pr₁ feature) , inverseB (pr₂ feature))
 
 productObservation-leftInverse :
   ∀ {StateA StateB FeatureA FeatureB : Set}
@@ -4511,7 +4511,7 @@ collision-implies-no-leftInverse-via-injectivity
   λ witness →
     distinct
       (discreteLeftInverse-observe-injective
-        (proj₂ witness)
+        (pr₂ witness)
         obsEq)
 
 canonicalWatkinsTargetSignalStream :
@@ -5504,7 +5504,7 @@ successor-never-globally-eventually-fixed-at-zero h =
   no-succ-zero
     (trans
       (sym (iterateUpdate-succ 1))
-      (proj₂ (h 1)))
+      (pr₂ (h 1)))
   where
     iterateUpdate-succ :
       ∀ n → iterateUpdate succ n 1 ＝ succ n
@@ -5768,9 +5768,9 @@ jaxRecurrentScan-step-law :
   (state : State)
   (x : Input)
   (xs : List Input) →
-  proj₁ (jaxRecurrentScan step state (x ∷ xs))
+  pr₁ (jaxRecurrentScan step state (x ∷ xs))
   ＝
-  proj₁ (jaxRecurrentScan step (proj₁ (step state x)) xs)
+  pr₁ (jaxRecurrentScan step (pr₁ (step state x)) xs)
 jaxRecurrentScan-step-law step state x xs with step state x
 ... | state′ , output = refl
 
@@ -5778,12 +5778,12 @@ jaxLexicographicScoreOrder :
   List C.ScoreEntry →
   List ℕ
 jaxLexicographicScoreOrder xs =
-  map proj₂ (C.sortScores xs)
+  map pr₂ (C.sortScores xs)
 
 jaxLexicographicScoreOrder-law :
   ∀ xs →
   jaxLexicographicScoreOrder xs ＝
-  map proj₂ (C.sortScores xs)
+  map pr₂ (C.sortScores xs)
 jaxLexicographicScoreOrder-law xs = refl
 
 jaxSparseSupportSize :
@@ -5928,7 +5928,7 @@ jaxBatchedGRUHiddenStep :
   List C.Int8
 jaxBatchedGRUHiddenStep states xs =
   map
-    (λ stateX → jaxGRUHiddenStep (proj₁ stateX) (proj₂ stateX))
+    (λ stateX → jaxGRUHiddenStep (pr₁ stateX) (pr₂ stateX))
     (zipGRUStatesInts states xs)
 
 jaxBatchedGRUHiddenStep-law :
@@ -5938,8 +5938,8 @@ jaxBatchedGRUHiddenStep-law :
     (λ stateX →
       C.hiddenState
         (C.gruStep
-          (proj₁ stateX)
-          (proj₂ stateX)))
+          (pr₁ stateX)
+          (pr₂ stateX)))
     (zipGRUStatesInts states xs)
 jaxBatchedGRUHiddenStep-law states xs = refl
 jaxJittedScanSum :
@@ -5993,13 +5993,13 @@ record JAXExecutionMirrorReproof : Set₁ where
       (state : State)
       (x : Input)
       (xs : List Input) →
-      proj₁ (jaxRecurrentScan step state (x ∷ xs))
+      pr₁ (jaxRecurrentScan step state (x ∷ xs))
       ＝
-      proj₁ (jaxRecurrentScan step (proj₁ (step state x)) xs)
+      pr₁ (jaxRecurrentScan step (pr₁ (step state x)) xs)
     lexicographicScoreOrder :
       ∀ xs →
       jaxLexicographicScoreOrder xs ＝
-      map proj₂ (C.sortScores xs)
+      map pr₂ (C.sortScores xs)
     sparseSupportSize :
       ∀ {A : Set}
       (K : C.ActionSpace A)
@@ -6046,8 +6046,8 @@ record JAXExecutionMirrorReproof : Set₁ where
         (λ stateX →
           C.hiddenState
             (C.gruStep
-              (proj₁ stateX)
-              (proj₂ stateX)))
+              (pr₁ stateX)
+              (pr₂ stateX)))
         (zipGRUStatesInts states xs)
     tsallis2NearSparsity :
       ∀ xs →
@@ -6605,8 +6605,8 @@ canonicalHaarFeature-recurrent-step :
   C.gruStep
     s
     (C.int8Sub
-      (proj₁ (C.canonicalCReLU8 x))
-      (proj₂ (C.canonicalCReLU8 x)))
+      (pr₁ (C.canonicalCReLU8 x))
+      (pr₂ (C.canonicalCReLU8 x)))
   ＝
   C.gruStep s x
 canonicalHaarFeature-recurrent-step s x =
@@ -6621,8 +6621,8 @@ canonicalHaarFeature-recurrent-prefix :
     (map
       (λ x →
         C.int8Sub
-          (proj₁ (C.canonicalCReLU8 x))
-          (proj₂ (C.canonicalCReLU8 x)))
+          (pr₁ (C.canonicalCReLU8 x))
+          (pr₂ (C.canonicalCReLU8 x)))
       xs)
     s
   ＝
@@ -6639,8 +6639,8 @@ canonicalHaarFeature-recurrent-prefix (x ∷ xs) s =
       (C.gruStep
         s
         (C.int8Sub
-          (proj₁ (C.canonicalCReLU8 x))
-          (proj₂ (C.canonicalCReLU8 x)))))
+          (pr₁ (C.canonicalCReLU8 x))
+          (pr₂ (C.canonicalCReLU8 x)))))
     (ap
       (C.recurrentListState
         C.canonicalGRURecurrentNetwork
@@ -6678,8 +6678,8 @@ record CanonicalHaarRecurrentCompositionTheorem : Set₁ where
       C.gruStep
         s
         (int8Sub
-          (proj₁ (C.canonicalCReLU8 x))
-          (proj₂ (C.canonicalCReLU8 x)))
+          (pr₁ (C.canonicalCReLU8 x))
+          (pr₂ (C.canonicalCReLU8 x)))
       ＝
       C.gruStep s x
     reconstructedPrefix :
@@ -6689,8 +6689,8 @@ record CanonicalHaarRecurrentCompositionTheorem : Set₁ where
         (map
           (λ x →
             int8Sub
-              (proj₁ (C.canonicalCReLU8 x))
-              (proj₂ (C.canonicalCReLU8 x)))
+              (pr₁ (C.canonicalCReLU8 x))
+              (pr₂ (C.canonicalCReLU8 x)))
           xs)
         s
       ＝
@@ -9214,7 +9214,7 @@ record MegaFirstWelfareTheoremConditions
           b
           a) →
       budget p
-        (proj₁ (strictlyBetter improvement))
+        (pr₁ (strictlyBetter improvement))
         b
 
 open MegaFirstWelfareTheoremConditions public
@@ -9320,7 +9320,7 @@ record FiniteNonIIDDemandCostClosure
         goods
         price
         (endowment
-          (proj₁ (strictlyBetter improvement)))
+          (pr₁ (strictlyBetter improvement)))
         b
 
 finiteNonIIDBudgetCostBound :
@@ -9772,8 +9772,8 @@ recursiveRadner-generalized =
           Price
           Allocation
           Portfolio
-          (proj₁ allocationPair)
-          (proj₂ allocationPair))
+          (pr₁ allocationPair)
+          (pr₂ allocationPair))
         (λ D →
           RecursiveRadnerEquilibrium
             State
@@ -9783,8 +9783,8 @@ recursiveRadner-generalized =
             Price
             Allocation
             Portfolio
-            (proj₁ allocationPair)
-            (proj₂ allocationPair)
+            (pr₁ allocationPair)
+            (pr₂ allocationPair)
             D))
     (λ pricePair allocationPair →
       Σ (RecursiveRadnerData
@@ -9795,8 +9795,8 @@ recursiveRadner-generalized =
           Price
           Allocation
           Portfolio
-          (proj₁ allocationPair)
-          (proj₂ allocationPair))
+          (pr₁ allocationPair)
+          (pr₂ allocationPair))
         (λ D →
           RecursiveRadnerEquilibrium
             State
@@ -9806,8 +9806,8 @@ recursiveRadner-generalized =
             Price
             Allocation
             Portfolio
-            (proj₁ allocationPair)
-            (proj₂ allocationPair)
+            (pr₁ allocationPair)
+            (pr₂ allocationPair)
             D))
     (λ {pricePair} {allocationPair} h → h)
 
