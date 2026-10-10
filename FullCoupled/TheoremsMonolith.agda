@@ -1194,25 +1194,66 @@ aStar-plan-monoid-theorem Expression =
 -- monad-law proofs in the standard library.
 ------------------------------------------------------------------------
 
+record AStarRawMonad (M : Set → Set) : Set₁ where
+  constructor aStarRawMonad
+  field
+    returnM : ∀ {A : Set} → A → M A
+    bindM : ∀ {A B : Set} → M A → (A → M B) → M B
+
+AStarState : Set → Set → Set
+AStarState S A = S → A × S
+
+aStarStateReturn : ∀ {S A : Set} → A → AStarState S A
+aStarStateReturn value state = value , state
+
+aStarStateBind :
+  ∀ {S A B : Set} →
+  AStarState S A →
+  (A → AStarState S B) →
+  AStarState S B
+aStarStateBind action next state =
+  next (pr₁ (action state)) (pr₂ (action state))
+
+aStarStateRawMonad :
+  ∀ {S : Set} →
+  AStarRawMonad (AStarState S)
+aStarStateRawMonad =
+  aStarRawMonad aStarStateReturn aStarStateBind
+
+aStarListReturn : ∀ {A : Set} → A → List A
+aStarListReturn value = value ∷ []
+
+aStarListBind :
+  ∀ {A B : Set} →
+  List A →
+  (A → List B) →
+  List B
+aStarListBind [] f = []
+aStarListBind (x ∷ xs) f = f x ++ aStarListBind xs f
+
+aStarListRawMonad : AStarRawMonad List
+aStarListRawMonad =
+  aStarRawMonad aStarListReturn aStarListBind
+
 record AStarHaskellMonadSurface (Expression : Set) : Set₁ where
   constructor aStarHaskellMonadSurface
   field
     frontierMonad :
-      Monad (State (List (List Expression)))
+      AStarRawMonad (AStarState (List (List Expression)))
     candidatePlanMonad :
-      Monad List
+      AStarRawMonad List
 
 open AStarHaskellMonadSurface public
 
 aStar-frontier-monad :
   ∀ {Expression : Set} →
-  Monad (State (List (List Expression)))
-aStar-frontier-monad = stateMonad
+  AStarRawMonad (AStarState (List (List Expression)))
+aStar-frontier-monad = aStarStateRawMonad
 
 aStar-candidate-plan-monad :
   ∀ {Expression : Set} →
-  Monad List
-aStar-candidate-plan-monad = listMonad
+  AStarRawMonad List
+aStar-candidate-plan-monad = aStarListRawMonad
 
 aStar-haskell-monad-surface :
   ∀ (Expression : Set) →
