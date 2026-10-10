@@ -335,6 +335,9 @@ syntax try-fun t f = try t or-else f
 -- Imported qualified; theorem names remain isolated from this monolith.
 ------------------------------------------------------------------------
 
+-- Keep the TypeTopology sum algebra local: the synchronized imports hide
+-- `_+_` to disambiguate natural/integer/rational addition.
+open import MLTT.Plus renaming (_+_ to _⊎_; inl to inj₁; inr to inj₂)
 open import FullCoupled.CanonicalLearnerMonolith as C hiding (Int; _+Int_; _*Int_)
 -- END THEOREM-SPECIFIC IMPORTS
 
