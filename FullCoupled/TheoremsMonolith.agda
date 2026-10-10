@@ -4826,7 +4826,7 @@ canonicalIterateComposition K m (succ n) s =
   trans
     (ap
       (λ k → C.iterateCanonical K k s)
-      (+-succ m n))
+      (succ-right m n))
     (ap
       (C.canonicalFullStep K)
       (canonicalIterateComposition K m n s))
@@ -4849,7 +4849,7 @@ recurrentPrefixStepWork-split m zero =
     (sym (zero-right-neutral (recurrentPrefixStepWork m)))
 recurrentPrefixStepWork-split m (succ n) =
   trans
-    (ap recurrentPrefixStepWork (+-succ m n))
+    (ap recurrentPrefixStepWork (succ-right m n))
     (ap succ (recurrentPrefixStepWork-split m n))
 
 canonicalNatIndexedExactUniversalReadout :
@@ -7020,7 +7020,7 @@ canonicalAStarZeroCost = refl
 
 canonicalAStarSuccessorCost :
   ∀ n → n + succ zero ＝ succ n
-canonicalAStarSuccessorCost n = +-succ n zero
+canonicalAStarSuccessorCost n = succ-right n zero
 
 record CanonicalAStarCostGuidanceTheorem : Set₁ where
   constructor canonicalAStarCostGuidanceTheorem
@@ -7844,7 +7844,7 @@ nat-plus-one :
   ∀ n → n + succ zero ＝ succ n
 nat-plus-one n =
   trans
-    (+-succ n zero)
+    (succ-right n zero)
     (ap succ (zero-right-neutral n))
 
 integer-nat-plus-one :
@@ -10007,7 +10007,7 @@ successorMeasureAfterIterate W (succ n) s =
     (successor W (iterateStep (step W) n s))
     (trans
       (ap succ (successorMeasureAfterIterate W n s))
-      (sym (+-succ (measure W s) n)))
+      (sym (succ-right (measure W s) n)))
 
 successorMeasureOrbitInjective :
   ∀ {State : Set}
