@@ -4821,7 +4821,7 @@ canonicalIterateComposition :
 canonicalIterateComposition K m zero s =
   ap
     (λ k → C.iterateCanonical K k s)
-    (+-identityʳ m)
+    (zero-right-neutral m)
 canonicalIterateComposition K m (succ n) s =
   trans
     (ap
@@ -4845,8 +4845,8 @@ recurrentPrefixStepWork-split :
   recurrentPrefixStepWork m + recurrentPrefixStepWork n
 recurrentPrefixStepWork-split m zero =
   trans
-    (ap recurrentPrefixStepWork (+-identityʳ m))
-    (sym (+-identityʳ (recurrentPrefixStepWork m)))
+    (ap recurrentPrefixStepWork (zero-right-neutral m))
+    (sym (zero-right-neutral (recurrentPrefixStepWork m)))
 recurrentPrefixStepWork-split m (succ n) =
   trans
     (ap recurrentPrefixStepWork (+-succ m n))
@@ -7845,7 +7845,7 @@ nat-plus-one :
 nat-plus-one n =
   trans
     (+-succ n zero)
-    (ap succ (+-identityʳ n))
+    (ap succ (zero-right-neutral n))
 
 integer-nat-plus-one :
   ∀ n → (pos n) +Int (pos 1) ＝ pos (succ n)
@@ -10001,7 +10001,7 @@ successorMeasureAfterIterate :
   (s : State) →
   measure (iterateStep step n s) ＝ measure s + n
 successorMeasureAfterIterate W zero s =
-  sym (+-identityʳ (measure W s))
+  sym (zero-right-neutral (measure W s))
 successorMeasureAfterIterate W (succ n) s =
   trans
     (successor W (iterateStep (step W) n s))
