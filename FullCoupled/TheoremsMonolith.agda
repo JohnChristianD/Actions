@@ -338,6 +338,7 @@ syntax try-fun t f = try t or-else f
 -- Keep the TypeTopology sum algebra local: the synchronized imports hide
 -- `_+_` to disambiguate natural/integer/rational addition.
 open import MLTT.Plus renaming (_+_ to _⊎_; inl to inj₁; inr to inj₂)
+open import Ordinals.Notions _<_ renaming (is-accessible to RankAccessible; acc to rankAcc)
 open import FullCoupled.CanonicalLearnerMonolith as C hiding (Int; _+Int_; _*Int_)
 -- END THEOREM-SPECIFIC IMPORTS
 
@@ -1468,12 +1469,12 @@ eGraphAStarEventualStableFromRank :
           n
           s))
 eGraphAStarEventualStableFromRank {Expression = Expression} {State = State} W stableOrNot s =
-  go s (rank W s) refl (<-wellFounded (rank W s))
+  go s (rank W s) refl (<-is-well-founded (rank W s))
   where
   go :
     ∀ (s : State) (n : ℕ) →
     rank W s ＝ n →
-    Acc _<_ n →
+    RankAccessible n →
     Σ ℕ
       (λ k →
         stable W
@@ -1481,7 +1482,7 @@ eGraphAStarEventualStableFromRank {Expression = Expression} {State = State} W st
             (step W)
             k
             s))
-  go s n rankEq (acc smaller) with stableOrNot s
+  go s n rankEq (rankAcc smaller) with stableOrNot s
   ... | inj₁ stableS =
     zero , stableS
   ... | inj₂ notStable with strictDescent W s notStable
