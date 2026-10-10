@@ -47,6 +47,8 @@ collect_imports() {
       !inside && $0 ~ /^[[:space:]]*(open[[:space:]]+)?import[[:space:]]+/ {
         line=$0
         if (line ~ /FullCoupled[.]/) next
+        # Keep TypeTopology's MLTT.Plus local; it must not enter the shared Agda2hs import closure.
+        if (line ~ /^open import MLTT[.]Plus([[:space:]]|$)/) next
         if (line ~ /TWA[.]Thesis[.]Chapter3[.](ClosenessSpaces|SearchableTypes)[[:space:]]+fe([[:space:]]|$)/) next
         if (line ~ /^open import (Agda[.]Builtin[.]Reflection|Haskell[.]Law[.]Num[.]Def|Haskell[.]Law[.]Num[.]Int|Haskell[.]Prelude[.]Nat[.]Properties|Unsafe[.]Haskell)([[:space:]]|$)/) next
         if (line ~ /^open import InfinitePigeon[.]FinitePigeon([[:space:]]|$)/) next
@@ -88,6 +90,7 @@ external_drift() {
       mod=$0
       sub(/^[[:space:]]*(open[[:space:]]+)?import[[:space:]]+/, "", mod)
       if (mod !~ /^FullCoupled[.]/ &&
+          mod !~ /^MLTT[.]Plus([[:space:]]|$)/ &&
           mod !~ /^TWA[.]Thesis[.]Chapter3[.](ClosenessSpaces|SearchableTypes)[[:space:]]+fe([[:space:]]|$)/ &&
           mod !~ /^Agda[.]Builtin[.]Reflection([[:space:]]|$)/ &&
           mod !~ /^Haskell[.]Law[.]Num[.](Def|Int)([[:space:]]|$)/ &&
