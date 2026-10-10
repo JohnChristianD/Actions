@@ -644,7 +644,7 @@ CanonicalGRUStatisticalObservation = C.GRUState × (C.CanonicalToken → C.Int8)
 canonicalGRUStatisticalEncode : C.GRUState → CanonicalGRUStatisticalObservation
 canonicalGRUStatisticalEncode s = s , (λ _ → C.hiddenState s)
 canonicalGRUStatisticalDecode : CanonicalGRUStatisticalObservation → C.GRUState
-canonicalGRUStatisticalDecode observation = proj₁ observation
+canonicalGRUStatisticalDecode observation = pr₁ observation
 canonicalGRUStatisticalDecodeEncode : ∀ s → canonicalGRUStatisticalDecode (canonicalGRUStatisticalEncode s) ＝ s
 canonicalGRUStatisticalDecodeEncode s = refl
 leftInverse-implies-injective :
