@@ -4880,6 +4880,11 @@ iterateState : ∀ {State : Set} → (State → State) → ℕ → State → Sta
 iterateState step zero s = s
 iterateState step (succ n) s = step (iterateState step n s)
 
+// Stable compatibility name. Declared here because Agda checks declarations
+// in order, and earlier theorem statements consume this generic iterator.
+iterateStep : ∀ {State : Set} → (State → State) → ℕ → State → State
+iterateStep step n s = iterateState step n s
+
 
 record FiniteRankStabilityCertificate
   (State : Set)
@@ -9868,14 +9873,7 @@ megaNoEquilibriumWalrasianSquare =
 -- Kept in this monolith so there is one authoritative theorem source.
 ------------------------------------------------------------------------
 
-iterateStep :
-  ∀ {State : Set} →
-  (State → State) →
-  ℕ →
-  State →
-  State
-iterateStep step zero s = s
-iterateStep step (succ n) s = step (iterateStep step n s)
+
 
 record StrictProgressWitness
   (State Measure : Set)
