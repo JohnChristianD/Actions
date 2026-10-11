@@ -6029,7 +6029,7 @@ record JAXExecutionMirrorReproof : Set₁ where
       ∀ xs →
       jaxIntegerLayerNormCenteredNumerators xs ＝
       C.integerLayerNormCenteredNumerators xs
-    integerLayerNormRadicand :
+    jaxIntegerLayerNormRadicandLaw :
       ∀ xs epsilon →
       jaxIntegerLayerNormRadicand xs epsilon ＝
       C.integerLayerNormRadicand xs epsilon
