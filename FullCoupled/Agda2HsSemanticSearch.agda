@@ -450,12 +450,12 @@ graphValidPlan [] _ = False
 graphValidPlan plan laws =
   graphAllUnique plan && graphValidChain plan laws
 
-graphLast :
+-- Plans are stored deepest dependency first; the active node is the head.
+graphFirst :
   List String ->
   Maybe String
-graphLast [] = Nothing
-graphLast (name ∷ []) = Just name
-graphLast (_ ∷ names) = graphLast names
+graphFirst [] = Nothing
+graphFirst (name ∷ _) = Just name
 
 graphMaximalDependencyChain :
   List String ->
@@ -463,7 +463,7 @@ graphMaximalDependencyChain :
   Bool
 graphMaximalDependencyChain plan laws =
   if graphValidPlan plan laws then
-    case graphLast plan of λ where
+    case graphFirst plan of λ where
       Nothing -> False
       Just terminal ->
         case graphLawForName terminal laws of λ where
@@ -686,7 +686,7 @@ graphAStarHeuristic :
   GraphNode ->
   Nat
 graphAStarHeuristic laws node =
-  case graphLast (graphNodePlan node) of λ where
+  case graphFirst (graphNodePlan node) of λ where
     Nothing -> zero
     Just terminal ->
       case graphLawForName terminal laws of λ where
