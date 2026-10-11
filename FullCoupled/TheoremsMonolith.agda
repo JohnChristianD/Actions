@@ -6025,7 +6025,7 @@ record JAXExecutionMirrorReproof : Set₁ where
       (q : C.QFunction {A})
       (c : C.CountFunction {A}) →
       jaxSparsemaxPolicyIndex K q c ＝ C.sparsemaxPolicy K q c
-    integerLayerNormCenteredNumerators :
+    jaxIntegerLayerNormCenteredNumeratorsLaw :
       ∀ xs →
       jaxIntegerLayerNormCenteredNumerators xs ＝
       C.integerLayerNormCenteredNumerators xs
