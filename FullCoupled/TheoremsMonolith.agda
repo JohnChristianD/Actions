@@ -5138,7 +5138,7 @@ record GuardedCubicalTrace (Feature : Set) : Set where
   no-eta-equality
   field
     traceHead : Feature
-    tail : GuardedCubicalTrace Feature
+    traceTail : GuardedCubicalTrace Feature
 
 guardedCubicalTraceStage :
   ∀ {Feature : Set} →
@@ -5147,7 +5147,7 @@ guardedCubicalTraceStage :
   Feature
 guardedCubicalTraceStage zero trace = GuardedCubicalTrace.traceHead trace
 guardedCubicalTraceStage (succ n) trace =
-  guardedCubicalTraceStage n (GuardedCubicalTrace.tail trace)
+  guardedCubicalTraceStage n (GuardedCubicalTrace.traceTail trace)
 
 record GuardedCubicalDenseRepresentation
   (State Feature : Set) : Set₁ where
