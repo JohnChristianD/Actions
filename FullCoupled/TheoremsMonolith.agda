@@ -5705,7 +5705,7 @@ record UniformSupportTsallisBoundary
 ------------------------------------------------------------------------
 
 jaxIntegerSum : List Int → Int
-jaxIntegerSum [] = + 0
+jaxIntegerSum [] = pos 0
 jaxIntegerSum (x ∷ xs) =
   x +Int jaxIntegerSum xs
 
