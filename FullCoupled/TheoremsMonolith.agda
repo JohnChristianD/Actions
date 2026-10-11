@@ -5137,7 +5137,7 @@ record GuardedCubicalTrace (Feature : Set) : Set where
   coinductive
   no-eta-equality
   field
-    head : Feature
+    traceHead : Feature
     tail : GuardedCubicalTrace Feature
 
 guardedCubicalTraceStage :
@@ -5145,7 +5145,7 @@ guardedCubicalTraceStage :
   ℕ →
   GuardedCubicalTrace Feature →
   Feature
-guardedCubicalTraceStage zero trace = GuardedCubicalTrace.head trace
+guardedCubicalTraceStage zero trace = GuardedCubicalTrace.traceHead trace
 guardedCubicalTraceStage (succ n) trace =
   guardedCubicalTraceStage n (GuardedCubicalTrace.tail trace)
 
