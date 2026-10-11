@@ -4880,6 +4880,11 @@ iterateState : ∀ {State : Set} → (State → State) → ℕ → State → Sta
 iterateState step zero s = s
 iterateState step (succ n) s = step (iterateState step n s)
 
+-- Stable compatibility name. Declared here because Agda checks declarations
+-- in order, and earlier theorem statements consume this generic iterator.
+iterateStep : ∀ {State : Set} → (State → State) → ℕ → State → State
+iterateStep step n s = iterateState step n s
+
 
 record FiniteRankStabilityCertificate
   (State : Set)
@@ -5138,7 +5143,7 @@ record GuardedCubicalTrace (Feature : Set) : Set where
   no-eta-equality
   field
     traceHead : Feature
-    tail : GuardedCubicalTrace Feature
+    traceTail : GuardedCubicalTrace Feature
 
 guardedCubicalTraceStage :
   ∀ {Feature : Set} →
@@ -5147,7 +5152,7 @@ guardedCubicalTraceStage :
   Feature
 guardedCubicalTraceStage zero trace = GuardedCubicalTrace.traceHead trace
 guardedCubicalTraceStage (succ n) trace =
-  guardedCubicalTraceStage n (GuardedCubicalTrace.tail trace)
+  guardedCubicalTraceStage n (GuardedCubicalTrace.traceTail trace)
 
 record GuardedCubicalDenseRepresentation
   (State Feature : Set) : Set₁ where
@@ -5700,7 +5705,7 @@ record UniformSupportTsallisBoundary
 ------------------------------------------------------------------------
 
 jaxIntegerSum : List Int → Int
-jaxIntegerSum [] = + 0
+jaxIntegerSum [] = pos 0
 jaxIntegerSum (x ∷ xs) =
   x +Int jaxIntegerSum xs
 
@@ -6020,11 +6025,11 @@ record JAXExecutionMirrorReproof : Set₁ where
       (q : C.QFunction {A})
       (c : C.CountFunction {A}) →
       jaxSparsemaxPolicyIndex K q c ＝ C.sparsemaxPolicy K q c
-    integerLayerNormCenteredNumerators :
+    jaxIntegerLayerNormCenteredNumeratorsLaw :
       ∀ xs →
       jaxIntegerLayerNormCenteredNumerators xs ＝
       C.integerLayerNormCenteredNumerators xs
-    integerLayerNormRadicand :
+    jaxIntegerLayerNormRadicandLaw :
       ∀ xs epsilon →
       jaxIntegerLayerNormRadicand xs epsilon ＝
       C.integerLayerNormRadicand xs epsilon
@@ -9868,14 +9873,7 @@ megaNoEquilibriumWalrasianSquare =
 -- Kept in this monolith so there is one authoritative theorem source.
 ------------------------------------------------------------------------
 
-iterateStep :
-  ∀ {State : Set} →
-  (State → State) →
-  ℕ →
-  State →
-  State
-iterateStep step zero s = s
-iterateStep step (succ n) s = step (iterateStep step n s)
+
 
 record StrictProgressWitness
   (State Measure : Set)
