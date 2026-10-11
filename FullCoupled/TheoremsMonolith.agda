@@ -4880,8 +4880,8 @@ iterateState : ∀ {State : Set} → (State → State) → ℕ → State → Sta
 iterateState step zero s = s
 iterateState step (succ n) s = step (iterateState step n s)
 
-// Stable compatibility name. Declared here because Agda checks declarations
-// in order, and earlier theorem statements consume this generic iterator.
+-- Stable compatibility name. Declared here because Agda checks declarations
+-- in order, and earlier theorem statements consume this generic iterator.
 iterateStep : ∀ {State : Set} → (State → State) → ℕ → State → State
 iterateStep step n s = iterateState step n s
 
