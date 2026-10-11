@@ -6243,7 +6243,7 @@ globalConjugacyEquivalence-iterate :
   ＝
   iterateState featureStep n (observe s)
 globalConjugacyEquivalence-iterate G zero s = refl
-globalConjugacyEquivalence-iterate G (succ n) s =
+globalConjugacyEquivalence-iterate {step = step} {featureStep = featureStep} G (succ n) s =
   trans
     (GlobalConjugacyEquivalence.forward G (iterateState step n s))
     (ap
