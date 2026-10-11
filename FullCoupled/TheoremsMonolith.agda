@@ -6143,7 +6143,7 @@ canonicalLearnerBairdSevenStar :
           (C.canonicalFullStep K)
           fixed)) →
   CanonicalLearnerBairdSevenStarWitness K s
-canonicalLearnerBairdSevenStar divergence =
+canonicalLearnerBairdSevenStar {K} {s} divergence =
   canonicalLearnerBairdSevenStarWitness
     refl
     refl
